@@ -1,0 +1,1 @@
+admin-update-post.tpl
