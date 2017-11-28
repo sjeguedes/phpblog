@@ -29,14 +29,14 @@ class AppRouter
 
 	private function getRoutesConfig()
 	{
-		$xml = new \DOMDocument;
-    	$xml->load(__DIR__ . '/../Config/routes.xml');
-    	$routes = $xml->getElementsByTagName('route');
+		// Get routes from yaml file
+		$yaml = $this->config::parseYAMLFile(__DIR__ . '/routing.yml');
+		//var_dump($yaml);
 
-    	foreach ($routes as $route) {
-    		$path = $route->getAttribute('path');
-    		$name = $route->getAttribute('name');
-    		$method = $route->getAttribute('method');
+		foreach ($yaml['routes'] as $route) {
+    		$path = $route['path'];
+    		$name = $route['name'];
+    		$method = $route['method'];
 
     		$this->createRoute($path, $name, $method);
     	}

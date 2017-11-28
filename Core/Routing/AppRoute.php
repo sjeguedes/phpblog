@@ -83,9 +83,9 @@ class AppRoute
 				case 'slug':
 					$this->useParameter($match[1], '[a-z0-9-]+');
 					break;
-				// case 'pageid':
-				// 	$this->useParameter($match[1], '[\d]+');
-				// 	break;
+				case 'pageId':
+					$this->useParameter($match[1], '[\d]+');
+					break;
 				default:
 					$this->useParameter($match[1], '[^/]+');
 					break;

@@ -36,7 +36,7 @@
 					<div class="separator separator-neutral"></div>
 					<div class="row">
 						<div class="post-thumbnail col-md-12 col-lg-3 mb-4">
-							<img src="http://placehold.it/320x240" alt="{{ post[0].title|e('html_attr') }}">
+							<img src="http://placehold.it/320x240" alt="{{ item.title|e('html_attr') }}">
 						</div>
 						<div class="post-intro text-left col-md-12 col-lg-9">
 							<p class="px-3">{{ item.intro|escape|nl2br }}</p>

@@ -19,7 +19,7 @@ class HomeController extends BaseController
 	{
 		$varsArray = [
 			'metaTitle' => 'Blog made with OOP in PHP code',
-			'metaDescription' => 'This blog aims at showing et manage articles.',
+			'metaDescription' => 'This blog aims at showing and manage articles.',
 			'imgBannerCSSClass' => 'home',
 			'contactList' => $this->getContactList()
 		];
