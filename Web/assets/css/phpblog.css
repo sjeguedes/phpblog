@@ -187,6 +187,7 @@ body {
 	border-width: 0 10px;
 	border-style: solid;
 	border-color: #f96332;
+	border-radius: 50px 0;
 }  
 
 @media screen and (min-width: 992px) {

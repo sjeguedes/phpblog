@@ -18,11 +18,14 @@ class PostController extends BaseController
 
 	public function showList()
 	{
+		// Get posts datas
+		$postList = $this->currentModel->getListWithAuthor();
+
 		$varsArray = [
 			'metaTitle' => 'Posts list',
-			'metaDescription' => '',
+			'metaDescription' => 'Here, you can follow our news and technical topics.',
 			'imgBannerCSSClass' => 'post-list',
-			'postList' => $this->currentModel->getListWithAuthor()
+			'postList' => $postList
 		];
 		echo $this->page->renderTemplate('blog/post/post-list.tpl', $varsArray);
 	}
@@ -44,7 +47,7 @@ class PostController extends BaseController
 			if($currentPageId <= $postListOnPage['pageQuantity']) {
 				$varsArray = [
 					'metaTitle' => 'Posts list',
-					'metaDescription' => '',
+					'metaDescription' => 'Here, you can follow our news and technical topics.',
 					'imgBannerCSSClass' => 'post-list',
 					'postListOnPage' => $postListOnPage
 				];
@@ -83,14 +86,16 @@ class PostController extends BaseController
 			}
 			// A post exists.
 			else {
-				$postListURL = $this->router->useURL('Blog\Post\Post|showList', null);
+				//$postListWithPagingURL = $this->router->useURL('Blog\Post\Post|showListWithPaging', ['pageId' => $post[0]->temporaryParams['pagingNumber']]);
+				//$adminUpdatePostURL = $this->router->useURL('Admin\Post\AdminPost|updatePost', ['id' => $post[0]->id]);
 				
 				$varsArray = [
-					'metaTitle' => 'Post presentation',
-					'metaDescription' => '',
+					'metaTitle' => 'Post - ' . $post[0]->title,
+					'metaDescription' => $post[0]->intro,
 					'imgBannerCSSClass' => 'post-single',
 					'post' => $post,
-					'postListURL' => $postListURL
+					//'postListWithPagingURL' => $postListWithPagingURL,
+					//'adminUpdatePostURL' => $adminUpdatePostURL
 				];
 				echo $this->page->renderTemplate('blog/post/post-single.tpl', $varsArray);
 			}

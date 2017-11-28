@@ -7,7 +7,7 @@
 		    <section class="post-detail">
 				<article class="post-item card my-4 px-3 py-4" ">
 					<h1 class="post-title">{{ post[0].title|escape }}</h1>
-					<div class="post-img" data-background-color="yellow">
+					<div class="post-img">
 						<img src="http://placehold.it/480x360" alt="{{ post[0].title|e('html_attr') }}">
 					</div>
 					<div class="separator separator-primary"></div>
