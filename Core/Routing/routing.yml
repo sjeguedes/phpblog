@@ -1,0 +1,70 @@
+routes:
+    home:
+        path: /
+        module: Home\Home 
+        action: showHome
+        name: Home\Home|showHome
+        method: GET
+
+    homeContact:
+        path: /home/contact
+        module: Home\Home
+        action: sendContactMessage
+        name: Home\Home|sendContactMessage
+        method: POST
+
+    postslist:
+        path: /posts
+        module: Blog\Post\Post
+        action: showList
+        name: Blog\Post\Post|showList
+        method: GET
+
+    postWithId:
+        path: /post/:id
+        module: Blog\Post\Post
+        action: showSingle
+        name: Blog\Post\Post|showSingle
+        method: GET
+
+    postWithSlugAndId:
+        path: /post/:slug-:id
+        module: Blog\Post\Post 
+        action: showSingle
+        name: Blog\Post\Post|showSingle
+        method: GET
+
+    postsWithPaging:
+        path: /posts/page/:pageId
+        module: Blog\Post\Post
+        action: showListWithPaging
+        name: Blog\Post\Post|showListWithPaging
+        method: GET
+
+    adminHome:
+        path: /admin
+        module: Admin\AdminHome
+        action: showHome
+        name: Admin\AdminHome|showHome
+        method: GET
+
+    adminCreatePost:
+        path: /admin/create-post
+        module: Admin\Post\AdminPost
+        action: addPost
+        name: Admin\Post\AdminPost|addPost
+        method: POST
+
+    adminUpdatePost:
+        path: /admin/update-post/:id
+        module: Admin\Post\AdminPost
+        action: updatePost
+        name: Admin\Post\AdminPost|updatePost
+        method: POST
+
+    adminDeletePost:
+        path: /admin/delete-post/:id
+        module: Admin\Post\AdminPost
+        action: deletePost
+        name: Admin\Post\AdminPost|deletePost
+        method: POST
