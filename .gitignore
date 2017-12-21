@@ -1,0 +1,11 @@
+Libs/vendor
+Libs/composer.phar
+Libs/composer.lock
+Web/assets/css/demo.css
+Web/assets/files
+Web/assets/img
+Core/Config/Yaml/config.yml
+.DS_store
+Core/_archives
+App/Views/_archives
+Web/phpinfos.php
