@@ -1,12 +1,13 @@
 <?php
-namespace App\Models\Home;
+namespace App\Models\Admin;
 use App\Models\BaseModel;
 use Core\Database\AppDatabase;
 use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
 use Core\Config\AppConfig;
+use App\Models\Blog\Entity\User;
 
-class HomeModel extends BaseModel
+class AdminHomeModel extends AdminModel
 {
 	/**
 	 * Constructor
@@ -16,6 +17,5 @@ class HomeModel extends BaseModel
 	 */
 	public function __construct(AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
 	{
-		parent::__construct(AppDatabase::getInstance(), $httpResponse, $router, $config);
 	}
 }

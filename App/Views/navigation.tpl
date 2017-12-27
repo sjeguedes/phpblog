@@ -1,5 +1,5 @@
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg bg-phpblog-neutral fixed-top navbar-transparent " color-on-scroll="50">
+<nav class="navbar navbar-expand-lg bg-phpblog-neutral fixed-top navbar-transparent" color-on-scroll="50">
     <div class="container">
         <div class="navbar-translate">
             <a class="navbar-brand" href="/" title="phpBlog">

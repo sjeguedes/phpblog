@@ -4,18 +4,20 @@ use App\Models\BaseModel;
 use Core\Database\AppDatabase;
 use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
+use Core\Config\AppConfig;
 use App\Models\Blog\Entity\User;
 
-class AdminModel extends BaseModel
+abstract class AdminModel extends BaseModel
 {
 	/**
 	 * Constructor
-	 * @param HTTPResponse instance
+	 * @param AppHTTPResponse instance
 	 * @param AppRouter instance
+	 * @param AppConfig instance
 	 */
-	public function __construct(AppHTTPResponse $httpResponse = null, AppRouter $router = null)
+	public function __construct(AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
 	{
-		parent::__construct(AppDatabase::getInstance(), $httpResponse, $router);
+		parent::__construct(AppDatabase::getInstance(), $httpResponse, $router, $config);
 	}
 
 	public function getUserById($userId)

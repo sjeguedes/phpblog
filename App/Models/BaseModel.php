@@ -2,26 +2,33 @@
 namespace App\Models;
 use Core\Database\AppDatabase;
 use Core\Database\PDOFactory;
+use Core\AppHTTPResponse;
+use Core\Routing\AppRouter;
 use Core\Config\AppConfig;
 
 abstract class BaseModel 
 {
 	protected $dbConnector;
+	protected $httpResponse;
+	protected $router;
 	protected $config;
 
 	/**
 	 * Constructor
-	 * @param AppDatabase $dbConnector: AppDatabase instance
-	 * @param HTTPResponse instances
-	 * @param AppRouter instances
+	 * @param AppDatabase instance
+	 * @param AppHTTPResponse instance
+	 * @param AppRouter instance
+	 * @param AppConfig instance
 	 */
-	public function __construct(AppDatabase $dbConnector, $httpResponse, $router)   
+	public function __construct(AppDatabase $dbConnector, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)   
 	{	
 		$this->dbConnector = $dbConnector::getPDOWithMySQl();
-		$this->config = AppConfig::getInstance();
+		$this->httpResponse = $httpResponse;
+		$this->router = $router;
+		$this->config = $config;
 	}
 
-	// Helpers: insert escaped datas in database
+	// Helper: insert escaped datas in database
 
 	public function avoidSQLInjection() {
 		if(ctype_digit($string)) { // string is an int
@@ -34,7 +41,7 @@ abstract class BaseModel
 		return $string;
 	}
 
-	// Helpers: show escaped datas on website
+	// Helper: show escaped datas on website
 
 	public function avoidXSS($string)
 	{ 
@@ -57,7 +64,6 @@ abstract class BaseModel
 	{
 		if($this->dbConnector !== null) {
 			$query = $this->dbConnector->query('SELECT * FROM ' . $table);
-			//var_dump($query); 
 			return $query->fetchAll(\PDO::FETCH_ASSOC);
 		}
 	}

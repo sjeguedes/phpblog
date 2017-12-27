@@ -10,16 +10,16 @@
 						Sending Date
 					</div>
 					<div class="flex-col bg-primary">
-						Name
+						Family name
 					</div>
 					<div class="flex-col bg-primary">
-						Firstname
+						First name
 					</div>
 					<div class="flex-col bg-primary">
 						Contact email
 					</div>
 					<div class="flex-col bg-primary">
-						<p>Message send:</p>
+						<p>Message sent</p>
 					</div>
 				</div>
 				{% for item in contactList %}
@@ -28,7 +28,7 @@
 						{{ item.contact_sendingDate }}
 					</div>
 					<div class="flex-col">
-						{{ item.contact_name }}
+						{{ item.contact_familyName }}
 					</div>
 					<div class="flex-col">
 						{{ item.contact_firstName }}

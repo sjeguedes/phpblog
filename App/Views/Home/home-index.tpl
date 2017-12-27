@@ -25,7 +25,11 @@
 	    </div>
 	</div>
 </div>
+{% block contactForm %}
 {{ include("Home/home-contact-form.tpl") }}
+{% endblock %}
+{% block contactList %}
 {# Contact list to move from here!!!! #}
 {{ include("Admin/admin-contact-list.tpl") }}
+{% endblock %}
 {% endblock %}

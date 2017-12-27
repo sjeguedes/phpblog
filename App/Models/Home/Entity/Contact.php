@@ -5,7 +5,7 @@ class Contact
 {
 	private $id;
 	private $sendingDate;
-	private $name;
+	private $familyName;
 	private $firstname;
 	private $message;
 

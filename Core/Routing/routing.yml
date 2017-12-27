@@ -1,17 +1,31 @@
 routes:
-    home:
+    homeGETParams:
         path: /
         module: Home\Home 
         action: showHome
         name: Home\Home|showHome
         method: GET
 
-    homeContact:
-        path: /home/contact
+    homePOSTParams:
+        path: /
         module: Home\Home
-        action: sendContactMessage
-        name: Home\Home|sendContactMessage
+        action: showHome
+        name: Home\Home|showHome
         method: POST
+
+    # homeContact:
+    #     path: /home/contact
+    #     module: Home\Home
+    #     action: sendContactMessage
+    #     name: Home\Home|sendContactMessage
+    #     method: POST
+
+    # homeContactCheck:
+    #     path: /
+    #     module: Home\Home
+    #     action: getCurrentToken
+    #     name: Home\Home|getCurrentToken
+    #     method: GET
 
     postslist:
         path: /posts

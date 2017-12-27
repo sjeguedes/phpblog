@@ -13,12 +13,13 @@ class PostModel extends BaseModel
 {
 	/**
 	 * Constructor
-	 * @param object: HTTPResponse instance
-	 * @param object: AppRouter instance
+	 * @param AppHTTPResponse instance
+	 * @param AppRouter instance
+	 * @param AppConfig instance
 	 */
-	public function __construct(AppHTTPResponse $httpResponse, AppRouter $router)
+	public function __construct(AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
 	{
-		parent::__construct(AppDatabase::getInstance(), $httpResponse, $router);
+		parent::__construct(AppDatabase::getInstance(), $httpResponse, $router, $config);
 	}
 
 	public function getSingleById($postId)
@@ -68,7 +69,6 @@ class PostModel extends BaseModel
 		$author = $this->getAuthorByPostUserId($post->userId);
 		$post->author = $author;
 		array_push($postWithAuthor, $post);
-		//var_dump('WITH AUTHOR', $postWithAuthor);
 		return $postWithAuthor;
 	}
 
@@ -101,17 +101,8 @@ class PostModel extends BaseModel
 		$query->bindParam(':postPerPage', $postPerPage, \PDO::PARAM_INT);
 		$query->execute();
 
-		// Get rank for all the posts: return an array of arrays (with post_id and rank)
-		//$postsRank = $this->getRankForAll();
-		//var_dump($postsRank);
-
 		// Compare post_id from retrieved posts to add rank property to corresponding Post instance
 		while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
-			// for($i = 0; $i < count($postsRank) - 1; $i++) {
-			// 	if($postsRank[$i]['post_id'] == $datas['post_id']) {
-			// 		$datas['rank'] = $postsRank[$i]['rank'];
-			// 	}
-			// }
 	      	$postsOnpage[] = new Post($datas);
 	    }
 
@@ -122,7 +113,6 @@ class PostModel extends BaseModel
 		// Get total number of pages for paging
 		$pagesQuantity = ceil($countedPosts / $postPerPage);
 
-	    //var_dump('$pagesQuantity:', $pagesQuantity, '$postsOnpage', $postsOnpage);
     	return ['currentPage' => $pageId, 'pageQuantity' => $pagesQuantity, 'postsOnPage' => $postsOnpage];
 	}
 
@@ -131,21 +121,19 @@ class PostModel extends BaseModel
 		$result = $this->getRankForSingle($postId);
 		$postRank = intval($result[0]);
 		$postQuantity = intval($result[1]);
-		$postPerPage = $this->config::POST_PER_PAGE;
+		$postPerPage = $this->config::$_postPerPage;
 		$paging = ceil($postQuantity / $postPerPage);
 
 		$interval = [];
 		$start = 0;
-		//var_dump('$postRank', $postRank, '$postQuantity', $postQuantity);
+
 		for($i = 1; $i <= $paging; $i++) {
-			//var_dump('s', $start, 's+p', $start + $postPerPage);
 			if($start <= $postRank && $postRank < $start + $postPerPage) {
 				$singleIsOnPage = $i;
 				break;
 			}
 			$start = $start + $postPerPage;
 		}
-		//var_dump('getPagingForSingle', $singleIsOnPage);
 		return $singleIsOnPage;
 	}
 

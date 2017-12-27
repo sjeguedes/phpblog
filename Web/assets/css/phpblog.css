@@ -3,15 +3,91 @@
 	margin-left: 0 !important;
 	margin-right: 0 !important;
 }
+
 .row [class*="col-"] {
 	padding-left: 0 !important;
 	padding-right: 0 !important;
 }
+
+.tooltip .tooltip-inner {
+	max-width: 100%;
+}
 /* End override BootStrap */
 
+/* Override Now ui */
+.alert {
+	position: relative;
+}
+
+.alert .close {
+	position: absolute;
+	top: 0;
+	right: 5px;
+	cursor: pointer;
+}
+
+.alert .close .now-ui-icons:before {
+	font-size: 0.75em; 
+}
+
+.input-group-addon, .form-control {
+	background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.active-field .input-group-addon, .active-field .form-control {
+	background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* End override Now ui */
+
+/* Override Google chrome autofill */
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+	-webkit-animation-delay: 50ms;
+    -webkit-animation-name: autofill;
+  	-webkit-animation-fill-mode: both;
+}
+
+input:-webkit-autofill, 
+textarea:-webkit-autofill, 
+select:-webkit-autofill {
+	 -webkit-animation-delay: 200ms;
+  	-webkit-animation-name: no-autofill;
+  	-webkit-animation-fill-mode: both;
+}
+
+@-webkit-keyframes no-autofill {
+  from {
+  	color: #fff;
+    background: rgba(255, 255, 255, 0.2) none;	
+  }
+  to {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1) none;
+
+  }
+}
+
+@-webkit-keyframes autofill {
+	from {
+  		color: #fff;
+    	background: rgba(255, 255, 255, 0.1) none;	
+  	}
+  	to {
+    	color: #fff;
+    	background: rgba(255, 255, 255, 0.2) none;
+  	}
+}
+/* End override Google chrome autofill */
+
+.g-recaptcha {
+	display: inline-block;
+}
+
 body {
-	/*background-color: #ccc;*/
-	height: 100vh;
+	/*background-color: #ccc;
+	height: 100vh;*/
+	height: 100%;
 }
 
 .navbar.bg-phpblog-neutral {
@@ -146,10 +222,22 @@ body {
 }
 
 .content {
-	margin: 1em 0;
+	padding: 1em 0;
 	flex: 1 0 auto;
 	position: relative;
 	z-index: 0;
+}
+
+.no-js-box {
+	width: 100%;
+	height: 100%;
+	position: fixed;
+	top: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+    justify-content: center;
+	background-color: rgba(0, 0, 0, 0.9); 
 }
 
 .section {
@@ -161,7 +249,7 @@ body {
 	width: 100%;
 	bottom: 0;
 	left: 0;*/
-	background-color: #ddd !important;
+	background-color: rgb(153, 153, 153);
 }
 
 .footer .social-personal-links {
@@ -173,6 +261,9 @@ body {
 	text-align: center;
 }
 
+.footer .copyright a.btn-link {
+	padding: 0;
+}
 
 /* Post List */
 .post-header-infos {
@@ -195,6 +286,64 @@ body {
 		border-width: 10px 0;
 		border-color: #f96332;
 	}
+}
+
+/* Contact form */
+.section-contact-us .contact-form .textarea-container {
+	margin: 0 0 10px;
+}
+
+.contact-form .textarea-container.input-group .input-group-addon {
+	padding-top: 19px;
+	align-items: flex-start;
+}
+
+.section-contact-us .cf-hide {
+	display: none;
+}
+
+.section-contact-us .cf-screen-reader {  
+	position: absolute !important;
+   	clip: rect(1px 1px 1px 1px);
+   	clip: rect(1px, 1px, 1px, 1px);
+   	height: 1px;
+   	overflow: hidden;
+   	width: 1px;
+}
+
+.cf-error .cf-check-notice {
+	display: block;
+	color: rgba(255, 54, 54, 0.8);
+	background-color: #fff;
+	padding: 5px;
+}
+
+.contact-form textarea.form-control {
+	/*padding-left: 51px;*/
+	border-radius: 0 30px 30px 0;
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.contact-form textarea.form-control:focus {
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+.contact-form .text-danger {
+	font-weight: bold;
+    font-size: 0.85em;
+}
+
+.contact-form .btn-warning {
+	background-color: rgba(255, 255, 255, 0.1);
+	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+}
+
+.contact-form .btn-warning:hover {
+	background-color: rgba(255, 255, 255, 0.2);
+}
+
+.contact-form .ajax-loader {
+	border-radius: 50%;
 }
 
 /* Contact list */

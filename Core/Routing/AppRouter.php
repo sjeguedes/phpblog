@@ -1,5 +1,6 @@
 <?php
 namespace Core\Routing;
+use Core\AppPage;
 use Core\AppHTTPResponse;
 use Core\Config\AppConfig;
 /**
@@ -15,14 +16,20 @@ class AppRouter
 	private $url;
 	private $routes = [];
 	private $namedRoutes = [];
+	private $page;
 	private $httpResponse;
-	private $routerInstance;
+	private $router;
 	private $config;
 
 	
 	public function __construct($url)
 	{
 		$this->url = (string) $url;
+		$this->page = new AppPage();
+		// Instanciate a HTTPResponse object
+		$this->httpResponse = new AppHTTPResponse();
+		// Store the same instance
+		$this->router = clone $this;
 		$this->config = AppConfig::getInstance();
 		$this->getRoutesConfig();
 	}
@@ -31,13 +38,11 @@ class AppRouter
 	{
 		// Get routes from yaml file
 		$yaml = $this->config::parseYAMLFile(__DIR__ . '/routing.yml');
-		//var_dump($yaml);
 
 		foreach ($yaml['routes'] as $route) {
     		$path = $route['path'];
     		$name = $route['name'];
     		$method = $route['method'];
-
     		$this->createRoute($path, $name, $method);
     	}
     	$this->checkRoutes();
@@ -52,32 +57,24 @@ class AppRouter
 
 	private function checkRoutes()
 	{
-		// Instanciate a HTTPResponse object
-		$this->httpResponse = new AppHTTPResponse();
-
-		// Store the same instance;
-		$routerInstance  = clone $this;
-		$this->routerInstance = $routerInstance;
-
 		try {
 			if(isset($this->routes[$_SERVER['REQUEST_METHOD']])) {
 				$noRoute = true;
 				try {
 					// Loop only if a route exists with this method
 					foreach($this->routes[$_SERVER['REQUEST_METHOD']] as $route) {
-
 						// isMatched method returns true: url matched
 						if($route->isMatched($this->url)) {
 							$noRoute = false;
 							// Does action exist?
-							$result = $route->getControllerAction($this->httpResponse, $this->routerInstance);
+							$result = $route->getControllerAction($this->page, $this->httpResponse, $this->router, $this->config);
+							break;
 							if(is_string($result)) {
-								//var_dump($result);
-								// show error view
-								return $this->httpResponse->set404ErrorResponse($result, $this->routerInstance);
+								// Show error view
+								return $this->httpResponse->set404ErrorResponse($result, $this->router);
 							}
 							else {
-								// show right template view
+								// Show right template view
 								return $result;
 							}
 						}		
@@ -88,40 +85,37 @@ class AppRouter
 				}
 				catch(RoutingException $e) {
 					// show error view
-					return $this->httpResponse->set404ErrorResponse($this->config::isDebug($e->getMessage()), $this->routerInstance);
+					return $this->httpResponse->set404ErrorResponse($this->config::isDebug($e->getMessage()), $this->router);
 				}
 			}
 			else {
 				throw new RoutingException("No content is available for your request. [Debug trace: REQUEST_METHOD is not being used by any routes!]");
-				
 			}
 
 		}
 		catch(RoutingException $e) {
 			// show error view
-			return $this->httpResponse->set404ErrorResponse($this->config::isDebug($e->getMessage()), $this->routerInstance);
+			return $this->httpResponse->set404ErrorResponse($this->config::isDebug($e->getMessage()), $this->router);
 		}
-		//var_dump($this->routes);
-		
 	}
 
 	/* Example: $router->useURL('post|single', ['slug' => 'article-intro', 'id' => '5']); */
 	public function useURL($name, $params = [])
 	{
-			try {
-				if(isset($this->namedRoutes[$name])) {
-					// $this->namedRoutes[$name] is an instance of "Route"
-					$route = $this->namedRoutes[$name];
-					return $route->generateURL($params);
-				}
-				else {
-					throw new RoutingException("No content is available for your request. [Debug trace: No route matches this name!]");
-				}
+		try {
+			if(isset($this->namedRoutes[$name])) {
+				// $this->namedRoutes[$name] is an instance of "Route"
+				$route = $this->namedRoutes[$name];
+				return $route->generateURL($params);
+			}
+			else {
+				throw new RoutingException("No content is available for your request. [Debug trace: No route matches this name!]");
+			}
 
-			}
-			catch(RoutingException $e) {
-				// show error view
-				return $this->httpResponse->set404ErrorResponse($this->config::isDebug($e->getMessage()), $this->routerInstance);
-			}
+		}
+		catch(RoutingException $e) {
+			// show error view
+			return $this->httpResponse->set404ErrorResponse($this->config::isDebug($e->getMessage()), $this->router);
+		}
 	}
 }

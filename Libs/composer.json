@@ -1,6 +1,7 @@
 {
     "require": {
         "twig/twig": "~2.0",
-        "symfony/yaml": "^3.3"
+        "symfony/yaml": "^3.3",
+        "google/recaptcha": "~1.1"
     }
 }
