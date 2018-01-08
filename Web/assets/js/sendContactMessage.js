@@ -14,31 +14,21 @@ jQuery(function($) {
 	// -------------------------------------------------------------------------------------------------------
 
 	// User inputs are modified.
-	var fieldType = '.contact-form .input-group input[type="text"], .contact-form .input-group textarea, .contact-form input[id="cf_check"]',
-		typingTimer,
-		doneTypingInterval = 250;
-
-	$(document).on('change keyup blur input', fieldType, function() {
+	var fieldType = '.contact-form .input-group input[type="text"], .contact-form .input-group textarea, .contact-form input[id="cf_check"]';
+	
+	$(document).on('change keyup', fieldType, function() {
 		element = $(this);
-		// create delay when user is typing email
-		if(element.attr('id') == 'cf_email') {
-			clearTimeout(typingTimer);
-			typingTimer = setTimeout(function(){
-	        	checkForm(element, [getCurrentCheck, jsLcFirst]);
-	    	}, doneTypingInterval);
-	    }
-	    else {
-			checkForm(element, [getCurrentCheck, jsLcFirst]);
-	    }
+		checkForm(element, [getCurrentCheck, jsLcFirst]);
 	    showNoticeMessage(false);
 	});
 
 	// -------------------------------------------------------------------------------------------------------
 	// User submits contact form.
 	$(document).on('submit', '.contact-form', function(e) {
-		if(parseInt($(this).data('ajax')) == true) {
+		var contacForm = $(this);
+		if(parseInt(contacForm.data('ajax')) == 1) {
 			e.preventDefault();
-			$(this).find('.input-group input[type="text"], .input-group textarea, input[id="cf_check"]').each(function() {
+			contacForm.find('.input-group input[type="text"], .input-group textarea, input[id="cf_check"]').each(function() {
 				element = $(this);
 				checkForm(element, [getCurrentCheck, jsLcFirst]);
 			});
@@ -46,10 +36,10 @@ jQuery(function($) {
 			// Form is validated.
 			if(success && grcResponse) {	
 				// Add loader
-				$('button[name="cf_submit"]').prepend('<img class="ajax-loader" src="/assets/images/phpblog/ajax-loader.gif" alt="Loading">&nbsp;&nbsp;');			
+				$('button[name="cf_submit"]').prepend('<img class="ajax-loader" src="/assets/images/phpblog/ajax-loader.gif" alt="Loading">');			
 				// POST data
 				var data = {
-					cf_call: $('#cf_contact').val(),
+					cf_call: 'contact-ajax',
 					cf_familyName: $('#cf_familyName').val().replace(/^\s+|\s+$/gm,''),
 				 	cf_firstName: $('#cf_firstName').val().replace(/^\s+|\s+$/gm,''),
 				 	cf_email: $('#cf_email').val(), // spaces are already checked by email regex
@@ -62,7 +52,7 @@ jQuery(function($) {
 				data[captcha] = grcJSONResponse;
 
 				$.post({
-				 	url: $(this).attr('action'),
+				 	url: contacForm.attr('action'),
 				 	data,
 				 	dataType: 'html',
 				 	success: function(data) {
@@ -79,6 +69,7 @@ jQuery(function($) {
 						// Reset initial values
 						success = false;
 						grcResponse = false;
+						errorsOnFields = [];
 						
 						// Reset check AJAX values
 						check = [];
@@ -90,10 +81,26 @@ jQuery(function($) {
 							$('button[name="cf_submit"]').text().replace('&nbsp;&nbsp;', '');
 						});
 						$('button[name="cf_submit"]').remove('.ajax-loader');
+						// Is message really sent? $(data) corresponds to $('.contact-form').
+						if(parseInt($(data).data('not-sent')) == 1) {
+							$('.cf-success').slideUp(700);
+							if($('.cf-error').is(':hidden')) {
+							 	$('.cf-error').slideDown(700, function() { $(this).removeClass('cf-hide'); });
+							}
+							$('.cf-error').empty().html('<i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERROR!</strong>' +
+							'&nbsp;Sorry, a technical error happened!<br>Your message was not sent.<br>' +
+							'Please, try again later.' +
+		                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+		                    '<span aria-hidden="true"><i class="now-ui-icons ui-1_simple-remove"></i></span>' +
+		                    '</button>');
+							}
+						else {
+							$('.cf-success').slideDown(700);
+						}
 				  	},
 				  	error: function(xhr, error, status) {
 				  		// Manage error
-				  		//console.warn(xhr, xhr.responseText, error, status);
+				  		// console.warn(xhr, xhr.responseText, error, status);
 				  		if($('.cf-error').is(':hidden')) {
 						 	$('.cf-error').slideDown(700, function() { $(this).removeClass('cf-hide'); });
 						}
@@ -109,6 +116,20 @@ jQuery(function($) {
 			noGoogleRecaptchaResponse();
 			showNoticeMessage(true);
 		}
+	});
+
+	// -------------------------------------------------------------------------------------------------------
+
+	// Scroll to contact form notice message box if it is visible (obviously, in case of no AJAX mode).
+	$(window).on('load', function() {
+		$('.cf-error, .cf-success').each(function() {
+			if($(this).is(':visible')) {
+				$('html, body').animate({
+					scrollTop: ($(this).offset().top - 125) + 'px'
+				}, '700');
+				return false;
+			}
+		});
 	});
 
 	// -------------------------------------------------------------------------------------------------------
@@ -211,20 +232,25 @@ var check = [],
 	getCurrentCheck = function() {
 		$.get({
 		 	url: '/',
-		 	data: { cf_call: 'check' },
+		 	data: { cf_call: 'check-ajax' },
 		 	dataType: 'json',
 		 	success: function(json) {
 		 		check.push(json.key, json.value);
-		 		checkAjaxReturn = true;
+		 		$('.cf-error').empty().html('<i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;' +
+		 		'<strong>ERRORS!</strong>&nbsp;Change a few things up and try submitting again.' +
+                '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+                '<span aria-hidden="true"><i class="now-ui-icons ui-1_simple-remove"></i></span>' +
+                '</button>');
+                checkAjaxReturn = true;
 		 	},
 		 	error: function(xhr, error, status) {
 		 		// Manage error
-		 		//console.warn(xhr, xhr.responseText, error, status);
+		 		// console.warn(xhr, xhr.responseText, error, status);
 		 		if($('.cf-error').is(':hidden')) {
 				 	$('.cf-error').slideDown(700, function() { $(this).removeClass('cf-hide'); });
 				}
-				$('.cf-error').empty().html('<i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERROR!</strong>' +
-				'&nbsp;Sorry, a technical error happened!<br>We can not validate your inputs for the moment.<br>' +
+				$('.cf-error').empty().html('<i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;' +
+				'<strong>ERROR!</strong>&nbsp;Sorry, a technical error happened!<br>We can not validate your inputs for the moment.<br>' +
 				'Please, try again later.' +
                 '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
                 '<span aria-hidden="true"><i class="now-ui-icons ui-1_simple-remove"></i></span>' +
@@ -282,7 +308,7 @@ var ajaxCheckCount = 0,
 				}
 				else if(!is_email) {
 					fieldErrorMessage.html('&nbsp;Sorry, "<span class="text-muted">' + element.val() + 
-					'</span>" is not a valid email address!<br>Extra spaces before/after or forbidden characters could prevent validation.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
+					'</span>" is not a valid email address!<br>Extra spaces before/after or forbidden characters<br>could prevent validation.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
 					if(fieldErrorMessage.hasClass('cf-hide')) { fieldErrorMessage.removeClass('cf-hide').hide(); }
 					fieldErrorMessage.fadeIn(700);
 					errorsOnFields[element.attr('id')] = true;
@@ -296,8 +322,8 @@ var ajaxCheckCount = 0,
 				if($('.cf-error .cf-check-notice').length > 0) {
 					$('.cf-check-notice').remove();
 				}
-				// Check control only with AJAX success state returned
-				if(checkAjaxReturn) {
+				// Check control with AJAX success state concerning returned JSON
+				if(checkAjaxReturn !== undefined && checkAjaxReturn) {
 					if(element.attr('name') != check[0] || element.val() != check[1]) {
 						$('.cf-error').append('<span class="cf-check-notice">You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)</span>');
 						errorsOnFields[element.attr('id')] = true;
@@ -305,10 +331,6 @@ var ajaxCheckCount = 0,
 					else {
 						errorsOnFields[element.attr('id')] = false;
 					}
-				}
-				else {
-					// Technical error with AJAX
-					errorsOnFields[element.attr('id')] = true;
 				}
 			break;
 		}
@@ -330,34 +352,50 @@ var noGoogleRecaptchaResponse = function() {
 		if(!grcResponse) {
 			fieldErrorMessage = $('#cf-recaptcha').prev('.text-danger');
 			fieldErrorMessage.html('&nbsp;Please confirm you are a human.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
-			$('#cf-recaptcha').prev('.text-danger').fadeIn(700);		
+			$('#cf-recaptcha').prev('.text-danger').fadeIn(700);
 		}
 	}
 
 // Manage notice boxes display
-var showNoticeMessage = function(isSubmitted) {
-		if(isSubmitted && success && grcResponse) {
-			if($('.cf-error').is(':visible')) {
-				$('.cf-error').slideUp(700, function() { $(this).addClass('cf-hide'); });
+var	showNoticeMessage = function(isSubmitted) {
+		// Contact form is not submitted: simple JS validation
+		if(!isSubmitted) {
+			// Ready to send!
+			if(success && grcResponse) {
+				if($('.cf-error').is(':visible')) {
+					$('.cf-error').slideUp(700, function() { $(this).addClass('cf-hide'); });
+				}
 			}
-			
-			if($('.cf-success').is(':hidden')) {
-				$('.cf-success').slideDown(700,  function() { $(this).removeClass('cf-hide'); });
-			}
+			// Manage else case here to show notice error box, each time there is an error on any field.
 		}
-		if((!success && !grcResponse) || (!success && grcResponse) || (isSubmitted && success && !grcResponse)) {
-			if($('.cf-error').is(':hidden')) {
-				$('.cf-error').slideDown(700, function() { $(this).removeClass('cf-hide'); });
+		// Contact form is submitted in AJAX mode
+		else {
+			// All fields are completed correctly.
+			if(success && grcResponse) {
+				if($('.cf-error').is(':visible')) {
+					$('.cf-error').slideUp(700, function() { $(this).addClass('cf-hide'); });
+				}
+				// AJAX mode: show success notice box
+				if(parseInt($(this).data('ajax')) == 1 && $('.cf-success').is(':hidden')) {
+					$('.cf-success').slideDown(700, function() { $(this).removeClass('cf-hide'); });
+				}
 			}
-
-			if($('.cf-success').is(':visible')) {
-			 	$('.cf-success').slideUp(700, function() { $(this).addClass('cf-hide'); });
-			}
-		}
-		// Ready to send or only Google recaptcha is not valid before submit!
-		if((!isSubmitted && success && grcResponse) || (!isSubmitted && success && !grcResponse)) {
-			if($('.cf-error, .cf-success').is(':visible')) {
-			 	$('.cf-error, .cf-success').slideUp(700, function() { $(this).addClass('cf-hide'); });
+			// Errors on fields which prevent form to send user inputs.
+			if((!success && !grcResponse) || (!success && grcResponse) || (success && !grcResponse)) {
+				// show error notice box
+				if($('.cf-error').is(':hidden')) {
+					// Hide success notice box if it already exists (in case of previous success)
+					if($('.cf-success').is(':visible')) {
+					 	$('.cf-success').slideUp(350, function() { 
+					 		$(this).addClass('cf-hide');
+					 		$('.cf-error').slideDown(700, function() { $(this).removeClass('cf-hide'); });
+					 	});
+					}
+					// Show error notice box
+					else {
+						$('.cf-error').slideDown(700, function() { $(this).removeClass('cf-hide'); });
+					}
+				}
 			}
 		}
 	}

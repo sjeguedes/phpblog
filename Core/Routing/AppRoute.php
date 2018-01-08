@@ -52,8 +52,6 @@ class AppRoute
 	public function isMatched($url)
 	{
 		$url = trim($url, '/');
-		// Escape PCRE special characters
-		//$url = preg_quote($url);
 		$path = trim($this->path, '/');
 		$path = preg_replace_callback('/\:([\w]+)/', [$this, 'matchParameter'] , $path);
 		$regex = "#^$path$#i";
