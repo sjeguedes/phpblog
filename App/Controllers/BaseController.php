@@ -5,23 +5,40 @@ use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
 use Core\Config\AppConfig;
 
-// Composer autoloader
-if( !class_exists('Composer\\Autoload\\ClassLoader') )
-{
-	require_once __DIR__ . '/../../Libs/vendor/autoload.php';
-}
-
-// Google recaptcha component
-use ReCaptcha\ReCaptcha;
-
+/**
+ * Create a parent controller to use in each controller
+ */
 abstract class BaseController 
 {
+	/**
+	 * @var AppPage instance
+	 */
 	protected $page;
+	/**
+	 * @var AppHTTPResponse instance
+	 */
 	protected $httpResponse;
+	/**
+	 * @var AppRouter instance
+	 */
 	protected $router;
+	/**
+	 * @var AppConfig instance
+	 */
 	protected $config;
+	/**
+	 * @var object: an instance of current model called by a particular controller
+	 */
 	protected $currentModel;
 
+	/**
+	 * Constructor
+	 * @param AppPage $page 
+	 * @param AppHTTPResponse $httpResponse 
+	 * @param AppRouter $router 
+	 * @param AppConfig $config 
+	 * @return void
+	 */
 	public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)   
 	{
 		$this->page = $page;
@@ -32,6 +49,12 @@ abstract class BaseController
 		session_start();
 	}
 
+	/**
+	 * Check if called method exists
+	 * @param callable $action 
+	 * @throws exception
+	 * @return return boolean|string
+	 */
 	public function checkAction($action) 
 	{
 	    try {
@@ -47,54 +70,15 @@ abstract class BaseController
 		}
 	}
 
+	/**
+	 * Get the model for a particular controller
+	 * @param string $className: name of current class 
+	 * @return object: an instance of current model
+	 */
 	public function getCurrentModel($className)
 	{
 		$className = str_replace('Controller', 'Model', $className);
 		$currentModel = new $className($this->httpResponse, $this->router, $this->config);
 		return $currentModel;
-	}
-
-	public function checkGoogleRecaptchaResponse($grcResponse) // -> $_POST['g-recaptcha-response']
-	{
-		$reCaptcha = new ReCaptcha($this->config::$_params['googleRecaptcha']['secretKey']);
-		if(isset($_POST['g-recaptcha-response'])) {
-			$grcResponse = $reCaptcha->verify($grcResponse, $_SERVER['REMOTE_ADDR']);
-
-			// Verify response
-			if ($grcResponse->isSuccess()) {
-				return true;
-			}
-			else {
-				return [false, $grcResponse->getErrorCodes()];
-			}
-		}
-		else {
-			return false;
-		}
-	}
-
-	// Dynamic $_POST check (token) index in addition to fight against CSRF
-	public function generateTokenIndex($inputFormName)
-	{
-		if (!isset($_SESSION[$inputFormName])) {
-			$_SESSION[$inputFormName] = $inputFormName . mt_rand(0,mt_getrandmax());
-		}
-		return $_SESSION[$inputFormName];
-	}
-
-	
-	// Anti CSRF token
-	public function generateTokenValue($varName) 
-	{
-		if (!isset($_SESSION[$varName])) {
-		   	$_SESSION[$varName] = hash('sha256', $varName . bin2hex(openssl_random_pseudo_bytes(8)) . session_id());
-		}
-		return $_SESSION[$varName];
-	}
-
-	// Verify if token matches with POST value
-	public function checkTokenValue($token, $varName)
-	{
-		return $token === $this->generateTokenValue($varName);
 	}
 }

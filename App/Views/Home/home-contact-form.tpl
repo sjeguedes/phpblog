@@ -14,7 +14,7 @@
                     </button>
                 </p>
                 <p class="alert alert-danger cf-error{{ errors == 0 ? ' cf-hide'}}" role="alert">
-                    <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERRORS!</strong>&nbsp;{% if errors['sending'] is defined %}{{ errors['sending']|raw }}{% else %}Change a few things up and try submitting again.{% if errors['check'] is defined %}<br>{{ errors['check']|raw }}{% endif %}{% endif %}
+                    <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERRORS!</strong>&nbsp;{% if errors['cf_sending'] is defined %}{{ errors['cf_sending']|raw }}{% else %}Change a few things up and try submitting again.{% if errors['cf_check'] is defined %}<br>{{ errors['cf_check']|raw }}{% endif %}{% endif %}
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">
                             <i class="now-ui-icons ui-1_simple-remove"></i>
@@ -29,8 +29,8 @@
             <div class="card py-4" data-background-color="black">
                 <div{{ ajaxModeForContactForm == 1 ? ' id="cf-ajax-wrapper"' }} class="col-lg-6 text-center col-md-8 ml-auto mr-auto">
                     {% block contactForm %}
-                    <form class="contact-form" data-ajax="{{ ajaxModeForContactForm }}" data-not-sent="{{ sending }}" method="post" action="/">
-                        <p class="text-danger{{ errors['familyName'] is not defined ? ' cf-hide'}}" role="alert">&nbsp;{{ errors['familyName']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
+                    <form novalidate class="contact-form" data-ajax="{{ ajaxModeForContactForm }}" data-not-sent="{{ sending }}" method="post" action="/">
+                        <p class="text-danger{{ errors['cf_familyName'] is not defined ? ' cf-hide'}}" role="alert">&nbsp;{{ errors['cf_familyName']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                         <div class="input-group phpblog-field-group form-group-no-border input-lg">
                             <span class="input-group-addon">
                                 <i class="now-ui-icons users_single-02"></i>
@@ -38,21 +38,21 @@
                             </span>
                             <input type="text" class="form-control" aria-label="Your family name" id="cf_familyName" name="cf_familyName" placeholder="FAMILY NAME..." value="{{ familyName|e('html_attr') }}">
                         </div>
-                        <p class="text-danger{{ errors['firstName'] is not defined ? ' cf-hide'}}" role="alert">&nbsp;{{ errors['firstName']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
+                        <p class="text-danger{{ errors['cf_firstName'] is not defined ? ' cf-hide'}}" role="alert">&nbsp;{{ errors['cf_firstName']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                         <div class="input-group phpblog-field-group form-group-no-border input-lg">
                             <span class="input-group-addon">
                                 <i class="now-ui-icons users_single-02"></i>
                             </span>
                             <input type="text" class="form-control" aria-label="Your first name" id="cf_firstName" name="cf_firstName" placeholder="First name..." value="{{ firstName|e('html_attr') }}">
                         </div>
-                        <p class="text-danger{{ errors['email'] is not defined ? ' cf-hide'}}" role="alert">&nbsp;{{ errors['email']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
+                        <p class="text-danger{{ errors['cf_email'] is not defined ? ' cf-hide'}}" role="alert">&nbsp;{{ errors['cf_email']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                         <div class="input-group phpblog-field-group form-group-no-border input-lg">
                             <span class="input-group-addon">
                                 <i class="now-ui-icons ui-1_email-85"></i>
                             </span>
-                            <input type="text" class="form-control" aria-label="Your email" id="cf_email" name="cf_email" placeholder="Email..." value="{{ email|e('html_attr') }}">
+                            <input type="email" class="form-control" aria-label="Your email" id="cf_email" name="cf_email" placeholder="Email..." value="{{ email|e('html_attr') }}">
                         </div>
-                        <p class="text-danger{{ errors['message'] is not defined ? ' cf-hide'}}" role="alert">&nbsp;{{ errors['message']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
+                        <p class="text-danger{{ errors['cf_message'] is not defined ? ' cf-hide'}}" role="alert">&nbsp;{{ errors['cf_message']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                         <div class="textarea-container input-group phpblog-field-group form-group-no-border input-lg">
                             <span class="input-group-addon">
                                 <i class="now-ui-icons ui-2_chat-round"></i>

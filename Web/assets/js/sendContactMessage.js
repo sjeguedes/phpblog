@@ -2,7 +2,6 @@
 
 jQuery(function($) {
 	// --- JQuery validation --- 
-
 	var element;
 
 	// Don't remove (Bootstrap normal behaviour) but hide notice message boxes
@@ -14,10 +13,21 @@ jQuery(function($) {
 	// -------------------------------------------------------------------------------------------------------
 
 	// User inputs are modified.
-	var fieldType = '.contact-form .input-group input[type="text"], .contact-form .input-group textarea, .contact-form input[id="cf_check"]';
+	var fieldType = '.contact-form .input-group input[type="text"], .contact-form .input-group input[type="email"], .contact-form .input-group textarea, .contact-form input[id="cf_check"]';
 	
-	$(document).on('change keyup', fieldType, function() {
+	$(document).on('change keyup input paste', fieldType, function(e) {
+		console.log(e);
 		element = $(this);
+		element.val().replace('/\s\s/', '/\s/');
+
+		if (e.type == 'input' /*e.keyCode === 8*/) {
+			console.log('input');
+			//element.val(element.val());
+			//$(fieldType).trigger('input');
+		    //return false;
+		}
+
+
 		checkForm(element, [getCurrentCheck, jsLcFirst]);
 	    showNoticeMessage(false);
 	});
@@ -28,7 +38,7 @@ jQuery(function($) {
 		var contacForm = $(this);
 		if(parseInt(contacForm.data('ajax')) == 1) {
 			e.preventDefault();
-			contacForm.find('.input-group input[type="text"], .input-group textarea, input[id="cf_check"]').each(function() {
+			contacForm.find('.input-group input[type="text"], .input-group input[type="email"], .input-group textarea, input[id="cf_check"]').each(function() {
 				element = $(this);
 				checkForm(element, [getCurrentCheck, jsLcFirst]);
 			});
@@ -40,10 +50,10 @@ jQuery(function($) {
 				// POST data
 				var data = {
 					cf_call: 'contact-ajax',
-					cf_familyName: $('#cf_familyName').val().replace(/^\s+|\s+$/gm,''),
-				 	cf_firstName: $('#cf_firstName').val().replace(/^\s+|\s+$/gm,''),
-				 	cf_email: $('#cf_email').val(), // spaces are already checked by email regex
-				 	cf_message: $('#cf_message').val().replace(/^\s+|\s+$/gm,''),
+					cf_familyName: $('#cf_familyName').val(),  // spaces before and after are deleted thanks to server side filters
+				 	cf_firstName: $('#cf_firstName').val(),  // spaces before and after are deleted thanks to server side filters
+				 	cf_email: $('#cf_email').val(), // spaces before and after are deleted thanks to server side filters
+				 	cf_message: $('#cf_message').val(),  // spaces before and after are deleted thanks to server side filters
 				 	cf_submit: 1
 				};
 				// Get dynamic "cf_check" var name and create recaptcha value
@@ -120,13 +130,21 @@ jQuery(function($) {
 
 	// -------------------------------------------------------------------------------------------------------
 
-	// Scroll to contact form notice message box if it is visible (obviously, in case of no AJAX mode).
 	$(window).on('load', function() {
+		// Scroll to contact form notice message box if it is visible (obviously, in case of no AJAX mode).
 		$('.cf-error, .cf-success').each(function() {
 			if($(this).is(':visible')) {
 				$('html, body').animate({
 					scrollTop: ($(this).offset().top - 125) + 'px'
 				}, '700');
+				return false;
+			}
+		});
+		// Update success state if Google recaptcha is the only one to validate after reload.
+		$('.contact-form').find('.input-group input[type="text"], .input-group input[type="email"], .input-group textarea, input[id="cf_check"]').each(function() {
+			element = $(this);
+			if(element.val() != '') {
+				checkForm(element, [getCurrentCheck, jsLcFirst]);
 				return false;
 			}
 		});
@@ -284,22 +302,15 @@ var ajaxCheckCount = 0,
 					fieldErrorMessage.fadeIn(700);
 					errorsOnFields[element.attr('id')] = true;
 				}
-				else if(typeof element.val() !== 'string') {
-					var elementLabel = functionsArray[1](element.attr('aria-label'));
-					fieldErrorMessage.html('&nbsp;Please verify ' + elementLabel + 
-									  ' format.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
-					if(fieldErrorMessage.hasClass('cf-hide')) { fieldErrorMessage.removeClass('cf-hide').hide(); }
-					fieldErrorMessage.fadeIn(700);
-					errorsOnFields[element.attr('id')] = true;
-				}
 				else {
 					fieldErrorMessage.fadeOut(700);
 					errorsOnFields[element.attr('id')] = false;
 				}
 			break;
 			case 'cf_email':
-				var pattern = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+				var pattern = /^\s*\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+\s*$/;
 				var is_email = pattern.test(element.val());
+
 				if(element.val().replace(/^\s+|\s+$/gm,'') == '') {
 					fieldErrorMessage.html('&nbsp;Please fill in your email address.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
 					if(fieldErrorMessage.hasClass('cf-hide')) { fieldErrorMessage.removeClass('cf-hide').hide(); }
@@ -308,7 +319,7 @@ var ajaxCheckCount = 0,
 				}
 				else if(!is_email) {
 					fieldErrorMessage.html('&nbsp;Sorry, "<span class="text-muted">' + element.val() + 
-					'</span>" is not a valid email address!<br>Extra spaces before/after or forbidden characters<br>could prevent validation.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
+					'</span>" is not a valid email address!<br>Please check its format.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
 					if(fieldErrorMessage.hasClass('cf-hide')) { fieldErrorMessage.removeClass('cf-hide').hide(); }
 					fieldErrorMessage.fadeIn(700);
 					errorsOnFields[element.attr('id')] = true;

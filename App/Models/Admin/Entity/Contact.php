@@ -1,5 +1,5 @@
 <?php
-namespace App\Models\Home\Entity;
+namespace App\Models\Admin\Entity;
 
 class Contact
 {
@@ -12,7 +12,7 @@ class Contact
 	// Temporary params which are not in database but useful in methods
 	private $temporaryParams = [];
 
-	public function __construct(array $array)   
+	public function __construct($array)   
 	{
 		$this->hydrate($array);
 	}
@@ -74,6 +74,79 @@ class Contact
 
 	// Getters
 	
+	public function getId() 
+	{
+		return $this->id;
+	}
+
+	public function getSendingDate()
+	{
+		return $this->sendingDate;
+	}
+
+	public function getFamilyName()
+	{
+		return $this->familyName;
+	}
+
+	public function getFirstName() 
+	{
+		return $this->firstName;
+	}
+
+	public function getEmail()
+	{
+		return $this->email;
+	}
+
+	public function getMessage()
+	{
+		return $this->message;
+	}
 	
 	// Setters
+	
+	public function setId($id) 
+	{
+		$id = (int) $id;
+		if ($id > 0) {
+	    	$this->id = $id;
+	    }
+	}
+
+	public function setSendingDate($sendingDate)
+	{
+		if(is_string($sendingDate)) {
+			$date = new \DateTime($sendingDate);
+	      	$this->sendingDate = date_format($date, 'd-m-Y H:i:s');
+	    }
+	}
+
+	public function setFamilyName($familyName) 
+	{
+		if(is_string($familyName)) {
+	      	$this->familyName = $familyName;
+	    }
+	}
+
+	public function setFirstName($firstName) 
+	{
+		if(is_string($firstName)) {
+	      	$this->firstName = $firstName;
+	    }
+	}
+
+	public function setEmail($email) 
+	{
+		if(is_string($email)) {
+	      	$this->email = $email;
+	    }
+	}
+
+	public function setMessage($message) 
+	{
+		if(is_string($message)) {
+	      	$this->message = $message;
+	    }
+	}
 }

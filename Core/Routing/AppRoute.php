@@ -4,36 +4,32 @@ use Core\AppPage;
 use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
 use Core\Config\AppConfig;
+
 /**
  * Define a route used by router
- * Enable access to url matching route
+ * Enable access to URL matching route
  */
 class AppRoute
 {
 	/**
-	 * $path is a path to check
-	 * @var string
+	 * @var string: a path which may contain parameters to check
 	 */
 	private $path;
 	/**
-	 * $matches stores matching value(s) in url
-	 * @var array
-	 */
-	/**
-	 * $name is used to call a route by a name which identify controller and action
-	 * @var string
+	 * @var string: used to call a route by name which identifies controller and action
 	 */
 	private $name;
 	/**
+	 * @var array: store matching value(s) in URL
+	 */
 	private $matches = [];
 	/**
-	 * $params stores params used in route with attached regex to match url
-	 * @var array
+	 * @var array: store parameters used in route with corresponding regex to match URL
 	 */
 	private $params = [];
 
 	/**
-	 * Initialise $path and $name
+	 * Initialize $path and $name
 	 * @param string $path: path to check
 	 * @param string $name: name given to route
 	 * @return void
@@ -45,7 +41,7 @@ class AppRoute
 	}
 
 	/**
-	 * Try to match url with defined path
+	 * Try to match URL with defined path
 	 * @param  string $url: URL we want to access
 	 * @return boolean 
 	 */
@@ -64,7 +60,7 @@ class AppRoute
 		// Delete first value $matches[0] not to keep complete url
 		array_shift($matches);
 
-		// Initialise array
+		// Initialize array
 		$this->matches = $matches;
 		return true;
 	}
@@ -102,21 +98,25 @@ class AppRoute
 	}
 
 	/**
-	 * Stores parameters we want to match
-	 * @param  string $param: defined param to find
+	 * Store parameters to match
+	 * @param  string $param: defined parameter to find
 	 * @param  string $regex: pattern to match this parameter
 	 * @return void
 	 */
 	private function useParameter($param, $regex)
 	{
-		// Escape "()" to prevent these groups from being matched
+		// Escapes "()" to prevent these groups from being matched
 		$paramRegex = str_replace('(','(?:', $regex);
 		$this->params[$param] = $paramRegex;
 	}
-
+	
 	/**
-	 * Call and execute a Closure or controller method with its arguments
-	 * @return object controller method is executed
+	 * Call and execute controller action method with its arguments
+	 * @param AppPage $page instance 
+	 * @param AppHTTPResponse $httpResponse instance
+	 * @param AppRouter $router instance
+	 * @param AppConfig $config instance
+	 * @return string|callable: error message or controller action method is executed
 	 */
 	public function getControllerAction(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
 	{
@@ -151,6 +151,11 @@ class AppRoute
 		return $errorMessage;		
 	}
 
+	/**
+	 * Retreive URL with parameter(s)
+	 * @param array|null $params 
+	 * @return string: generated URL
+	 */
 	public function generateURL($params = null)
 	{
 		$smartURL = $this->path;
@@ -161,5 +166,4 @@ class AppRoute
 		}
 		return $smartURL;
 	}
-
 }

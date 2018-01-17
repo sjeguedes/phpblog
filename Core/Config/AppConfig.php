@@ -3,7 +3,7 @@ namespace Core\Config;
 use Core\AppHTTPResponse;
 
 // Composer autoloader
-if( !class_exists('Composer\\Autoload\\ClassLoader') )
+if (!class_exists('Composer\\Autoload\\ClassLoader'))
 {
 	require_once __DIR__ . '/../../Libs/vendor/autoload.php';
 }
@@ -41,7 +41,7 @@ class AppConfig
 		self::$_dbName = self::$_params['database']['dbName'];
 		self::$_dbUser = self::$_params['database']['dbUser'];
 		self::$_dbPwd = self::$_params['database']['dbPwd'];
-		$this->httpResponse = new AppHTTPResponse;
+		$this->httpResponse = new AppHTTPResponse();
 	}
 
 	protected function __clone()
@@ -55,7 +55,7 @@ class AppConfig
 		return $yaml['config'];
 	}
 
-	// debug
+	// Debug
 	public static function isDebug($string)
 	{
 		if(!self::$_appDebug) {
@@ -100,6 +100,5 @@ class AppConfig
                 </span>
             </button>
         </div>';
-		
 	}
 }
