@@ -1,12 +1,6 @@
 <?php
 namespace Core\Config;
 use Core\AppHTTPResponse;
-
-// Composer autoloader
-if (!class_exists('Composer\\Autoload\\ClassLoader'))
-{
-	require_once __DIR__ . '/../../Libs/vendor/autoload.php';
-}
 // Symfony Yaml parser Component
 use Symfony\Component\Yaml\Yaml;
 

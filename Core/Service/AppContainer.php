@@ -4,19 +4,10 @@ use Core\Config\AppConfig;
 use Core\Form\AppFormValidator;
 use Core\Form\AppCaptcha;
 use Core\Form\AppMailer;
-
-// Composer autoloader
-if (!class_exists('Composer\\Autoload\\ClassLoader'))
-{
-	require_once __DIR__ . '/../../Libs/vendor/autoload.php';
-}
-
 // Import PHPMailer component
 use PHPMailer\PHPMailer\PHPMailer;
-
 // Import Google recaptcha component
 use ReCaptcha\ReCaptcha;
-
 
 /**
  * Class to create a DIC (Dependency Injection Container)

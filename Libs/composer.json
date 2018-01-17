@@ -1,4 +1,17 @@
 {
+    "autoload": {
+    	"exclude-from-classmap": [
+    		"../App/Controllers/_archives",
+    		"../App/Models/_archives",
+    		"../App/Views/_archives",
+    		"../Core/_archives"
+    	],
+	    "psr-4": {
+	      "App\\":"../App/",
+	      "Core\\":"../Core/",
+	      "Libs\\":"../Libs/"
+	    }
+	},
     "require": {
         "twig/twig": "~2.0",
         "symfony/yaml": "^3.3",

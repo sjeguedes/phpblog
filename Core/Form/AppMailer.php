@@ -1,13 +1,6 @@
 <?php
 namespace Core\Form;
 use Core\Config\AppConfig;
-
-// Composer autoloader
-if (!class_exists('Composer\\Autoload\\ClassLoader'))
-{
-	require_once __DIR__ . '/../../Libs/vendor/autoload.php';
-}
-
 // Import PHPMailer component
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;

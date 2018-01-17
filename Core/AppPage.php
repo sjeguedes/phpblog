@@ -1,12 +1,6 @@
 <?php
 namespace Core;
 
-// Composer autoloader
-if (!class_exists('Composer\\Autoload\\ClassLoader'))
-{
-	require_once __DIR__ . '/../Libs/vendor/autoload.php';
-}
-
 /**
  * Load template engine to show front-end and set its parameters:
  * Example: here Twig template engine is used
