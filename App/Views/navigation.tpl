@@ -22,13 +22,13 @@
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-header">Back-end pages</a>
-                        <a class="dropdown-item" href="/posts" title="View all posts">View all posts</a>
+                        <a class="dropdown-item" href="/admin" title="Admin homepage">Admin homepage</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="index.php?v=blog&t=admin-create-post" title="Edit a new post">Edit a new post</a>
+                        <a class="dropdown-item" href="/admin/#contactList" title="Look at contact messages">Look at contact messages</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="index.php?v=blog&t=admin-update-post" title="Update a post">Update a post</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="index.php?v=blog&t=admin-delete-post" title="Delete a post">Delete a post</a>
+                        <a class="dropdown-item" href="/admin/#postList" title="Edit/Delete a post">Edit/Delete a post</a>
+                         <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="/admin/add-post" title="Edit a new post">Edit a new post</a>
                     </div>
                 </li>
                 <li class="nav-item">

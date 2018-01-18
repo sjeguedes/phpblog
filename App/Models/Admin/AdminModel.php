@@ -7,6 +7,9 @@ use Core\Routing\AppRouter;
 use Core\Config\AppConfig;
 use App\Models\Blog\Entity\User;
 
+/**
+ * Create a parent class for admin models
+ */
 abstract class AdminModel extends BaseModel
 {
 	/**
@@ -20,6 +23,11 @@ abstract class AdminModel extends BaseModel
 		parent::__construct(AppDatabase::getInstance(), $httpResponse, $router, $config);
 	}
 
+	/**
+	 * Get User entity thanks to his id
+	 * @param string $userId 
+	 * @return object: a User entity
+	 */
 	public function getUserById($userId)
 	{
 	    $query = $this->dbConnector->query('SELECT * FROM users
@@ -28,24 +36,33 @@ abstract class AdminModel extends BaseModel
 	    return new User($datas);
 	}
 
-	public function generateUserActivationCode($UserId, $UserPseudo)
+	/**
+	 * Generate activation code for new user to validate his account
+	 * @param string $UserId 
+	 * @param string $UserNickName 
+	 * @see http://php.net/manual/fr/function.hash.php
+	 * @return string: a part of long hash
+	 */
+	private function generateUserActivationCode($UserId, $UserNickName)
 	{
-			// Do stuff! -> use for instance hash('sha256' , string: user_id + user_name )
-			// http://php.net/manual/fr/function.hash.php
-			$salt = substr(md5(microtime()), rand(0, 5), rand(5, 10));
-			$activationCode = substr(hash('sha256', $UserId . $salt . $UserPseudo), 0, 45);
-			return $activationCode;
+		$salt = substr(md5(microtime()), rand(0, 5), rand(5, 10));
+		$activationCode = substr(hash('sha256', $UserId . $salt . $UserNickName), 0, 45);
+		return $activationCode;
 			
 	}
 
-	public function generateUserPasswordEncryption($password)
+	/**
+	 * Generate encrypted password for user password
+	 * @param string $password 
+	 * @see http://php.net/manual/fr/function.password-hash.php
+	 * @return string: an encrypted password
+	 */
+	private function generateUserPasswordEncryption($password)
 	{
-			// Do stuff! -> use password_hash( string $password chosen , integer $algo [, array $options ] )
-			// http://php.net/manual/fr/function.password-hash.php
-			$options = [
-			    'cost' => 8,
-			];
-			$encryptedPassword = password_hash($password, PASSWORD_BCRYPT, $options);
-			return $encryptedPassword;
+		$options = [
+		    'cost' => 8,
+		];
+		$encryptedPassword = password_hash($password, PASSWORD_BCRYPT, $options);
+		return $encryptedPassword;
 	}
 }

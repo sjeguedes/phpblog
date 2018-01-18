@@ -52,11 +52,10 @@ abstract class BaseModel
 	 */
 	public function selectAll($table)
 	{
-		if($this->dbConnector !== null) {
+		if ($this->dbConnector !== null) {
 			$query = $this->dbConnector->query('SELECT * FROM ' . $table);
 			return $query->fetchAll(\PDO::FETCH_ASSOC);
-		}
-		else {
+		} else {
 			return null;
 		}
 	}

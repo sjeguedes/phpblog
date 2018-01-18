@@ -13,7 +13,7 @@ routing:
         name: Home\Home|isCalled
         method: POST
 
-    postslist:
+    postsList:
         path: /posts
         module: Blog\Post\Post
         action: showList
@@ -44,12 +44,12 @@ routing:
     adminHome:
         path: /admin
         module: Admin\AdminHome
-        action: showHome
-        name: Admin\AdminHome|showHome
+        action: showAdminHome
+        name: Admin\AdminHome|showAdminHome
         method: GET
 
     adminCreatePost:
-        path: /admin/create-post
+        path: /admin/add-post
         module: Admin\Post\AdminPost
         action: addPost
         name: Admin\Post\AdminPost|addPost
