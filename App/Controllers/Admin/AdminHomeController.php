@@ -12,7 +12,7 @@ use Core\Config\AppConfig;
 class AdminHomeController extends BaseController
 {
 	/**
-	 * Contructor
+	 * Constructor
 	 * @param AppPage $page 
 	 * @param AppHTTPResponse $httpResponse 
 	 * @param AppRouter $router 

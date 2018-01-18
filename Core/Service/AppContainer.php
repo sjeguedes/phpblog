@@ -27,10 +27,6 @@ class AppContainer
 	 */
 	private static $_params;
 
-
-	/** TODO: to delete! */
-	public static $_parameters;
-
 	/**
 	 * Singleton
 	 * @return object AppContainer
