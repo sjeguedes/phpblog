@@ -16,18 +16,7 @@ jQuery(function($) {
 	var fieldType = '.contact-form .input-group input[type="text"], .contact-form .input-group input[type="email"], .contact-form .input-group textarea, .contact-form input[id="cf_check"]';
 	
 	$(document).on('change keyup input paste', fieldType, function(e) {
-		console.log(e);
 		element = $(this);
-		element.val().replace('/\s\s/', '/\s/');
-
-		if (e.type == 'input' /*e.keyCode === 8*/) {
-			console.log('input');
-			//element.val(element.val());
-			//$(fieldType).trigger('input');
-		    //return false;
-		}
-
-
 		checkForm(element, [getCurrentCheck, jsLcFirst]);
 	    showNoticeMessage(false);
 	});
