@@ -1,7 +1,7 @@
 routing:
     homeGETParams:
         path: /
-        module: Home\Home 
+        module: Home\Home
         action: isCalled
         name: Home\Home|isCalled
         method: GET
@@ -29,7 +29,7 @@ routing:
 
     postWithSlugAndId:
         path: /post/:slug-:id
-        module: Blog\Post\Post 
+        module: Blog\Post\Post
         action: showSingle
         name: Blog\Post\Post|showSingle
         method: GET

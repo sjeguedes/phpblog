@@ -8,7 +8,7 @@ use Core\Config\AppConfig;
 /**
  * Create a parent controller to use in each controller
  */
-abstract class BaseController 
+abstract class BaseController
 {
 	/**
 	 * @var AppPage instance
@@ -33,13 +33,13 @@ abstract class BaseController
 
 	/**
 	 * Constructor
-	 * @param AppPage $page 
-	 * @param AppHTTPResponse $httpResponse 
-	 * @param AppRouter $router 
-	 * @param AppConfig $config 
+	 * @param AppPage $page: an instance of AppPage
+	 * @param AppHTTPResponse $httpResponse: an instance of AppHTTPResponse
+	 * @param AppRouter $router: an instance of AppRouter
+	 * @param AppConfig $config: an instance of AppConfig
 	 * @return void
 	 */
-	public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)   
+	public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
 	{
 		$this->page = $page;
 		$this->httpResponse = $httpResponse;
@@ -51,11 +51,11 @@ abstract class BaseController
 
 	/**
 	 * Check if called method exists
-	 * @param callable $action 
+	 * @param callable $action
 	 * @throws exception
 	 * @return return boolean|string
 	 */
-	public function checkAction($action) 
+	public function checkAction($action)
 	{
 	    try {
 			if(is_callable([$this, $action])) {
@@ -72,13 +72,13 @@ abstract class BaseController
 
 	/**
 	 * Get the model for a particular controller
-	 * @param string $className: name of current class 
+	 * @param string $className: name of current class
 	 * @return object: an instance of current model
 	 */
 	public function getCurrentModel($className)
 	{
 		$className = str_replace('Controller', 'Model', $className);
-		$currentModel = new $className($this->httpResponse, $this->router, $this->config);
+		$currentModel = new $className($this->config);
 		return $currentModel;
 	}
 }

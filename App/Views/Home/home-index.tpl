@@ -1,5 +1,4 @@
 {% extends "layout.tpl" %}
-
 {% block content %}
 <div class="section section-about-us">
 	<div class="container">
@@ -27,9 +26,5 @@
 </div>
 {% block contactForm %}
 {{ include("Home/home-contact-form.tpl") }}
-{% endblock %}
-{% block contactList %}
-{# Contact list to move from here!!!! #}
-{{ include("Admin/admin-contact-list.tpl") }}
 {% endblock %}
 {% endblock %}

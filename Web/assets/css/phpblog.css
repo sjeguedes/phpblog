@@ -27,7 +27,7 @@
 }
 
 .alert .close .now-ui-icons:before {
-	font-size: 0.75em; 
+	font-size: 0.75em;
 }
 /* End override Now ui */
 
@@ -122,7 +122,7 @@ body {
 	    margin: 0 1rem;
 	    margin-bottom: 15px;
 	    padding-top: 0;*/
-	    
+
 	    /*transform: translate(0,-25px);*/
 	    overflow-y: hidden;
 	}
@@ -133,7 +133,7 @@ body {
 		opacity: 1;
 		/*max-height: 300px;*/
 		height: 100%;
-		
+
 		/*height: 100%;*/
 		/*margin-bottom: -300px;*/
 	}
@@ -192,7 +192,7 @@ body {
 	display: flex;
 	align-items: center;
     justify-content: center;
-	background-color: rgba(0, 0, 0, 0.9); 
+	background-color: rgba(0, 0, 0, 0.9);
 }
 
 .section {
@@ -234,7 +234,7 @@ body {
 	border-style: solid;
 	border-color: #f96332;
 	border-radius: 50px 0;
-}  
+}
 
 @media screen and (min-width: 992px) {
 	.post-thumbnail img {
@@ -272,21 +272,30 @@ body {
 	border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-/* Contact form */
 .section-contact-us .contact-form .textarea-container {
 	margin: 0 0 10px;
 }
 
-.contact-form .textarea-container.input-group .input-group-addon {
+.section-contact-us .contact-form .textarea-container.input-group .input-group-addon {
 	padding-top: 19px;
 	align-items: flex-start;
+}
+
+.contact-form .btn-warning {
+	position: relative;
+	background-color: rgba(255, 255, 255, 0.1);
+	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+}
+
+.contact-form .btn-warning:hover {
+	background-color: rgba(255, 255, 255, 0.2);
 }
 
 .section-contact-us .cf-hide {
 	display: none;
 }
 
-.section-contact-us .cf-screen-reader {  
+.section-contact-us .cf-screen-reader {
 	position: absolute !important;
    	clip: rect(1px 1px 1px 1px);
    	clip: rect(1px, 1px, 1px, 1px);
@@ -295,19 +304,19 @@ body {
    	width: 1px;
 }
 
-/* Override Google chrome autofill for contact form */
-.contact-form input:-webkit-autofill:focus,
-.contact-form input:-webkit-autofill:active,
-.contact-form textarea:-webkit-autofill:focus, 
-.contact-form textarea:-webkit-autofill:active {
+/* Override Google chrome autofill */
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active {
 	-webkit-animation-delay: 0;
     -webkit-animation-name: cf-autofill;
   	-webkit-animation-fill-mode: both;
 }
 
-.contact-form input:-webkit-autofill, 
-.contact-form textarea:-webkit-autofill, 
-.contact-form select:-webkit-autofill {
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
 	-webkit-animation-delay: 0;
   	-webkit-animation-name: cf-no-autofill;
   	-webkit-animation-fill-mode: both;
@@ -334,21 +343,12 @@ body {
     	background-color: #2c2c2c;
   	}
 }
-/* End override Google chrome autofill for contact form */
+/* End override Google chrome autofill d */
 
+/* Contact form */
 .contact-form .text-danger {
 	font-weight: bold;
     font-size: 0.85em;
-}
-
-.contact-form .btn-warning {
-	position: relative;
-	background-color: rgba(255, 255, 255, 0.1);
-	box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
-}
-
-.contact-form .btn-warning:hover {
-	background-color: rgba(255, 255, 255, 0.2);
 }
 
 .contact-form .ajax-loader {

@@ -1,21 +1,21 @@
 <?php
 namespace App\Models\Admin;
 use App\Models\BaseModel;
-use Core\Database\AppDatabase;
-use Core\AppHTTPResponse;
-use Core\Routing\AppRouter;
 use Core\Config\AppConfig;
 use App\Models\Blog\Entity\User;
 
+/**
+ * Create an admin model to manage posts
+ */
 class AdminPostModel extends AdminModel
 {
 	/**
 	 * Constructor
-	 * @param AppHTTPResponse instance
-	 * @param AppRouter instance
-	 * @param AppConfig instance
+	 * @param AppConfig $config: an instance of AppConfig
+     * @return void
 	 */
-	public function __construct(AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
+	public function __construct(AppConfig $config)
 	{
+        parent::__construct($config);
 	}
 }
