@@ -1,7 +1,7 @@
 {% extends "layout.tpl" %}
 {% block content %}
 
-{% if postListOnPage %}
+{% if postListOnPage['postsOnPage'] is not empty %}
 	<!-- Paginated posts -->
 	{% set postsDatas =  postListOnPage['postsOnPage'] %}
 {% else %}
@@ -18,15 +18,15 @@
 			    </p>
 			{% for item in postsDatas %}
 				<article class="post-item card px-3 py-4" ">
-					<h2 class="post-title">{{ item.title|escape }}</h2>
+					<h2 class="post-title">{{ item.title|raw }}</h2>
 					<div class="separator separator-primary"></div>
 					<div class="post-header">
 						<ul class="post-header-infos">
 							<li>
-								{% if item.author %} <i class="fa fa-user">&nbsp;</i>by {{ item.author.pseudo|escape }} {% endif %} 
+								{% if item.author %} <i class="fa fa-user">&nbsp;</i>by {{ item.author.pseudo|raw }} {% endif %}
 								<i class="fa fa-calendar">&nbsp;</i>Published on {{ item.creationDate }}&nbsp;-&nbsp;Updated on {{ item.updateDate }}
 							</li>
-							<!--<li> 
+							<!--<li>
 		                    	<i class="fa fa-comment"></i>[number] of Comments&nbsp;|&nbsp;
 		                    	<i class="fa fa-tag"></i>Tags:&nbsp;
 		                    	<span class="label label-info">News</span>
@@ -39,7 +39,7 @@
 							<img src="http://placehold.it/320x240" alt="{{ item.title|e('html_attr') }}">
 						</div>
 						<div class="post-intro text-left col-md-12 col-lg-9">
-							<p class="px-3">{{ item.intro|escape|nl2br }}</p>
+							<p class="px-3">{{ item.intro|raw }}</p>
 							<div class="text-right px-3"><a href="/post/{{ item.slug|e('url') }}-{{ item.id }}" title="{{ item.title|e('html_attr') }}">Read more +</a></div>
 						</div>
 					</div>

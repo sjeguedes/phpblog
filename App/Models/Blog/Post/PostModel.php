@@ -5,6 +5,7 @@ use Core\Database\AppDatabase;
 use Core\Config\AppConfig;
 use App\Models\Blog\Entity\Post;
 use App\Models\Admin\Entity\User;
+use App\Models\Admin\Entity\Comment;
 
 /**
  * Create a class for front-end posts queries
@@ -28,10 +29,10 @@ class PostModel extends BaseModel
      */
     public function getSlug($postId)
     {
-        $query = $this->dbConnector->prepare("SELECT post_slug
+        $query = $this->dbConnector->prepare('SELECT post_slug
                                               FROM posts
                                               WHERE post_id = ?
-                                              LIMIT 1");
+                                              LIMIT 1');
         $query->bindParam(1, $postId, \PDO::PARAM_INT);
         $query->execute();
         $data = $query->fetch(\PDO::FETCH_ASSOC);
@@ -41,22 +42,26 @@ class PostModel extends BaseModel
 	/**
      * Get a single post with its id
      * @param string $postId
-     * @return object: a Post entity instance
+     * @return object|boolean: a Post entity instance or false
      */
     public function getSingleById($postId)
 	{
-	    $postIsOnPage = $this->getPagingForSingle($postId);
-
 	    $query = $this->dbConnector->prepare('SELECT *
 	    									  FROM posts
 	    									  WHERE post_id = :postId');
 	    $query->bindParam(':postId', $postId, \PDO::PARAM_INT);
 	    $query->execute();
 	    $datas = $query->fetch(\PDO::FETCH_ASSOC);
-	    $post = new Post($datas);
-        // Temporary parameter is created here:
-	    $post->pagingNumber = $postIsOnPage;
-	    return $post;
+        // Is there a result?
+        if ($datas != false) {
+            $post = new Post($datas);
+            $postIsOnPage = $this->getPagingForSingle($postId);
+            // Temporary parameter is created here:
+            $post->pagingNumber = $postIsOnPage;
+	       return $post;
+        } else {
+            return false;
+        }
 	}
 
     /**
@@ -274,19 +279,42 @@ class PostModel extends BaseModel
     {
         // Secure query
         $query = $this->dbConnector->prepare('INSERT INTO comments
-                                              (comment_creationDate, comment_nickName, comment_email, comment_content, comment_postId)
-                                              VALUES (NOW(), ?, ?, ?, ?)');
+                                              (comment_creationDate, comment_nickName, comment_email, comment_title, comment_content, comment_postId)
+                                              VALUES (NOW(), ?, ?, ?, ?, ?)');
         $query->bindParam(1, $nickName);
         $query->bindParam(2, $email);
-        $query->bindParam(3, $content);
-        $query->bindParam(4, $postId);
+        $query->bindParam(3, $title);
+        $query->bindParam(4, $content);
+        $query->bindParam(5, $postId);
 
         // Insertion
         $nickName = $commentDatas['pcf_nickName'];
         $email = $commentDatas['pcf_email'];
+        $title = $commentDatas['pcf_title'];
         $content = $commentDatas['pcf_content'];
-        // TODO: check if post id exists! -> checkPostId()
+        // Post id was checked before by controller!
         $postId = $commentDatas['pcf_postId'];
         $query->execute();
+    }
+
+    /**
+     * Get all Comment entities for a particular post
+     * @param string $postId
+     * @return array: an array which contains all Comment entities instances
+     */
+    public function getCommentListForSingle($postId)
+    {
+        $comments = [];
+        $query = $this->dbConnector->prepare('SELECT *
+                                              FROM comments
+                                              WHERE comment_postId = ?
+                                              ORDER BY comment_creationDate DESC');
+        $query->bindParam(1, $postId, \PDO::PARAM_INT);
+        $query->execute();
+
+        while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+            $comments[] = new Comment($datas);
+        }
+        return $comments;
     }
 }

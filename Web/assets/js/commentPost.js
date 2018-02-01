@@ -88,6 +88,7 @@ var checkForm = function(formIdentifier, element, functionsArray) {
 
         switch (element.attr('id')) {
             case formIdentifier + 'nickName':
+            case formIdentifier + 'title':
             case formIdentifier + 'content':
                 if (element.val().replace(/^\s+|\s+$/gm,'') == '') {
                     var elementLabel = functionsArray[0](element.attr('aria-label'));

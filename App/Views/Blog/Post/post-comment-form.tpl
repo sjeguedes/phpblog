@@ -26,7 +26,7 @@
         <!-- End user notice message -->
         <div class="row">
             <div class="card py-4 col-lg-8 text-center col-md-10 ml-auto mr-auto" data-background-color="black">
-            	<div class="col-lg-8 text-center col-md-10 ml-auto mr-auto">
+            	<div class="col-lg-8 col-md-10 ml-auto mr-auto">
                     <form novalidate class="comment-form form-nospam" method="post" action="/comment-post/{{ post[0].id }}"  data-try-validation="{{ tryValidation }}">
     	            	<p class="text-danger{{ errors['pcf_nickName'] is not defined ? ' form-hide' }}" role="alert">&nbsp;{{ errors['pcf_nickName']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                         <div class="input-group phpblog-field-group form-group-no-border input-lg">
@@ -41,6 +41,13 @@
                                 <i class="now-ui-icons ui-1_email-85"></i>
                             </span>
                             <input type="email" class="form-control" aria-label="Your email" id="pcf_email" name="pcf_email" placeholder="Email..." value="{{ email|e('html_attr') }}">
+                        </div>
+                        <p class="text-danger{{ errors['pcf_title'] is not defined ? ' form-hide' }}" role="alert">&nbsp;{{ errors['pcf_title']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
+                        <div class="input-group phpblog-field-group form-group-no-border input-lg">
+                            <span class="input-group-addon">
+                                <i class="now-ui-icons users_circle-08"></i>
+                            </span>
+                            <input type="text" class="form-control" aria-label="Your title" id="pcf_title" name="pcf_title" placeholder="Title..." value="{{ title|e('html_attr') }}">
                         </div>
                         <p class="text-danger{{ errors['pcf_content'] is not defined ? ' form-hide' }}" role="alert">&nbsp;{{ errors['pcf_content']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                         <div class="textarea-container input-group phpblog-field-group form-group-no-border input-lg">

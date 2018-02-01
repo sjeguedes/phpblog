@@ -112,6 +112,9 @@ class PostController extends BaseController
      * @return void
      */
     private function renderSingle($post, $checkedForm = []) {
+        // Retrieve single post comments
+        $postComments = $this->currentModel->getCommentListForSingle($post[0]->id);
+
         // Prepare template vars
         $jsArray = [
             0 => [
@@ -129,7 +132,9 @@ class PostController extends BaseController
             'metaDescription' => $post[0]->intro,
             'imgBannerCSSClass' => 'post-single',
             'post' => $post,
+            'postComments' => $postComments,
             'nickName' => isset($checkedForm['pcf_nickName']) ? $checkedForm['pcf_nickName'] : '',
+            'title' => isset($checkedForm['pcf_title']) ? $checkedForm['pcf_title'] : '',
             'email' => isset($checkedForm['pcf_email']) ? $checkedForm['pcf_email'] : '',
             'content' => isset($checkedForm['pcf_content']) ? $checkedForm['pcf_content'] : '',
             'pcfTokenIndex' => $this->pcfTokenIndex,
@@ -276,7 +281,8 @@ class PostController extends BaseController
         $datas = [
             0 => ['name' => 'nickName', 'filter' => 'alphanum', 'modifiers' => ['trimStr', 'ucfirstStr']],
             1 => ['name' => 'email', 'filter' => 'email', 'modifiers' => ['trimStr']],
-            2 => ['name' => 'content', 'filter' => 'alphanum', 'modifiers' => ['trimStr', 'ucfirstStr']]
+            2 => ['name' => 'title', 'filter' => 'alphanum', 'modifiers' => ['trimStr', 'ucfirstStr']],
+            3 => ['name' => 'content', 'filter' => 'alphanum', 'modifiers' => ['trimStr', 'ucfirstStr']]
         ];
         // Filter user inputs in $_POST datas
         $this->commentFormValidator->filterDatas($datas);
@@ -284,6 +290,8 @@ class PostController extends BaseController
         $this->commentFormValidator->validateRequired('nickName', 'nickname');
         // Email
         $this->commentFormValidator->validateEmail('email', 'email', $_POST['pcf_email']);
+        // Title
+        $this->commentFormValidator->validateRequired('title', 'title');
         // Content
         $this->commentFormValidator->validateRequired('content', 'comment');
         // Check token to avoid CSRF
@@ -296,11 +304,18 @@ class PostController extends BaseController
         if (isset($result) && empty($result['pcf_errors']) && isset($result['pcf_noSpam']) && $result['pcf_noSpam'] && isset($result['pcf_check']) && $result['pcf_check']) {
             // Insert Comment entity in database
             try {
-                $result['pcf_postId'] =  $_POST['pcf_postId'];
-                $this->currentModel->insertComment($result);
-                $insertion = true;
+                // Check post id used in form
+                // Is there an existing post with this id? User can change hidden input value!
+                if ($this->currentModel->getSingleById($_POST['pcf_postId']) != false) {
+                    $result['pcf_postId'] =  $_POST['pcf_postId'];
+                    $this->currentModel->insertComment($result);
+                    $insertion = true;
+                } else {
+                     $result['pcf_errors']['pcf_unsaved'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your comment was not saved: please try again later.<br>[Debug trace: id "<strong>' . $_POST['pcf_postId'] . '</strong>" doesn\'t exist in database!]</span>');
+                     $insertion = false;
+                }
             } catch (\PDOException $e) {
-                $result['pcf_unsaved'] = $this->config::isDebug('Sorry a technical error happened! Your comment was not saved: please try again later. [Debug trace: ' . $e->getMessage() . ']');
+                $result['pcf_errors']['pcf_unsaved'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your comment was not saved: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
                 $insertion = false;
             }
             // Comment entity was saved successfuly!

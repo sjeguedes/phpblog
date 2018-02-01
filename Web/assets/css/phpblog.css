@@ -221,7 +221,8 @@ body {
 }
 
 /* Post List */
-.post-header-infos {
+.post-header-infos,
+.comment-header-infos {
     list-style: none;
 }
 
@@ -244,7 +245,7 @@ body {
 }
 
 /* Forms */
-.cf-error .cf-check-notice, .pcf-error .pcf-check-notice {
+.cf-error .cf-check-notice, .form-check-notice {
     display: block;
     color: rgba(255, 54, 54, 0.8);
     background-color: #fff;
