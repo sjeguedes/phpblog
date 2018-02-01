@@ -1,11 +1,6 @@
 <?php
-//use Core\Psr4AutoloaderClass;
 use Core\Service\AppContainer;
 use Core\Routing\AppRouter;
-
-// TODO: delete in production!
-error_reporting(E_ALL);
-ini_set("display_errors", 1);
 
 // Composer autoloader
 if (!class_exists('Composer\\Autoload\\ClassLoader'))

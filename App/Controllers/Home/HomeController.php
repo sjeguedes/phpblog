@@ -8,7 +8,7 @@ use Core\Config\AppConfig;
 use Core\Service\AppContainer;
 
 /**
- * Manage Homepage appearence and its actions
+ * Manage Homepage appearence and its actions on front-end
  */
 class HomeController extends BaseController
 {
@@ -98,7 +98,7 @@ class HomeController extends BaseController
      * Check if there is already a success state for contact form
      * @return boolean
      */
-    public function isContactSuccess() {
+    private function isContactSuccess() {
         if(isset($_SESSION['cf_success'])) {
             return true;
         }
@@ -111,7 +111,7 @@ class HomeController extends BaseController
      * Show homepage with normal routing, call twig template and initialize contact form parameters
      * @return void
      */
-    public function showHome()
+    private function showHome()
     {
         // Show normal home view
         $jsArray = [
@@ -153,7 +153,7 @@ class HomeController extends BaseController
      * and call form validation
      * @return void
      */
-    public function showContact()
+    private function showContact()
     {
         // Store result from form validation
         $checkedForm = $this->validateContactForm();
@@ -180,7 +180,6 @@ class HomeController extends BaseController
                     'JS' => $jsArray,
                     'metaTitle' => 'Blog made with OOP in PHP code',
                     'metaDescription' => 'This blog aims at showing and manage articles.',
-                    'metaRobots' => 'noindex, nofollow',
                     'imgBannerCSSClass' => 'home',
                     'familyName' => isset($checkedForm['cf_familyName']) ? $checkedForm['cf_familyName'] : '',
                     'firstName' => isset($checkedForm['cf_firstName']) ? $checkedForm['cf_firstName'] : '',
@@ -235,7 +234,7 @@ class HomeController extends BaseController
      * echo a current token JSON string for contact form
      * @return void
      */
-    public function getCurrentToken() {
+    private function getCurrentToken() {
         $this->httpResponse->addHeader('Content-Type:application/json; charset=utf-8');
         echo json_encode(['key' => $this->cfTokenIndex,'value' => $this->cfTokenValue]);
     }
@@ -253,8 +252,8 @@ class HomeController extends BaseController
             2 => ['name' => 'email', 'filter' => 'email', 'modifiers' => ['trimStr']],
             3 => ['name' => 'message', 'filter' => 'alphanum', 'modifiers' => ['trimStr', 'ucfirstStr']]
         ];
-        // Filter $_POST datas
-        $filteredValues = $this->contactFormValidator->filterDatas($datas);
+        // Filter user inputs in $_POST datas
+        $this->contactFormValidator->filterDatas($datas);
         // Family name
         $this->contactFormValidator->validateRequired('familyName', 'family name');
         // First name

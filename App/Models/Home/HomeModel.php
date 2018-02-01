@@ -20,13 +20,14 @@ class HomeModel extends BaseModel
 	}
 
 	/**
-	 * Insert a contact entity in database
+	 * Insert a Contact entity in database
 	 * @param array $contactDatas: an array of contact message datas
 	 * @return void
 	 */
 	public function insertContact($contactDatas)
 	{
-		$query = $this->dbConnector->prepare('INSERT INTO contacts
+		// Secure query
+        $query = $this->dbConnector->prepare('INSERT INTO contacts
 											  (contact_sendingDate, contact_familyName, contact_firstName, contact_email, contact_message)
 											  VALUES (NOW(), ?, ?, ?, ?)');
 		$query->bindParam(1, $familyName);

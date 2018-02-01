@@ -33,17 +33,39 @@ abstract class BaseModel
     // Common queries
 
     /**
+     * Check if a row id exists in a particular table
+     * @param string $table: table name
+     * @param string $columnPrefix: prefix column name
+     * @param string $id: primary key
+     * @return boolean
+     */
+    public function checkRowId($table, $columnPrefix, $id)
+    {
+        $query = $this->dbConnector->prepare("SELECT ${columnPrefix}_id
+                                              FROM $table
+                                              WHERE ${columnPrefix}_id = ?
+                                              LIMIT 1");
+        $query->bindParam(1, $id, \PDO::PARAM_INT);
+        $query->execute();
+
+        // Count result
+        $numRows = $query->rowCount(); // this PDO method equals mysql_num_rows($query).
+        if ($numRows > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Select all datas in a particular database table
      * @param string $table: table name
-     * @return null|array: an array of datas from the database
+     * @return array: an array of datas from the database
      */
     public function selectAll($table)
     {
-        if ($this->dbConnector !== null) {
-            $query = $this->dbConnector->query('SELECT * FROM ' . $table);
-            return $query->fetchAll(\PDO::FETCH_ASSOC);
-        } else {
-            return null;
-        }
+        $query = $this->dbConnector->query('SELECT *
+                                            FROM ' . $table);
+        return $query->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

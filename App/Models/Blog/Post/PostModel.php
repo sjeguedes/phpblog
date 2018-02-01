@@ -21,6 +21,23 @@ class PostModel extends BaseModel
         parent::__construct(AppDatabase::getInstance(), $config);
     }
 
+    /**
+     * Get a post slug with its id
+     * @param string $postId
+     * @return return string: desired slug
+     */
+    public function getSlug($postId)
+    {
+        $query = $this->dbConnector->prepare("SELECT post_slug
+                                              FROM posts
+                                              WHERE post_id = ?
+                                              LIMIT 1");
+        $query->bindParam(1, $postId, \PDO::PARAM_INT);
+        $query->execute();
+        $data = $query->fetch(\PDO::FETCH_ASSOC);
+        return $data['post_slug'];
+    }
+
 	/**
      * Get a single post with its id
      * @param string $postId
@@ -247,4 +264,29 @@ class PostModel extends BaseModel
 		}
 		return $postsWithAuthor;
 	}
+
+    /**
+     * Insert a Comment entity in database
+     * @param array $commentDatas: an array of post comment datas
+     * @return void
+     */
+    public function insertComment($commentDatas)
+    {
+        // Secure query
+        $query = $this->dbConnector->prepare('INSERT INTO comments
+                                              (comment_creationDate, comment_nickName, comment_email, comment_content, comment_postId)
+                                              VALUES (NOW(), ?, ?, ?, ?)');
+        $query->bindParam(1, $nickName);
+        $query->bindParam(2, $email);
+        $query->bindParam(3, $content);
+        $query->bindParam(4, $postId);
+
+        // Insertion
+        $nickName = $commentDatas['pcf_nickName'];
+        $email = $commentDatas['pcf_email'];
+        $content = $commentDatas['pcf_content'];
+        // TODO: check if post id exists! -> checkPostId()
+        $postId = $commentDatas['pcf_postId'];
+        $query->execute();
+    }
 }

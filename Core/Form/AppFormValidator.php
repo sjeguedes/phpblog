@@ -18,7 +18,7 @@ class AppFormValidator
 	 */
 	private $formIdentifier;
 		/**
-	 * @var string: index name based on $formIdentifier for errors which are stored in $result 
+	 * @var string: index name based on $formIdentifier for errors which are stored in $result
 	 */
 	private $errorIndex;
 	/**
@@ -44,7 +44,8 @@ class AppFormValidator
 
 	/**
 	 * Constructor
-	 * @param array $datas 
+	 * @param array $datas to validate
+     * @param string $formIdentifier
 	 * @return void
 	 */
 	public function __construct($datas, $formIdentifier)
@@ -54,15 +55,13 @@ class AppFormValidator
 		$this->errorIndex = $this->formIdentifier . 'errors';
 		$this->config = AppConfig::getInstance();
 		$this->helper = AppStringModifier::getInstance();
-		// Initialize form captcha type 1 with DIC
-		$this->captchaType1 = AppContainer::getCaptcha()[0];
 	}
 
 	/**
 	 * Get result datas
 	 * @return array: an array which contains filtered datas and error messages
 	 */
-	public function getResult() 
+	public function getResult()
 	{
 		return $this->result;
 	}
@@ -70,26 +69,25 @@ class AppFormValidator
 	/**
 	 * Filter each user input
 	 * @param array $datas: datas to filter
-	 * @param int $inputType: chosen http request method 
+	 * @param int $inputType: chosen http request method
 	 * @return void
 	 */
 	public function filterDatas($datas, $inputType = INPUT_POST)
 	{
-		// Declare current validator to use it as argument
+        // Declare current validator to use it as argument
 		$validator = $this;
 		// Apply filter for each type of data
 		for ($i = 0; $i < count($datas); $i++) {
 			$name = $this->formIdentifier . $datas[$i]['name'];
 			$filterType = $datas[$i]['filter'];
 			$modifiers = $datas[$i]['modifiers'];
-
 			switch ($filterType) {
 				case 'alphanum':
 					$this->filteredDatas[$name] = filter_input($inputType, $name, FILTER_CALLBACK, [
 			            'options' => function($data) use($validator, $modifiers) {
 			            	$data = $validator->modifyData($data, $modifiers);
 			            	return $data = filter_var($data, FILTER_SANITIZE_STRING);
-			            	 
+
 			            }
 			        ]);
 				break;
@@ -97,7 +95,7 @@ class AppFormValidator
 					$this->filteredDatas[$name] = filter_input($inputType, $name, FILTER_CALLBACK, [
 			            'options' => function($data) use($validator, $modifiers) {
 			            	$data = $validator->modifyData($data, $modifiers);
-			            	return $data = filter_var($data, FILTER_SANITIZE_EMAIL);            	
+			            	return $data = filter_var($data, FILTER_SANITIZE_EMAIL);
 			            }
 			        ]);
 				break;
@@ -173,7 +171,7 @@ class AppFormValidator
 			}
 		} else {
 			$this->result[$this->errorIndex][$name] = 'Please fill in your email.';
-		} 
+		}
 	}
 
 	/**
@@ -182,7 +180,7 @@ class AppFormValidator
 	 * @return void
 	 */
 	public function validateToken($dynamicToken) {
-		// Check if value from form match value stored in $_SESSION 
+		// Check if value from form match value stored in $_SESSION
 		if(isset($dynamicToken) && isset($_SESSION[$this->formIdentifier . 'token'])) {
 				if($this->checkTokenValue($dynamicToken, $this->formIdentifier . 'token')) {
 					$this->result[$this->formIdentifier . 'check'] = true;
@@ -200,32 +198,8 @@ class AppFormValidator
 	}
 
 	/**
-	 * Validate Google recaptcha (is it correctly checked?)
-	 * @param string $grcResponse: the value of 'g-recaptcha-response' in the submitted form 
-	 * @return void
-	 */
-	public function validateGoogleRecaptcha($grcResponse)
-	{
-		if(isset($grcResponse)) {
-			$response = $this->checkGoogleRecaptchaResponse($grcResponse);
-
-			if(is_bool($response) && $response && empty($this->result[$this->errorIndex])) {
-				$this->result['g-recaptcha-response'] = true;
-			}
-			elseif((is_array($response) && !$response[0]) || (is_bool($response) && $response && !empty($this->result[$this->errorIndex]))) {
-				$this->result[$this->errorIndex]['g-recaptcha-response'] = 'Please confirm you are a human.';
-				$this->result['g-recaptcha-response'] = false;
-			}
-			else {
-				$this->result[$this->errorIndex]['g-recaptcha-response'] = 'Sorry, a technical error happened.<br>We were not able to check if you are a human.<br>Please try again later.';
-				$this->result['g-recaptcha-response'] = false;
-			}
-		}
-	}
-
-	/**
 	 * Create a dynamic $_POST check (token) index in addition to token value to prevent CSRF
-	 * @param string $name: name of field which contains token 
+	 * @param string $name: name of field which contains token
 	 * @return string stored in $_SESSION
 	 */
 	public function generateTokenIndex($name)
@@ -238,10 +212,10 @@ class AppFormValidator
 
 	/**
 	 * Create a token value to fight against CSRF
-	 * @param string $varName: name which corresponds to token index 
+	 * @param string $varName: name which corresponds to token index
 	 * @return string: value stored in $_SESSION
 	 */
-	public function generateTokenValue($varName) 
+	public function generateTokenValue($varName)
 	{
 		if (!isset($_SESSION[$varName])) {
 		   	$_SESSION[$varName] = hash('sha256', $varName . bin2hex(openssl_random_pseudo_bytes(8)) . session_id());
@@ -251,35 +225,12 @@ class AppFormValidator
 
 	/**
 	 * Check if created token matches with token in $_POST value
-	 * @param string $token: $_POST value 
+	 * @param string $token: $_POST value
 	 * @param string $varName: name which corresponds to token index in $_SESSION
 	 * @return boolean
 	 */
 	public function checkTokenValue($token, $varName)
 	{
 		return $token === $this->generateTokenValue($varName);
-	}
-
-	/**
-	 * Check Google recaptcha response with ReCaptcha instance
-	 * @param string $grcResponse: the value of 'g-recaptcha-response' in the submitted form
-	 * @return boolean|array: boolean or an array which contains boolean and string
-	 */
-	public function checkGoogleRecaptchaResponse($grcResponse) 
-	{
-		if(isset($grcResponse)) {
-			$return = $this->captchaType1->verify($grcResponse, $_SERVER['REMOTE_ADDR']);
-
-			// Verify response
-			if ($return->isSuccess()) {
-				return true;
-			}
-			else {
-				return [false, $return->getErrorCodes()];
-			}
-		}
-		else {
-			return false;
-		}
 	}
 }

@@ -1,15 +1,18 @@
 <?php
 namespace Core\Routing;
+use Core\Routing\RoutingException;
+use Core\Routing\AppRoute;
 use Core\AppPage;
 use Core\AppHTTPResponse;
 use Core\Config\AppConfig;
 
 /**
- * Create a router to:
+ * Create a router class to:
 * - load routes from external YAML file.
 * - create objects routes and store them in array.
 * - find corresponding controller and action if URL matches with a route.
-* - send a 404 response if URL doesn't match.
+* - send a 404 response (with or without particular error redirection)
+* if URL doesn't match, or anything wrong happens.
 * - create URL with route thanks to a name and defined path parameters.
 */
 class AppRouter
@@ -42,10 +45,10 @@ class AppRouter
 	 * @var object: store unique AppConfig instance
 	 */
 	private $config;
-	
+
 	/**
 	 * Constructor
-	 * @param string $url 
+	 * @param string $url
 	 * @return void
 	 */
 	public function __construct($url)
@@ -57,12 +60,20 @@ class AppRouter
 		// TODO: use DIC to instantiate HTTPResponse object!
 		$this->httpResponse = new AppHTTPResponse();
 		// Store the same instance
-		$this->router = $this;
+		$this->router = &$this;
 		// TODO: use DIC to instantiate AppConfig object!
 		$this->config = AppConfig::getInstance();
 		// Get existing routes
 		$this->getRoutesConfig();
-	}
+    }
+
+    /**
+     * Get used "url" parameter
+     * @return string: url to route
+     */
+    public function getUrl() {
+        return $this->url;
+    }
 
 	/**
 	 * Parse routes configuration, call routes creation and call routes checking
@@ -84,9 +95,9 @@ class AppRouter
 
 	/**
 	 * Create routes and their names
-	 * @param string $path: a path to compare with url which may contain parameters 
+	 * @param string $path: a path to compare with url which may contain parameters
 	 * @param string|null $name: route name
-	 * @param string $method: http request method ('POST', 'GET') 
+	 * @param string $method: http request method ('POST', 'GET')
 	 * @return void
 	 */
 	private function createRoute($path, $name = null, $method)
@@ -100,76 +111,72 @@ class AppRouter
 	/**
 	 * Check if a route matches with called url
 	 * @throws RoutingException
-	 * @return callable: method to call a controller action or 404 error response
+	 * @return callable|void: method to call a controller action
 	 */
 	private function checkRoutes()
 	{
 		try {
 			if(isset($this->routes[$_SERVER['REQUEST_METHOD']])) {
 				$noRoute = true;
-				try {
-					// Loop only if a route exists with this method
-					foreach($this->routes[$_SERVER['REQUEST_METHOD']] as $route) {
-						// isMatched method returns true: url matched.
-						if($route->isMatched($this->url)) {
-							$noRoute = false;
-							// Does action exist?
-							$result = $route->getControllerAction($this->page, $this->httpResponse, $this->router, $this->config);
-							break;
-							if(is_string($result)) {
-								// Show error view
-								return $this->httpResponse->set404ErrorResponse($result, $this->router);
-							}
-							else {
-								// Show right template view
-								return $result;
-							}
-						}		
-					}
-					if($noRoute) {
-						throw new RoutingException("No content is available for your request. [Debug trace: No route matches url!]");
+				// Loop only if a route exists with this method
+				foreach ($this->routes[$_SERVER['REQUEST_METHOD']] as $route) {
+					// isMatched method returns true: url matched.
+					if ($route->isMatched($this->url)) {
+                        $noRoute = false;
+
+                        // Call controller and its appropriate action if both exist.
+                        $result = $route->getControllerAction($this->page, $this->httpResponse, $this->router, $this->config);
+
+                        // Does action exist?
+                        if (is_string($result)) {
+                            // Show error view with 404 error
+                            $this->httpResponse->setError(404, $this->config::isDebug($result), $this->router);
+                        } else {
+                            // Show right template view
+                            return $result;
+                        }
+                        // Stop loop
+                        break;
 					}
 				}
-				catch(RoutingException $e) {
-					// Show error view
-					return $this->httpResponse->set404ErrorResponse($this->config::isDebug($e->getMessage()), $this->router);
+				if ($noRoute) {
+                    $request = '<strong>' . htmlentities($this->httpResponse->getWrongUrl($this->url)) . '</strong>';
+					throw new RoutingException("No content is available for your request \"${request}\". [Debug trace: no route matches url!]");
 				}
-			}
-			else {
-				throw new RoutingException("No content is available for your request. [Debug trace: REQUEST_METHOD is not being used by any routes!]");
+			} else {
+				throw new RoutingException("No content is available for request. [Debug trace: REQUEST_METHOD is not being used by any routes!]");
 			}
 
-		}
-		catch(RoutingException $e) {
-			// Show error view
-			return $this->httpResponse->set404ErrorResponse($this->config::isDebug($e->getMessage()), $this->router);
+		} catch (RoutingException $e) {
+			// Show error view with 404 error
+            $this->httpResponse->setError(404, $this->config::isDebug($e->getMessage()), $this->router);
 		}
 	}
 
 	/**
-	 * Generate a complete URL with route name and path params
-	 * Example: $router->useURL('post|single', ['slug' => 'article-intro', 'id' => '5']);
-	 * @param string $name 
-	 * @param array $params 
+	 * Generate a complete URL with route name and path parameters
+	 * Example: $router->useURL('Blog\Post|showSingle', ['slug' => 'article-intro', 'id' => '5']);
+	 * @param string $name
+	 * @param array $params
 	 * @throws RoutingException
-	 * @return string|callable: corresponding URL or 404 error response
+	 * @return string|void: corresponding URL
 	 */
 	public function useURL($name, $pathParams = [])
 	{
-		try {
+        try {
 			if(isset($this->namedRoutes[$name])) {
 				// $this->namedRoutes[$name] is an instance of "Route".
 				$route = $this->namedRoutes[$name];
 				return $route->generateURL($pathParams);
 			}
 			else {
-				throw new RoutingException("No content is available for your request. [Debug trace: No route matches this name!]");
+				throw new RoutingException("No content is available for request. [Debug trace: no route matches this name!]");
 			}
 
 		}
 		catch(RoutingException $e) {
-			// Show error view
-			return $this->httpResponse->set404ErrorResponse($this->config::isDebug($e->getMessage()), $this->router);
+			// Show error view with 404 error
+            $this->httpResponse->setError(404, $this->config::isDebug($e->getMessage()), $this->router);
 		}
 	}
 }

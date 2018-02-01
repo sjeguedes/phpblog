@@ -8,6 +8,8 @@ use Core\Form\AppMailer;
 use PHPMailer\PHPMailer\PHPMailer;
 // Import Google recaptcha component
 use ReCaptcha\ReCaptcha;
+// Custom antispam tools
+use Core\Form\Element\AppNoSpamTools;
 
 /**
  * Class to create a DIC (Dependency Injection Container)
@@ -53,7 +55,7 @@ class AppContainer
      * Feed DIC parameters
      * @return array an array of service parameters
      */
-    private function addParameters() 
+    private function addParameters()
     {
     	// Get parameters from yaml file
 		$yaml = self::$_config::parseYAMLFile(__DIR__ . '/service.yml');
@@ -76,7 +78,7 @@ class AppContainer
 				break;
 				// Other types: do stuff here!
 			}
-			
+
 		}
 		return $validators;
 	}
@@ -84,7 +86,7 @@ class AppContainer
 	/**
 	 * Create captcha instances
 	 * @see https://www.google.com/recaptcha/admin key generator
-	 * @return ReCaptcha|...
+	 * @return ReCaptcha|AppNoSpamTools|...
 	 */
 	public static function getCaptcha()
 	{
@@ -93,9 +95,11 @@ class AppContainer
 				case 'ReCaptcha':
 					$captchas[$i] = new AppCaptcha(new ReCaptcha(self::$_config::$_params['googleRecaptcha']['secretKey']));
 				break;
+                case 'AppNoSpamTools':
+                    $captchas[$i] = new AppCaptcha(new AppNoSpamTools(self::$_params['service']['captcha'][$i]));
+                break;
 				// Other types: do stuff here!
 			}
-
 		}
 		return $captchas;
 	}

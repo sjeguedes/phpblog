@@ -36,4 +36,7 @@
 		</div>
 	</div>
 </div>
+{% block commentForm %}
+{% include("Blog/Post/post-comment-form.tpl") %}
+{% endblock %}
 {% endblock %}

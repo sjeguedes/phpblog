@@ -7,7 +7,7 @@ use Symfony\Component\Yaml\Yaml;
 class AppConfig
 {
 	private static $_instance;
-	
+
 	public static $_params; // Stores config params
 	public static $_appDebug; // Debug mode to show details of exception for instance
 	public static $_postPerPage; // Post Quantity to show per page
@@ -30,7 +30,7 @@ class AppConfig
 	{
 		self::$_params = $this->getConfigParams();
 		self::$_appDebug = self::$_params['appDebug'];
-		self::$_postPerPage = self::$_params['posts']['postPerPage']; 
+		self::$_postPerPage = self::$_params['posts']['postPerPage'];
 		self::$_dbHost = self::$_params['database']['dbHost'];
 		self::$_dbName = self::$_params['database']['dbName'];
 		self::$_dbUser = self::$_params['database']['dbUser'];
@@ -39,7 +39,7 @@ class AppConfig
 	}
 
 	protected function __clone()
-	{ 
+	{
 	}
 
 	private function getConfigParams()
