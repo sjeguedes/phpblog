@@ -53,7 +53,7 @@ class AppRouter
 	 */
 	public function __construct($url)
 	{
-		// Receive $_GET['url'] value
+		// Store $_GET['url'] value
 		$this->url = $url;
 		// TODO: use DIC to instantiate AppPage object!
 		$this->page = new AppPage();
@@ -83,8 +83,7 @@ class AppRouter
 	{
 		// Get routes from yaml file
 		$yaml = $this->config::parseYAMLFile(__DIR__ . '/routing.yml');
-
-		foreach ($yaml['routing'] as $route) {
+        foreach ($yaml['routing'] as $route) {
     		$path = $route['path'];
     		$name = $route['name'];
     		$method = $route['method'];
@@ -115,38 +114,49 @@ class AppRouter
 	 */
 	private function checkRoutes()
 	{
-		try {
+        try {
 			if(isset($this->routes[$_SERVER['REQUEST_METHOD']])) {
-				$noRoute = true;
+				$isNoRoute = true;
 				// Loop only if a route exists with this method
 				foreach ($this->routes[$_SERVER['REQUEST_METHOD']] as $route) {
-					// isMatched method returns true: url matched.
+                    // isMatched method returns true: url matched
 					if ($route->isMatched($this->url)) {
-                        $noRoute = false;
-
+                        $isNoRoute = false;
                         // Call controller and its appropriate action if both exist.
                         $result = $route->getControllerAction($this->page, $this->httpResponse, $this->router, $this->config);
-
-                        // Does action exist?
+                        // Does action exist or does exception happen when action is called (PDOException, ...)?
                         if (is_string($result)) {
-                            // Show error view with 404 error
-                            $this->httpResponse->setError(404, $this->config::isDebug($result), $this->router);
+                            // Get initial requested URL
+                            $request = htmlentities('/' . rtrim($this->url, '/'));
+                            // No HTTP response refresh case
+                            throw new RoutingException("exception=$result<br>Your initial request was \"<strong>$request</strong>\".");
                         } else {
-                            // Show right template view
+                            // Action is correctly called, so show right template view!
                             return $result;
                         }
                         // Stop loop
                         break;
 					}
 				}
-				if ($noRoute) {
-                    $request = '<strong>' . htmlentities($this->httpResponse->getWrongUrl($this->url)) . '</strong>';
-					throw new RoutingException("No content is available for your request \"${request}\". [Debug trace: no route matches url!]");
-				}
+                // No existing route
+                if ($isNoRoute) {
+                    // Get initial requested URL
+                    $request = htmlentities('/' . rtrim($this->httpResponse->getWrongUrl($this->url), '/'));
+                    // Technical exception with custom error URL refresh (So initial route is not found but exists!)
+                    if (isset($_GET['refreshException']) && $_GET['refreshException']) {
+                        // Manage exception after refresh for "isRefreshed" parameter in HTTPResponse setError() method
+                        // An exception happens when action is called (PDOException, ...)
+                        $result = $route->getControllerAction($this->page, $this->httpResponse, $this->router, $this->config);
+                        // HTTP response refresh case
+                        throw new RoutingException((string) $result . "<br>Your initial request was \"<strong>$request</strong>\".");
+                    // No existing route! (with or without custom error URL refresh)
+                    } else {
+                        throw new RoutingException("No content is available for your request \"<strong>$request</strong>\". [Debug trace: no route matches url!]");
+                    }
+                }
 			} else {
-				throw new RoutingException("No content is available for request. [Debug trace: REQUEST_METHOD is not being used by any routes!]");
+				throw new RoutingException("No content is available for request method. [Debug trace: request method \"<strong>{$_SERVER['REQUEST_METHOD']}</strong>\" is not being used by any routes!]");
 			}
-
 		} catch (RoutingException $e) {
 			// Show error view with 404 error
             $this->httpResponse->setError(404, $this->config::isDebug($e->getMessage()), $this->router);
@@ -154,7 +164,7 @@ class AppRouter
 	}
 
 	/**
-	 * Generate a complete URL with route name and path parameters
+	 * Retrieve a complete URL with route name and path parameters
 	 * Example: $router->useURL('Blog\Post|showSingle', ['slug' => 'article-intro', 'id' => '5']);
 	 * @param string $name
 	 * @param array $params
@@ -172,7 +182,6 @@ class AppRouter
 			else {
 				throw new RoutingException("No content is available for request. [Debug trace: no route matches this name!]");
 			}
-
 		}
 		catch(RoutingException $e) {
 			// Show error view with 404 error

@@ -1,6 +1,7 @@
 <?php
 namespace App\Models\Admin;
 use App\Models\BaseModel;
+use App\Models\Blog\Post\PostModel;
 use Core\Database\AppDatabase;
 use Core\Config\AppConfig;
 use App\Models\Blog\Entity\User;
@@ -11,6 +12,11 @@ use App\Models\Blog\Entity\User;
 abstract class AdminModel extends BaseModel
 {
     /**
+     * @var array: an array of models used by admin classes
+     */
+    protected $externaldModels;
+
+    /**
      * Constructor
      * @param AppConfig $config: an instance of AppConfig
      * @return void
@@ -18,6 +24,8 @@ abstract class AdminModel extends BaseModel
     public function __construct(AppConfig $config)
     {
         parent::__construct(AppDatabase::getInstance(), $config);
+        // Store an instance of PostModel
+        $this->externaldModels['postModel'] = new PostModel($config);
     }
 
     /**
@@ -45,7 +53,6 @@ abstract class AdminModel extends BaseModel
         $salt = substr(md5(microtime()), rand(0, 5), rand(5, 10));
         $activationCode = substr(hash('sha256', $UserId . $salt . $UserNickName), 0, 45);
         return $activationCode;
-
     }
 
     /**
@@ -61,5 +68,53 @@ abstract class AdminModel extends BaseModel
         ];
         $encryptedPassword = password_hash($password, PASSWORD_BCRYPT, $options);
         return $encryptedPassword;
+    }
+
+    /**
+     * Delete an entity in database with its id
+     * @param string $entityId: entity id
+     * @param array $datas: an array which contains only entity type
+     * to delete entity
+     * @return void
+     */
+    public function deleteEntity($entityId, $datas)
+    {
+        $table = $datas['entity'] . 's';
+        $columnPrefix = $datas['entity'] . '_';
+        $query = $this->dbConnector->prepare("DELETE
+                                              FROM $table
+                                              WHERE ${columnPrefix}id = ?");
+        $query->bindParam(1, $entityId, \PDO::PARAM_INT);
+        $query->execute();
+    }
+
+    /**
+     * Update an entity in database with its id
+     * @param string $entityId: entity id
+     * @param array $newDatas: an array of parameters (entity type and values)
+     * to update entity
+     * @return void
+     */
+    public function updateEntity($entityId, $newDatas)
+    {
+        // Declare type to secure (add other params in array if necessary)
+        $PDOParams = [\PDO::PARAM_INT];
+        $table = $newDatas['entity'] . 's';
+        $columnPrefix = $newDatas['entity'] . '_';
+        $set = '';
+        $newValues = $newDatas['values'];
+        for ($i = 0; $i < count($newValues); $i ++) {
+            if ($i == 0) {
+                $set .= $columnPrefix . $newValues[$i]['column'] . '=' .  $newValues[$i]['value'];
+            } else {
+                $set .= ', ' . $columnPrefix . $newValues[$i]['column'] . '=' .  $newValues[$i]['value'];
+            }
+        }
+
+        $query = $this->dbConnector->prepare("UPDATE $table
+                                              SET $set
+                                              WHERE ${columnPrefix}id = ?");
+        $query->bindParam(1, $entityId, \PDO::PARAM_INT);
+        $query->execute();
     }
 }

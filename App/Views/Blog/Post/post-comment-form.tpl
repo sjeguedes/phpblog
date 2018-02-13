@@ -45,7 +45,7 @@
                         <p class="text-danger{{ errors['pcf_title'] is not defined ? ' form-hide' }}" role="alert">&nbsp;{{ errors['pcf_title']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                         <div class="input-group phpblog-field-group form-group-no-border input-lg">
                             <span class="input-group-addon">
-                                <i class="now-ui-icons users_circle-08"></i>
+                                <i class="now-ui-icons shopping_tag-content"></i>
                             </span>
                             <input type="text" class="form-control" aria-label="Your title" id="pcf_title" name="pcf_title" placeholder="Title..." value="{{ title|e('html_attr') }}">
                         </div>

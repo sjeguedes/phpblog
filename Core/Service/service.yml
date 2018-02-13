@@ -8,6 +8,10 @@ service:
       name: post.commentForm
       formIdentifier: pcf_
       formDatasRequest: POST
+    -
+      name: home.adminForm
+      formIdentifier: haf_
+      formDatasRequest: POST
   mailer:
     -
       name: home.contactForm

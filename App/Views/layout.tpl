@@ -15,17 +15,23 @@
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, shrink-to-fit=no" name="viewport" />
     <!-- Fonts and icons -->
     <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700,200" rel="stylesheet" />
-    <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" />
     <!-- CSS Files -->
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="/assets/css/now-ui-kit.css?v=1.1.0" rel="stylesheet" />
+{% if CSS is defined %}
+{% for item in CSS %}
+    <!-- CSS for plugin: {{ item['pluginName'] }} -->
+    <link href="{{ item['src'] }}" rel="stylesheet" />
+{% endfor %}
+{% endif %}
     <!-- Custom CSS -->
     <link href="/assets/css/phpblog.css?v=1.0" rel="stylesheet" />
 
 {% if JS is defined %}
 {% for item in JS %}
 {% if item['placement'] == 'top' %}
-    <!-- JS in head: {{ item['src'] }} -->
+    <!-- JS in head: {% if item['pluginName'] is defined %}{{ item['pluginName'] }}{% else %}{{ item['src'] }}{% endif %} -->
     <script src="{{ item['src'] }}"{{ item['attributes'] ? ' '~item['attributes'] : '' }}></script>
 {% endif %}
 {% endfor %}
@@ -67,7 +73,7 @@
 {% if JS is defined %}
 {% for item in JS %}
 {% if item['placement'] == 'bottom' %}
- <!-- JS at the end: {{ item['src'] }} -->
+<!-- JS in head: {% if item['pluginName'] is defined %}{{ item['pluginName'] }}{% else %}{{ item['src'] }}{% endif %} -->
 <script src="{{ item['src'] }}"{{ item['attributes'] ? ' '~item['attributes'] : '' }}></script>
 {% endif %}
 {% endfor %}

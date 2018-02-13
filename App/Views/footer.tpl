@@ -5,19 +5,19 @@
                 <li>
                     <a href="http://fr.linkedin.com/in/samuel-guedes" title="Linked In profile" class="btn btn-warning btn-icon btn-round">
                         <i class="fa fa-linkedin-square fa-lg" aria-hidden="true"></i>
-                    </a>    
+                    </a>
                 </li>
                 <li>
                     <a href="https://github.com/sjeguedes" title="Github Profile" class="btn btn-warning btn-icon btn-round">
                         <i class="fa fa-github-square fa-lg"></i>
-                    </a>    
+                    </a>
                 </li>
                 <li>
                      <a href="https://www.viadeo.com/fr/profile/samuel.guedes" title="Viadeo profile" class="btn btn-warning btn-icon btn-round">
                         <i class="fa fa-viadeo-square fa-lg"></i>
-                    </a>    
+                    </a>
                 </li>
-            </ul> 
+            </ul>
             <div class="copyright">
                 <p>
                     &copy; {{ "now"|date("Y") }} <a class="btn-neutral btn-link" href="https://www.dotprogs.com" title="Samuel GUEDES" target="_blank">Samuel GUEDES</a> - Coded by

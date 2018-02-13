@@ -12,6 +12,20 @@
 .tooltip .tooltip-inner {
     max-width: 100%;
 }
+
+.btn {
+    white-space: normal;
+}
+
+span.btn {
+    cursor: default !important;
+}
+
+span.btn:hover,span.btn:focus {
+    background-color: #888;
+    box-shadow: none;
+}
+
 /* End override BootStrap */
 
 /* Override Now ui */
@@ -151,12 +165,20 @@ body {
     background-image: url('/assets/images/phpblog/post-single.jpg');
 }
 
+.page-header-image.admin-home {
+    background-image: url('/assets/images/phpblog/admin-home.jpg');
+}
+
+.page-header-image.admin-post {
+    background-image: url('/assets/images/phpblog/admin-post.jpg');
+}
+
 .page-header-image.notfound-404 {
     background-image: url('/assets/images/phpblog/notfound-404.jpg');
 }
 
-.page-header-image.admin-home {
-    background-image: url('/assets/images/phpblog/admin-home.jpg');
+.page-header-image.http-response {
+    background-image: url('/assets/images/phpblog/http-response.jpg');
 }
 
 .page-header:before {
@@ -170,7 +192,6 @@ body {
 }
 
 .wrapper {
-    /*color: #fff;*/
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -180,7 +201,6 @@ body {
     padding: 1em 0;
     flex: 1 0 auto;
     position: relative;
-    z-index: 0;
 }
 
 .no-js-box {
@@ -220,6 +240,21 @@ body {
     padding: 0;
 }
 
+/* Badge */
+.badge {
+    border-radius: 5px;
+    font-size: 1em;
+    line-height: 1;
+    border: 2px solid;
+    margin-bottom: 1em;
+    border-radius: 0.5rem;
+}
+
+/* Description */
+.description, .card-description, .footer-big p {
+    font-weight: 400;
+}
+
 /* Post List */
 .post-header-infos,
 .comment-header-infos {
@@ -250,6 +285,11 @@ body {
     color: rgba(255, 54, 54, 0.8);
     background-color: #fff;
     padding: 5px;
+}
+
+form p.text-danger {
+    font-weight: bold;
+    font-size: 0.85em;
 }
 
 .input-group-addon, .form-control {
@@ -350,14 +390,9 @@ select:-webkit-autofill {
         background-color: #2c2c2c;
     }
 }
-/* End override Google chrome autofill d */
+/* End override Google chrome autofill */
 
 /* Contact form */
-.contact-form .text-danger {
-    font-weight: bold;
-    font-size: 0.85em;
-}
-
 .contact-form button[type="submit"] {
     position: relative;
 }
@@ -396,7 +431,7 @@ select:-webkit-autofill {
 }
 
 .flex-col {
-    width: 19%;
+    width: 25%;
     background-color: #CCC;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -411,8 +446,8 @@ select:-webkit-autofill {
     justify-content: center;
     align-items: center;
     line-height: 1;
-    min-height: 40px;
-    padding: 0.25em;
+    min-height: 70px;
+    padding: 0.5em;
 }
 
 .flex-label {
@@ -421,8 +456,13 @@ select:-webkit-autofill {
 }
 
 .flex-content {
-    display: inline-block;
-    padding: 0.25em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 5em;
+    line-height: 1;
+    padding: 0.5em 0.5em 0.25em;
+    margin-bottom: 0;
 }
 
 @media screen and (max-width: 767px) {
@@ -434,8 +474,127 @@ select:-webkit-autofill {
         width: 100%;
     }
 }
+/* Admin modals */
+.modal-backdrop {
+    background: rgba(0, 0, 0, 1);
+    background-color: none;
+}
 
-/* Contact list */
+.modal-backdrop.show {
+    opacity: .6;
+}
+
+.modal-header button[data-dismiss="modal"] {
+    cursor: pointer;
+}
+
+.modal-content .modal-header button {
+    right: 5px;
+    top: 5px;
+}
+
+.modal.modal-mini .modal-dialog {
+    max-width: 280px;
+}
+
+.modal.modal-mini .modal-profile i {
+    color: #888;
+    font-weight: bold;
+    font-size: 21px;
+}
+
+.modal.modal-mini .modal-footer button:first-child {
+    opacity: 1;
+}
+
+/* Admin list */
+.list-element .btn-icon {
+    display: inline-block;
+    height: 3.75rem;
+    min-width: 3.75rem;
+    width: 3.75rem;
+    padding: 1.5em 0.625em;
+    box-sizing: border-box;
+    font-weight: bold;
+    font-size: 0.75rem;
+    overflow: hidden;
+    position: relative;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Admin slick sliders */
+.slider-paging.slick-dotted.slick-slider {
+    margin-bottom: 0;
+}
+
+.slider-navigation {
+    position: relative;
+}
+
+.slider-navigation .slick-prev,
+.slider-navigation .slick-next {
+    position: absolute;
+    font-size: 2em !important;
+    width: 2em;
+    height: 2em;
+}
+
+.slider-navigation .slick-prev.btn,
+.slider-navigation .slick-next.btn {
+    margin: 0;
+}
+
+.slider-navigation .slick-prev::before,
+.slider-navigation .slick-next::before {
+    display: none;
+}
+
+.slider-navigation .slick-prev {
+    left: -5px;
+}
+
+.slider-navigation .slick-next {
+    right: -5px;
+}
+
+.slider-navigation .slick-prev.btn.slick-disabled,
+.slider-navigation .slick-next.btn.slick-disabled {
+    opacity: 0.25;
+}
+
+.slider-navigation .slick-dots {
+    position: relative;
+    top: -1em;
+    bottom: auto;
+    width: auto;
+    margin: 0 2.5em;
+}
+
+.slider-navigation .slick-dots li {
+    width: auto;
+    height: auto;
+    margin: 0.25em;
+    padding: 0.25em;
+    color: #888;
+}
+
+.slider-navigation .slick-dots li.slick-active,
+.slider-navigation .slick-dots li:hover {
+    color: #f96332;
+    border-bottom: 2px solid #333;
+}
+
+.slider-navigation .slick-dots li button {
+    font-size: inherit;
+    color: inherit;
+}
+
+.slider-navigation .slick-dots li button::before {
+    visibility: hidden;
+}
+
+/* Admin contact list */
 .contact-box {
     height: 33.33333vh;
     overflow: auto;

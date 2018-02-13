@@ -1,8 +1,8 @@
 {% if contactList is defined %}
-<div class="section section-contact-list">
+<div class="section section-admin-contact-list">
 	<div class="container">
 	    <div class="row">
-	        <div id="bloc-contactList" class="col-md-12 ml-auto mr-auto text-center">
+	        <div id="bloc-contact-list" class="col-md-12 ml-auto mr-auto text-center">
 				<h2 class="title">Admin contact list</h2>
 				<p class="description">All the messages sent with contact form are saved in database!</p>
 				<div class="contact-box card">
@@ -11,7 +11,7 @@
 						<div class="flex-table">
 							<div class="flex-col">
 								<div class="flex-header bg-primary">
-									<span class="flex-label">Sending Date</span>
+									<span class="flex-label">Sending date</span>
 								</div>
 								<span class="flex-content">{{ contactList[i].sendingDate }}</span>
 							</div>

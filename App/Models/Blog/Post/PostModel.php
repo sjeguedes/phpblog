@@ -298,6 +298,28 @@ class PostModel extends BaseModel
     }
 
     /**
+     * Get a single comment with its id
+     * @param string $commentId
+     * @return object|boolean: a Comment entity instance or false
+     */
+    public function getCommentById($commentId)
+    {
+        $query = $this->dbConnector->prepare('SELECT *
+                                              FROM comments
+                                              WHERE comment_id = :commentId');
+        $query->bindParam(':commentId', $commentId, \PDO::PARAM_INT);
+        $query->execute();
+        $datas = $query->fetch(\PDO::FETCH_ASSOC);
+        // Is there a result?
+        if ($datas != false) {
+            $comment = new Comment($datas);
+            return $comment;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Get all Comment entities for a particular post
      * @param string $postId
      * @return array: an array which contains all Comment entities instances

@@ -47,18 +47,16 @@ class AppRoute
 	 */
 	public function isMatched($url)
 	{
-		$url = trim($url, '/');
+        $url = trim($url, '/');
 		$path = trim($this->path, '/');
 		$path = preg_replace_callback('#\:([\w]+)#', [$this, 'matchParameter'] , $path);
 		$regex = "#^$path$#i";
-
 		// $url doesn't match
 		if (!preg_match($regex, $url, $matches)) {
 			return false;
 		}
 		// Delete first value $matches[0] not to keep complete url
 		array_shift($matches);
-
 		// Initialize array
 		$this->matches = $matches;
 		return true;
@@ -86,7 +84,6 @@ class AppRoute
 					$this->useParameter($match[1], '[^/]+');
 					break;
 			}
-
 			// Don't forget '()' to use a group in pattern
 			return '(' . $this->params[$match[1]] . ')';
 		} else {
@@ -122,7 +119,6 @@ class AppRoute
 		$explode = explode('|', $this->name);
 		$controllerPath = $explode[0];
 		$controllerClass = 'App\Controllers\\' . $controllerPath . 'controller';
-
 		try {
 			if (class_exists($controllerClass)) {
 				$controller = new $controllerClass($page, $httpResponse, $router, $config);

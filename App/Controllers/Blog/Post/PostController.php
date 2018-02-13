@@ -311,8 +311,8 @@ class PostController extends BaseController
                     $this->currentModel->insertComment($result);
                     $insertion = true;
                 } else {
-                     $result['pcf_errors']['pcf_unsaved'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your comment was not saved: please try again later.<br>[Debug trace: id "<strong>' . $_POST['pcf_postId'] . '</strong>" doesn\'t exist in database!]</span>');
-                     $insertion = false;
+                    $result['pcf_errors']['pcf_unsaved'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your comment was not saved: please try again later.<br>[Debug trace: id "<strong>' . $_POST['pcf_postId'] . '</strong>" doesn\'t exist in database!]</span>');
+                    $insertion = false;
                 }
             } catch (\PDOException $e) {
                 $result['pcf_errors']['pcf_unsaved'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your comment was not saved: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');

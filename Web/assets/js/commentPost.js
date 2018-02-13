@@ -21,6 +21,15 @@ jQuery(function($) {
                 return false;
             }
         });
+
+        // Scroll to element with "hash" css id name
+        var hash = window.location.hash;
+        // Scroll to a single comment on single post page
+        if (hash && /^#comment-\d{1,}$/g.test(hash)) {
+            $('html, body').animate({
+                scrollTop: $(hash).offset().top + 'px'
+            }, '700');
+        }
     });
 
     // -------------------------------------------------------------------------------------------------------

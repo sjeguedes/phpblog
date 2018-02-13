@@ -2,7 +2,7 @@ config:
     domain: www.example.com
     appDebug: true or false (show debug details for exceptions)
     database:
-        dbHost: localhost
+        dbHost: 127.0.0.1
         dbName: phpblog
         dbUser: root
         dbPwd:
@@ -14,8 +14,8 @@ config:
     contactForm:
         ajaxMode: true or false
         contactEmail: your_email_address_to_receive_a_message
-    # example: https://github.com/PHPMailer/PHPMailer/blob/master/examples/gmail.phpsPHPMailer:    
-    contactPHPMailer: 
+    # example: https://github.com/PHPMailer/PHPMailer/blob/master/examples/gmail.phpsPHPMailer:
+    contactPHPMailer:
         EnableExceptions: true or false
         SMTPDebug: 0 (or 1, 2, 3, 4)
         SMTPAuth: true or false
