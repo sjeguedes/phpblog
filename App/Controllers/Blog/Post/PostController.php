@@ -62,7 +62,6 @@ class PostController extends BaseController
 	{
 		// Get posts datas
 		$postList = $this->currentModel->getListWithAuthor();
-
 		$varsArray = [
 			'metaTitle' => 'Posts list',
 			'metaDescription' => 'Here, you can follow our news and technical topics.',
@@ -81,14 +80,22 @@ class PostController extends BaseController
 	{
 		// Get page number to show with paging
 		$currentPageId = $matches[0];
-
 		// $currentPageId doesn't exist (string or int < 0)
 		if ((int) $currentPageId <= 0) {
 			echo $this->httpResponse->set404ErrorResponse('Sorry this page doesn\'t exist!', $this->router);
 		} else {
 			// Get posts datas for current page and get post Quantity to show per page
 			$postListOnPage = $this->currentModel->getListByPaging($currentPageId, $this->config::$_postPerPage);
-
+            // Loop to find any existing comments attached to each post
+            for ($i = 0; $i < count($postListOnPage['postsOnPage']); $i ++) {
+                // Retrieve (or not) single post comments
+                $postComments = $this->currentModel->getCommentListForSingle($postListOnPage['postsOnPage'][$i]->id);
+                // Comments are found for a post.
+                if ($postComments != false) {
+                    // Add temporary param to object
+                    $postListOnPage['postsOnPage'][$i]->postComments = $postComments;
+                }
+            }
 			// $currentPageId value is correct: render page with included posts!
 			if ($currentPageId <= $postListOnPage['pageQuantity']) {
 				$varsArray = [
@@ -114,19 +121,38 @@ class PostController extends BaseController
     private function renderSingle($post, $checkedForm = []) {
         // Retrieve single post comments
         $postComments = $this->currentModel->getCommentListForSingle($post[0]->id);
-
         // Prepare template vars
-        $jsArray = [
+        $cssArray = [
             0 => [
+                'pluginName' => 'Slick Slider 1.8.1',
+                'src' => 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css'
+            ],
+            1 => [
+                'pluginName' => 'Slick Slider 1.8.1',
+                'src' => 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css'
+            ]
+        ];
+        $jsArray = [
+            1 => [
+                'pluginName' => 'Slick Slider 1.8.1',
+                'placement' => 'bottom',
+                'src' => 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js'
+            ],
+            2 => [
                 'placement' => 'bottom',
                 'src' => '/assets/js/phpblog.js'
             ],
-            1 => [
+            3 => [
                 'placement' => 'bottom',
                 'src' => '/assets/js/commentPost.js'
             ],
+            4 => [
+                'placement' => 'bottom',
+                'src' => '/assets/js/postSingle.js'
+            ]
         ];
         $varsArray = [
+            'CSS' => $cssArray,
             'JS' => $jsArray,
             'metaTitle' => 'Post - ' . $post[0]->title,
             'metaDescription' => $post[0]->intro,

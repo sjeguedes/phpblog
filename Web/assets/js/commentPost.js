@@ -11,7 +11,7 @@ jQuery(function($) {
     // -------------------------------------------------------------------------------------------------------
 
     // Better user experience with scroll
-    $(window).on('load', function(e) {
+    $(window).on('load hashchange', function(e) {
         // Scroll to comment form notice message box if it is visible (obviously, in case of no AJAX mode).
         $('.form-error, .form-success').each(function() {
             if($(this).is(':visible')) {

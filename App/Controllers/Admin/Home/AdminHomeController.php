@@ -64,6 +64,9 @@ class AdminHomeController extends AdminController
         // Initialize home admin forms validator
         $this->adminHomeValidator = AppContainer::getFormValidator()[2];
         // Define used parameters to avoid CSRF:
+        // Contact deleting token
+        $this->cdTokenIndex = $this->adminHomeValidator->generateTokenIndex('cd_check');
+        $this->cdTokenValue = $this->adminHomeValidator->generateTokenValue('cd_token');
         // Comment deleting token
         $this->pcdTokenIndex = $this->adminHomeValidator->generateTokenIndex('pcd_check');
         $this->pcdTokenValue = $this->adminHomeValidator->generateTokenValue('pcd_token');
@@ -121,16 +124,19 @@ class AdminHomeController extends AdminController
             'contactList' => $contactList,
             'commentList' => $commentList,
             'postList' => $postList,
-            // Deleting token
+            // Deleting token for Contact entity
+            'cdTokenIndex' => $this->cdTokenIndex,
+            'cdTokenValue' => $this->cdTokenValue,
+            // Deleting token for Comment entity
             'pcdTokenIndex' => $this->pcdTokenIndex,
             'pcdTokenValue' => $this->pcdTokenValue,
-            // Validation token
+            // Validation token for Comment entity
             'pcvTokenIndex' => $this->pcvTokenIndex,
             'pcvTokenValue' => $this->pcvTokenValue,
-            // Publication token
+            // Publication token for Comment entity
             'pcpTokenIndex' => $this->pcpTokenIndex,
             'pcpTokenValue' => $this->pcpTokenValue,
-            // Publication cancelation token
+            // Publication cancelation token for Comment entity
             'pcuTokenIndex' => $this->pcuTokenIndex,
             'pcuTokenValue' => $this->pcuTokenValue,
             // Error messages notice (only updated in actions)
@@ -151,7 +157,7 @@ class AdminHomeController extends AdminController
     }
 
     /**
-     * Check if there is already a success state for one of admin forms
+     * Check if there is already a success state for one of home admin forms
      * @return boolean
      */
     private function isActionSuccess() {
@@ -177,6 +183,31 @@ class AdminHomeController extends AdminController
             unset($_SESSION['haf_success']);
         }
 	}
+
+    /**
+     * Delete a Contact entity in database
+     * @param array $matches: an array of parameters matched in route
+     * @return void
+     */
+    public function deleteContact($matches)
+    {
+        $varsArray = $this->initAdminHome();
+        $paramsArray = [
+            'tokenIdentifier' => 'cd',
+            'action' => 'delete',
+            'errorMessage' => 'Deleting action was not performed correctly<br>as concerns contact #',
+            'successMessage' => 'Deleting action was performed successfully<br>as concerns contact #',
+            'datas' => ['entity' => 'contact'],
+        ];
+        // Validate or not form datas
+        $checkedForm = $this->validateEntityForms($paramsArray);
+        // Remind current paging slide item
+        $varsArray['slideRankAfterSubmit'] = (int) $_POST['cd_slide_rank'] !== 0 ? $_POST['cd_slide_rank'] : 1;
+        // Need to update errors template var, while there is no redirection to admin home (success state)
+        $varsArray['errors'] = isset($checkedForm['haf_errors']) ? $checkedForm['haf_errors'] : false;
+        // Render template with updated vars
+        $this->renderAdminHome($varsArray);
+    }
 
     /**
      * Delete a Comment entity in database
@@ -370,6 +401,78 @@ class AdminHomeController extends AdminController
                     'state' => true, // show success message (not really useful)
                     'id' => htmlentities($_POST[$commentIdIndex]), // retrieve comment id
                     'message' => $params['successMessage'] . htmlentities($_POST[$commentIdIndex]), // customize success message as regards action
+                    'slide_rank' => htmlentities($_POST[$tokenPrefix . 'slide_rank']) // last slide item reminder to position slide after redirection
+                ];
+                // Redirect to admin home action (to reset submitted form)
+                $this->httpResponse->addHeader('Location: /admin');
+            }
+        }
+        // Update error notice messages and form values
+        return $result;
+    }
+
+    /**
+     * Validate (or not) home admin actions forms on entity (deleting, validation, publication, publication cancelation)
+     * @param array $params: an array of parameter to validate a simple form
+     * @return array: an array which contains result of validation (errors, form values, ...)
+     */
+    private function validateEntityForms($params)
+    {
+        // Use value as var name
+        $tokenIndex = $params['tokenIdentifier'] . 'TokenIndex';
+        $entityIdIndex = $params['tokenIdentifier'] . '_id';
+        $entity = $params['datas']['entity'];
+        $entityName = ucfirst($params['datas']['entity']);
+        $getEntityByid = "get${entityName}ById";
+        $action = $params['action'] . 'Entity';
+        $arguments = [$_POST[$entityIdIndex], $params['datas']];
+        // Check token to avoid CSRF
+        $tokenValue = isset($_POST[$this->$tokenIndex]) ? $_POST[$this->$tokenIndex] : false;
+        $tokenPrefix = $params['tokenIdentifier'] . '_';
+        $this->adminHomeValidator->validateToken($tokenValue, $tokenPrefix);
+        // Get validation result
+        $result = $this->adminHomeValidator->getResult();
+        // Additional error message in case of form errors
+        if (!empty($result['haf_errors'])) {
+            // Check wrong entity id used in form
+            if ($this->currentModel->$getEntityByid($_POST[$entityIdIndex]) == false) {
+                $result['haf_errors']['haf_failed'][$entity]['message'] = $params['errorMessage'] . htmlentities($_POST[$entityIdIndex]) . '.';
+            }
+        }
+        // Submit: entity form is correctly filled.
+        if (isset($result) && empty($result['haf_errors']) && isset($result['haf_check']) && $result['haf_check']) {
+            // Perform desired action in database
+            try {
+                // Check entity id used in form
+                // Is there an existing entity with this id?
+                if ($this->currentModel->$getEntityByid($_POST[$entityIdIndex]) != false) {
+                    // Delete or validate or publish or unpublish entity
+                    call_user_func_array([$this->currentModel, $action], $arguments);
+                    $performed = true;
+                } else {
+                    $result['haf_errors']['haf_failed'][$entity]['message2'] = $this->config::isDebug('<span class="form-check-notice">Sorry an error happened! <strong>Wrong ' . $entity . ' id</strong> is used.<br>Action [Debug trace: <strong>' . $params["action"] . '</strong>] on ' . $entity . ' can not be performed correctly.<br>[Debug trace: ' . $entity . ' id "<strong>' . htmlentities($_POST[$entityIdIndex]) . '</strong>" doesn\'t exist in database!]</span>');
+                    $performed = false;
+                }
+            } catch (\PDOException $e) {
+                $result['haf_errors']['haf_failed'][$entity]['message2'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Please try again later.<br>Action [Debug trace: <strong>' . $params["action"] . '</strong>] on ' . $entity . ' [Debug trace: <strong> ' . $entity . ' id ' . htmlentities($_POST[$entityIdIndex]) . '</strong>] was not performed correctly.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $performed = false;
+            }
+            // Action was performed successfully on entity!
+            if ($performed) {
+                // Reset form associated datas
+                $result = [];
+                // Delete current token
+                unset($_SESSION[$tokenPrefix . 'check']);
+                unset($_SESSION[$tokenPrefix . 'token']);
+                // Regenerate token to be updated in forms
+                session_regenerate_id(true);
+                $this->$tokenIndex = $this->adminHomeValidator->generateTokenIndex($tokenPrefix . 'check');
+                $this->$tokenValue = $this->adminHomeValidator->generateTokenValue($tokenPrefix . 'token');
+                // Initialize success state
+                $_SESSION['haf_success'][$entity] = [
+                    'state' => true, // show success message (not really useful)
+                    'id' => htmlentities($_POST[$entityIdIndex]), // retrieve entity id
+                    'message' => $params['successMessage'] . htmlentities($_POST[$entityIdIndex]), // customize success message as regards action
                     'slide_rank' => htmlentities($_POST[$tokenPrefix . 'slide_rank']) // last slide item reminder to position slide after redirection
                 ];
                 // Redirect to admin home action (to reset submitted form)

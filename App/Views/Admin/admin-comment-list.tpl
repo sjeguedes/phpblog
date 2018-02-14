@@ -73,14 +73,14 @@
                                         <div class="flex-header bg-primary">
                                             <span class="flex-label">Added on</span>
                                         </div>
-                                        <p class="flex-content"><br><i class="fa fa-hourglass-end" aria-hidden="true"></i>&nbsp;{{ commentList[i].creationDate }}</span>
+                                        <p class="flex-content"><br><i class="fa fa-hourglass-end" aria-hidden="true"></i>&nbsp;{{ commentList[i].creationDate }}</p>
                                     </div>
                                     <div class="flex-col">
                                         <div class="flex-header bg-primary">
                                             <span class="flex-label">Comment details</span>
                                         </div>
                                         <p class="flex-content">
-                                            <button class="btn btn-primary" data-toggle="modal" data-target="#modal-comment-content-{{ i + 1 }}">SHOW CONTENT</button>
+                                            <button class="btn btn-primary" data-toggle="modal" data-target="#modal-comment-content-{{ i + 1 }}" title="Show content">SHOW CONTENT</button>
                                         </p>
                                     </div>
                                     <div class="flex-col">
@@ -134,7 +134,7 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
                     <i class="now-ui-icons ui-1_simple-remove"></i>
                 </button>
-                <h4 class="title title-up">{{ commentList[i].title|raw|nl2br }}</h4>
+                <h4 class="title title-up">Comment #{{ commentList[i].id }}<br>{{ commentList[i].title|raw|nl2br }}</h4>
             </div>
             <div class="modal-body">
                 <p><strong>Author nickname:</strong> {{ commentList[i].nickName|raw }}<br>
@@ -168,7 +168,8 @@
                     <input type="hidden" id="pcd_slide_rank" name="pcd_slide_rank" value="{{ rank }}">
                     <input type="hidden" id="pcd_check" name="{{ pcdTokenIndex }}" value="{{ pcdTokenValue }}">
                     <input type="hidden" id="pcd_id" name="pcd_id" value="{{ commentList[i].id }}">
-                    {# No need to set pcdSubmit because after success state comment doesn't exist anymore! In fact pcdSubmit will always set to "0". -#}
+                    {# No need to set pcdSubmit because after success state comment doesn't exist anymore! In fact pcdSubmit will always be set to "0". -#}
+                    {% set pcdSubmit = 0 -%}
                     <button type="submit" class="btn btn-neutral text-danger" name="pcd_submit" title="Confirm comment deleting" value="{{ pcdSubmit }}"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;CONFIRM</button>
                 </form>
             </div>

@@ -99,7 +99,6 @@ class PostModel extends BaseModel
 				return false;
 			}
 		}
-
 		// Will associate author datas for each post
 		$postWithAuthor = [];
 		$post = $this->getSingleById($postId);
@@ -137,10 +136,8 @@ class PostModel extends BaseModel
 	{
 		// Get first post row to show for group of posts which appears on selected page : must begin to 0 on first page ($pageId = 1)
 		$start = ($pageId - 1) * $postPerPage;
-
 		$i = 0;
 		$postsOnpage = [];
-
 		// SQL_CALC_FOUND_ROWS (MySQL 4+) also stores total number of rows (ignores LIMIT) with one query (to avoid secondary query with COUNT()!). OFFSET is more readable.
 		$query = $this->dbConnector->prepare('SELECT SQL_CALC_FOUND_ROWS *
 											  FROM posts
@@ -149,19 +146,16 @@ class PostModel extends BaseModel
 		$query->bindParam(':start', $start, \PDO::PARAM_INT);
 		$query->bindParam(':postPerPage', $postPerPage, \PDO::PARAM_INT);
 		$query->execute();
-
 		// Compare post_id from retrieved posts to add rank property to corresponding Post instance
 		while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$postsOnpage[] = new Post($datas);
 	    }
-
 		// Get the same result like COUNT() function:
 		$query2 = $this->dbConnector->query('SELECT FOUND_ROWS()');
 		// Get total number of posts in database
 		$countedPosts = $query2->fetchColumn();
 		// Get total number of pages for paging
 		$pagesQuantity = ceil($countedPosts / $postPerPage);
-
     	return ['currentPage' => $pageId, 'pageQuantity' => $pagesQuantity, 'postsOnPage' => $postsOnpage];
 	}
 
@@ -177,10 +171,8 @@ class PostModel extends BaseModel
 		$postQuantity = intval($result[1]);
 		$postPerPage = $this->config::$_postPerPage;
 		$paging = ceil($postQuantity / $postPerPage);
-
 		$interval = [];
 		$start = 0;
-
 		for($i = 1; $i <= $paging; $i++) {
 			if($start <= $postRank && $postRank < $start + $postPerPage) {
 				$singleIsOnPage = $i;
@@ -199,7 +191,6 @@ class PostModel extends BaseModel
 	public function getRankForSingle($postId)
 	{
 		$postsRank = $this->getRankForAll();
-
 		for($i = 0; $i < count($postsRank) - 1; $i++) {
 			if($postsRank[$i]['post_id'] == $postId) {
 				$singleRank = $postsRank[$i]['rank'];
@@ -225,7 +216,6 @@ class PostModel extends BaseModel
 	       	$postsRank[$i]['rank'] = $datas['rank'];
 	       	$i++;
 	    }
-
 	    // Get the same result like COUNT() function:
 		$query2 = $this->dbConnector->query('SELECT FOUND_ROWS()');
 		// Get total number of posts in database
@@ -322,7 +312,7 @@ class PostModel extends BaseModel
     /**
      * Get all Comment entities for a particular post
      * @param string $postId
-     * @return array: an array which contains all Comment entities instances
+     * @return array|boolean: an array which contains all Comment entities instances or false
      */
     public function getCommentListForSingle($postId)
     {
@@ -333,9 +323,11 @@ class PostModel extends BaseModel
                                               ORDER BY comment_creationDate DESC');
         $query->bindParam(1, $postId, \PDO::PARAM_INT);
         $query->execute();
-
         while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
             $comments[] = new Comment($datas);
+        }
+        if(!isset($comments)) {
+            return false;
         }
         return $comments;
     }

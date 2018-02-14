@@ -22,12 +22,25 @@ class AdminHomeModel extends AdminModel
     }
 
     /**
-     * Get Post entities ordered by creation date
-     * Use an external model: PostModel
-     * @return array: an array of Post entities instances
+     * Get a single contact with its id
+     * @param string $contactId
+     * @return object|boolean: a Contact entity instance or false
      */
-    public function getPostList() {
-        return $this->externaldModels['postModel']->getList();
+    public function getContactById($contactId)
+    {
+        $query = $this->dbConnector->prepare('SELECT *
+                                              FROM contacts
+                                              WHERE contact_id = :contactId');
+        $query->bindParam(':contactId', $contactId, \PDO::PARAM_INT);
+        $query->execute();
+        $datas = $query->fetch(\PDO::FETCH_ASSOC);
+        // Is there a result?
+        if ($datas != false) {
+            $contact = new Contact($datas);
+            return $contact;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -73,5 +86,14 @@ class AdminHomeModel extends AdminModel
             $comments[] = new Comment($datas);
         }
         return $comments;
+    }
+
+    /**
+     * Get Post entities ordered by creation date
+     * Use an external model: PostModel
+     * @return array: an array of Post entities instances
+     */
+    public function getPostList() {
+        return $this->externaldModels['postModel']->getList();
     }
 }

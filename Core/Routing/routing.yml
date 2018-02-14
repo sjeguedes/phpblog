@@ -62,6 +62,13 @@ routing:
         name: Home\Home|isCalled
         method: POST
 
+    adminHomeDeleteContact:
+        path: /admin/delete-contact/:id
+        module: Admin\Home\AdminHome
+        action: deleteContact
+        name: Admin\Home\AdminHome|deleteContact
+        method: POST
+
     adminHomeDeleteComment:
         path: /admin/delete-comment/:id
         module: Admin\Home\AdminHome

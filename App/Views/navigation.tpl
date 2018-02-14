@@ -19,14 +19,16 @@
                         <i class="fa fa-cog fa-lg" aria-hidden="true"></i>&nbsp;Admin&nbsp;menu
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-header">Back-end pages</a>
-                        <a class="dropdown-item" href="/admin" title="Admin homepage">Admin homepage</a>
+                        <span class="dropdown-header">Back-end pages</span>
+                        <a class="dropdown-item" href="/admin" title="Admin homepage"><i class="fa fa-chevron-right" aria-hidden="true"></i>&nbsp;Admin homepage</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="/admin/#contact-list" title="Look at contact messages">Look at contact messages</a>
+                        <a class="dropdown-item" href="/admin/#contact-list" title="Look at contact message list">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-right fa-lg" aria-hidden="true"></i>&nbsp;Look at contact message list</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="/admin/add-post" title="Edit a new post">Edit a new post</a>
+                        <a class="dropdown-item" href="/admin/#comment-list" title="Look at comment list">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-right fa-lg" aria-hidden="true"></i>&nbsp;Look at comment list</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="/admin/#post-list" title="Edit/Delete a post">Edit/Delete a post</a>
+                        <a class="dropdown-item" href="/admin/add-post" title="Edit a new post"><i class="fa fa-chevron-right" aria-hidden="true"></i>&nbsp;Edit a new post</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="/admin/#post-list" title="Edit/Delete a post"><i class="fa fa-chevron-right" aria-hidden="true"></i>&nbsp;Edit/Delete a post</a>
                     </div>
                 </li>
                 <li class="nav-item">

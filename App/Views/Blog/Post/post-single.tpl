@@ -20,10 +20,12 @@
                             </li>
                             <li>
                                 {% set countedComments = 0 %}
-                                {% for comment in postComments if comment.isPublished %}
+                                {% for comment in postComments if comment.isPublished == 1 %}
                                     {% set countedComments = loop.index %}
                                 {% endfor %}
+                                {% if countedComments != 0 %}
                                 <i class="fa fa-comment">&nbsp;</i>{{ countedComments }} comment(s)
+                                {% endif %}
                             </li>
                         </ul>
                     </div>

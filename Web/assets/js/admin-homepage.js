@@ -4,7 +4,8 @@ jQuery(function($) {
 
     // -------------------------------------------------------------------------------------------------------
 
-    $(window).on('load', function() {
+    // Better user experience with scroll
+    $(window).on('load hashchange', function() {
         // Scroll to bloc-"name-of-bloc"
 		var hash = window.location.hash;
 		if (hash) {
@@ -23,19 +24,35 @@ jQuery(function($) {
             }
         });
 
-        // Position comment paging slider correctly after form action submission (after error or success redirection)
-        if ($('.comment-list-paging').length > 0 && parseInt($('.comment-list-paging').data('slide-rank')) > 1) {
-            var slideRank = $('.comment-list-paging').data('slide-rank');
-            var slideQuantity = $('.comment-list-paging').find('.slide-item:last-child').attr('id').replace('slide-item-', '');
+        // Position paging sliders correctly after form action submission (after error or success redirection)
+        if ($('.slider-paging').length > 0 && $('.slider-paging')[0].hasAttribute('data-slide-rank') && parseInt($('.slider-paging').data('slide-rank')) > 1) {
+            var slideRank = $('.slider-paging').data('slide-rank');
+            var slideQuantity = $('.slider-paging').find('.slide-item:last-child').attr('id').replace('slide-item-', '');
             // Check validity of slideRank value
             if (slideRank > 1 && slideRank <= slideQuantity) {
-                $('.comment-list-paging').slick('slickGoTo', slideRank, true);
+                $('.slider-paging').slick('slickGoTo', slideRank, true);
             }
-            $('.comment-list-paging').slick('slickGoTo', 1, false);
+            $('.slider-paging').slick('slickGoTo', 1, false);
         }
 	});
 
     // -------------------------------------------------------------------------------------------------------
+
+    // Slick slider for contact list paging
+    var contactListSlider = $('.contact-list-paging').slick({
+        dots: true,
+        infinite: false,
+        speed: 300,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        adaptiveHeight: true,
+        appendArrows: $('.section-admin-contact-list .slider-navigation'),
+        appendDots: $('.section-admin-contact-list .slider-navigation'),
+        slide: '.slide-item',
+        prevArrow: '<button type="button" class="slick-prev btn btn-link"><i class="btn btn-link now-ui-icons arrows-1_minimal-left"></i></button>',
+        nextArrow: '<button type="button" class="slick-next btn btn-link"><i class="now-ui-icons arrows-1_minimal-right"></i></button>',
+
+    });
 
     // Slick slider for comment list paging
     var commentListSlider = $('.comment-list-paging').slick({
