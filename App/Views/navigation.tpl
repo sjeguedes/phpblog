@@ -4,7 +4,7 @@
         <div class="navbar-translate">
             <a class="navbar-brand" href="/" title="phpBlog">
                 <span class="btn btn-neutral btn-icon btn-round btn-lg"><img class="custom-logo" src="/assets/images/phpblog/custom-logo.png" alt="Logo de Samuel GUEDES" ></span>
-                <span rel="tooltip" title="phpBlog" data-placement="right" class="navbar-brand-title"><strong>&nbsp;phpBlog&nbsp;</strong></span>
+                <span title="phpBlog" class="navbar-brand-title"><strong>&nbsp;phpBlog&nbsp;</strong></span>
             </a>
             <button class="navbar-toggler navbar-toggler" type="button" data-toggle="collapse" data-target="#navigation" aria-controls="navigation-index" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-bar bar1"></span>

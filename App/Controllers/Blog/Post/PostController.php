@@ -85,7 +85,7 @@ class PostController extends BaseController
 			echo $this->httpResponse->set404ErrorResponse('Sorry this page doesn\'t exist!', $this->router);
 		} else {
 			// Get posts datas for current page and get post Quantity to show per page
-			$postListOnPage = $this->currentModel->getListByPaging($currentPageId, $this->config::$_postPerPage);
+			$postListOnPage = $this->currentModel->getListByPaging($currentPageId, $this->config::getParam('posts.postPerPage'));
             // Loop to find any existing comments attached to each post
             for ($i = 0; $i < count($postListOnPage['postsOnPage']); $i ++) {
                 // Retrieve (or not) single post comments
@@ -170,7 +170,6 @@ class PostController extends BaseController
             'tryValidation' => isset($_POST['pcf_submit']) ? 1 : 0,
             'errors' => isset($checkedForm['pcf_errors']) ? $checkedForm['pcf_errors'] : false,
             'success' => isset($_SESSION['pcf_success']) && $_SESSION['pcf_success'] ? true : false,
-
         ];
         // Render template
         echo $this->page->renderTemplate('Blog/Post/post-single.tpl', $varsArray);

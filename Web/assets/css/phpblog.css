@@ -50,7 +50,7 @@ span.btn:hover,span.btn:focus {
     display: inline-block;
 }
 
-body, .section {
+body {
     height: 100%;
 }
 
@@ -58,8 +58,16 @@ body, .section {
     background-color: rgb(153, 153, 153);
 }
 
-.navbar a{
+.navbar a {
     margin: 0;
+}
+
+.navbar-brand .btn {
+    cursor: pointer !important;
+}
+
+.navbar-brand:hover {
+    color: #888 !important;
 }
 
 .navbar-brand .custom-logo {

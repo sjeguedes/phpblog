@@ -12,10 +12,18 @@ use Core\Service\AppContainer;
  */
 class AdminHomeController extends AdminController
 {
-	/**
+    /**
      * @var object: an instance of validator object
      */
     private $adminHomeValidator;
+    /**
+     * @var string: dynamic index name for deleting contact form token
+     */
+    private $cdTokenIndex;
+    /**
+     * @var string: dynamic value for deleting contact form token
+     */
+    private $cdTokenValue;
     /**
      * @var string: dynamic index name for deleting comment form token
      */
@@ -111,7 +119,7 @@ class AdminHomeController extends AdminController
             ],
             1 => [
                 'placement' => 'bottom',
-                'src' => '/assets/js/admin-homepage.js'
+                'src' => '/assets/js/adminHomepage.js'
             ],
         ];
         return [
@@ -121,9 +129,14 @@ class AdminHomeController extends AdminController
             'metaDescription' => 'Here, you can have a look at all the essential administration information and functionalities.',
             'metaRobots' => 'noindex, nofollow',
             'imgBannerCSSClass' => 'admin-home',
+            // Get complete list of each entity type
             'contactList' => $contactList,
             'commentList' => $commentList,
             'postList' => $postList,
+            // Get number of entities to show per slide for each slider (paging sliders)
+            'contactPerSlide' => $this->config::getParam('admin.home.contactPerSlide'),
+            'commentPerSlide' => $this->config::getParam('admin.home.commentPerSlide'),
+            'postPerSlide' => $this->config::getParam('admin.home.postPerSlide'),
             // Deleting token for Contact entity
             'cdTokenIndex' => $this->cdTokenIndex,
             'cdTokenValue' => $this->cdTokenValue,
@@ -202,7 +215,7 @@ class AdminHomeController extends AdminController
         // Validate or not form datas
         $checkedForm = $this->validateEntityForms($paramsArray);
         // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = (int) $_POST['cd_slide_rank'] !== 0 ? $_POST['cd_slide_rank'] : 1;
+        $varsArray['slideRankAfterSubmit'] = isset($_POST['cd_slide_rank']) && (int) $_POST['cd_slide_rank'] !== 0 ? $_POST['cd_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin home (success state)
         $varsArray['errors'] = isset($checkedForm['haf_errors']) ? $checkedForm['haf_errors'] : false;
         // Render template with updated vars
@@ -225,9 +238,9 @@ class AdminHomeController extends AdminController
             'datas' => ['entity' => 'comment'],
         ];
         // Validate or not form datas
-        $checkedForm = $this->validateCommentForms($paramsArray);
+        $checkedForm = $this->validateEntityForms($paramsArray);
         // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = (int) $_POST['pcd_slide_rank'] !== 0 ? $_POST['pcd_slide_rank'] : 1;
+        $varsArray['slideRankAfterSubmit'] = isset($_POST['pcd_slide_rank']) && (int) $_POST['pcd_slide_rank'] !== 0 ? $_POST['pcd_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin home (success state)
         $varsArray['errors'] = isset($checkedForm['haf_errors']) ? $checkedForm['haf_errors'] : false;
         // Render template with updated vars
@@ -261,9 +274,9 @@ class AdminHomeController extends AdminController
             ]
         ];
         // Validate or not form datas
-        $checkedForm = $this->validateCommentForms($paramsArray);
+        $checkedForm = $this->validateEntityForms($paramsArray);
         // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = (int) $_POST['pcv_slide_rank'] !== 0 ? $_POST['pcv_slide_rank'] : 1;
+        $varsArray['slideRankAfterSubmit'] = isset($_POST['pcv_slide_rank']) && (int) $_POST['pcv_slide_rank'] !== 0 ? $_POST['pcv_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin home (success state)
         $varsArray['errors'] = isset($checkedForm['haf_errors']) ? $checkedForm['haf_errors'] : false;
         // Render template with updated vars
@@ -297,9 +310,9 @@ class AdminHomeController extends AdminController
             ]
         ];
         // Validate or not form datas
-        $checkedForm = $this->validateCommentForms($paramsArray);
+        $checkedForm = $this->validateEntityForms($paramsArray);
         // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = (int) $_POST['pcp_slide_rank'] !== 0 ? $_POST['pcp_slide_rank'] : 1;
+        $varsArray['slideRankAfterSubmit'] = isset($_POST['pcp_slide_rank']) && (int) $_POST['pcp_slide_rank'] !== 0 ? $_POST['pcp_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin home (success state)
         $varsArray['errors'] = isset($checkedForm['haf_errors']) ? $checkedForm['haf_errors'] : false;
         // Render template with updated vars
@@ -333,9 +346,9 @@ class AdminHomeController extends AdminController
             ]
         ];
         // Validate or not form datas
-        $checkedForm = $this->validateCommentForms($paramsArray);
+        $checkedForm = $this->validateEntityForms($paramsArray);
         // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = (int) $_POST['pcu_slide_rank'] !== 0 ? $_POST['pcu_slide_rank'] : 1;
+        $varsArray['slideRankAfterSubmit'] = isset($_POST['pcu_slide_rank']) && (int) $_POST['pcu_slide_rank'] !== 0 ? $_POST['pcu_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin home (success state)
         $varsArray['errors'] = isset($checkedForm['haf_errors']) ? $checkedForm['haf_errors'] : false;
         // Render template with updated vars

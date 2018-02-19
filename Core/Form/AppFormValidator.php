@@ -5,7 +5,7 @@ use Core\Service\AppContainer;
 use Core\Helper\AppStringModifier;
 
 /**
- * Class to validate form user inputs
+ * Validate form user inputs
  */
 class AppFormValidator
 {

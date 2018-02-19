@@ -50,7 +50,6 @@ class AppHTTPResponse
 	    header($string);
  	}
 
-
     /**
      * Catch HTTP redirect status to customize several errors
      * WARNING: must be used with serveur configuration to run correctly!
@@ -156,16 +155,20 @@ class AppHTTPResponse
 	/**
      * Display 404 error customized page
      * @param string $message: message to inform user
-     * @param AppRouter $router
+     * @param AppRouter|null $router
      * @return void
      */
-    public function set404ErrorResponse($message, AppRouter $router)
+    public function set404ErrorResponse($message, AppRouter $router = null)
 	{
         // Send "not found" HTTP headers
         $this->addHeader('Status: 404 Not Found');
         $this->addHeader('HTTP/1.1 404 Not Found');
 		// Prepare permalink to website homepage
-        $homeURL = $router->useURL('Home\Home|isCalled', null);
+        if (!is_null($router)) {
+            $homeURL = $router->useURL('Home\Home|isCalled', null);
+        } else {
+            $homeURL = '/';
+        }
 		// Render template
         $varsArray = [
 			'metaTitle' => '404 Error',

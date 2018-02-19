@@ -46,10 +46,10 @@
                     <div class="contact-list-paging slider-paging" data-slide-rank="{{ slide_rank|e('html_attr') }}">
                     {% set rank = 0 -%}
                     {% for i in 0..contactList|length - 1 -%}
-                        {# Begin slider item "div" if (i == 0) or (i % 5 == 0) -#}
-                        {% if (i == 0) or (i % 5 == 0) -%}
+                        {# Begin slider item "div" if (i == 0) or (i % contactPerSlide == 0) -#}
+                        {% if (i == 0) or (i % contactPerSlide == 0) -%}
                         {% set rank = rank + 1 -%}
-                        <!-- Begin Slick slider contact list slide item if (i == 0) or (i % 5 == 0) -->
+                        <!-- Begin Slick slider contact list slide item if (i == 0) or (i % contactPerSlide == 0) -->
                         <div class="slide-item" id="slide-item-{{ rank }}">
                     {# // -#}
                         <!-- // -->
@@ -68,14 +68,14 @@
                                         <div class="flex-header bg-info">
                                             <span class="flex-label">Sent on</span>
                                         </div>
-                                       <p class="flex-content"><br><i class="fa fa-hourglass-end" aria-hidden="true"></i>&nbsp;{{ contactList[i].sendingDate }}</p>
+                                       <p class="flex-content"><i class="fa fa-hourglass-end" aria-hidden="true"></i>&nbsp;{{ contactList[i].sendingDate }}</p>
                                     </div>
                                     <div class="flex-col">
                                         <div class="flex-header bg-info">
                                             <span class="flex-label">Sender</span>
                                         </div>
                                         <p class="flex-content">
-                                            <strong>{{ contactList[i].firstName|raw }}&nbsp;{{ contactList[i].familyName|raw }}</strong>
+                                            <i class="fa fa-user-circle" aria-hidden="true"></i>&nbsp;<strong>{{ contactList[i].firstName|raw }}&nbsp;{{ contactList[i].familyName|raw }}</strong>
                                         </p>
                                     </div>
                                     <div class="flex-col">
@@ -96,14 +96,14 @@
                                     </div>
                                 </div>
                             </div>
-                            {# Add "hr" tag if ((i + 1) % 5 != 0) and (i < contactList|length - 1) -#}
-                            {% if ((i + 1) % 5 != 0) and (i < contactList|length - 1) -%}
+                            {# Add "hr" tag if ((i + 1) % contactPerSlide != 0) and (i < contactList|length - 1) -#}
+                            {% if ((i + 1) % contactPerSlide != 0) and (i < contactList|length - 1) -%}
                             <hr>
                             {% endif %}
-                        {#  End slider item "div" if (i + 1) % 5 == 0 or last i -#}
-                        {% if ((i + 1) % 5 == 0) or (i == contactList|length - 1) -%}
+                        {#  End slider item "div" if (i + 1) % contactPerSlide == 0 or last i -#}
+                        {% if ((i + 1) % contactPerSlide == 0) or (i == contactList|length - 1) -%}
                         <!-- End Slick slider contact list slide item -->
-                        {# Interval of 5 items -#}
+                        {# Interval of "contactPerSlide" items -#}
                         </div>
                         {# // -#}
                         <!-- // -->
@@ -120,9 +120,9 @@
 {% endif -%}
 {# Second same loop to create contact modals functionalities, to avoid overflow hidden issue with slider -#}
 {# Use rank as reminder to know which slide comment item belongs to! -#}
- {% set rank = 0 -%}
+{% set rank = 0 -%}
 {% for i in 0..contactList|length - 1 -%}
-    {% if (i == 0) or (i % 5 == 0) -%}
+    {% if (i == 0) or (i % contactPerSlide == 0) -%}
         {% set rank = rank + 1 -%}
     {% endif -%}
 <!-- Contact content modal -->

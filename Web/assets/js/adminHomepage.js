@@ -25,15 +25,18 @@ jQuery(function($) {
         });
 
         // Position paging sliders correctly after form action submission (after error or success redirection)
-        if ($('.slider-paging').length > 0 && $('.slider-paging')[0].hasAttribute('data-slide-rank') && parseInt($('.slider-paging').data('slide-rank')) > 1) {
-            var slideRank = $('.slider-paging').data('slide-rank');
-            var slideQuantity = $('.slider-paging').find('.slide-item:last-child').attr('id').replace('slide-item-', '');
-            // Check validity of slideRank value
-            if (slideRank > 1 && slideRank <= slideQuantity) {
-                $('.slider-paging').slick('slickGoTo', slideRank, true);
+        $('.slider-paging').each(function() {
+            if ($(this).length > 0 && $(this)[0].hasAttribute('data-slide-rank') && parseInt($(this).data('slide-rank')) > 1) {
+                var slideRank = $(this).data('slide-rank');
+                var slideQuantity = $(this).find('.slide-item:last-child').attr('id').replace('slide-item-', '');
+                // Check validity of slideRank value
+                if (slideRank > 1 && slideRank <= slideQuantity) {
+                    $(this).slick('slickGoTo', slideRank, true);
+                } else {
+                    $(this).slick('slickGoTo', 1, false);
+                }
             }
-            $('.slider-paging').slick('slickGoTo', 1, false);
-        }
+        });
 	});
 
     // -------------------------------------------------------------------------------------------------------

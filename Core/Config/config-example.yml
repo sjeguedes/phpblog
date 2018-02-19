@@ -1,13 +1,18 @@
 config:
-    domain: www.example.com
+    domain: www.example.com (or local virtual host)
     appDebug: true or false (show debug details for exceptions)
     database:
-        dbHost: 127.0.0.1
-        dbName: phpblog
-        dbUser: root
-        dbPwd:
+        dbHost: your_db_host (local or remote server address)
+        dbName: your_db_name
+        dbUser: your_db_user_name
+        dbPwd: your_db_pwd
     posts:
-        postPerPage: 5 (number - post quantity per page for posts list)
+        postPerPage: 5 (number - post quantity to show per page for posts list)
+    admin:
+        home:
+            contactPerSlide: 5 (number - contact quantity to show per slide item)
+            commentPerSlide: 5 (number - comment quantity to show per slide item)
+            postPerSlide: 5 (number - post quantity to show per slide item)
     googleRecaptcha:
         siteKey: your_site_key
         secretKey: your_secret_key
@@ -15,13 +20,17 @@ config:
         ajaxMode: true or false
         contactEmail: your_email_address_to_receive_a_message
     # example: https://github.com/PHPMailer/PHPMailer/blob/master/examples/gmail.phpsPHPMailer:
+    # https://security.google.com/settings/security/activity?hl=en&pli=1
+    # https://myaccount.google.com/lesssecureapps
+    # https://accounts.google.com/DisplayUnlockCaptcha
+    # https://stackoverflow.com/questions/21937586/phpmailer-smtp-error-password-command-failed-when-send-mail-from-my-server
     contactPHPMailer:
-        EnableExceptions: true or false
+        enableExceptions: true or false
         SMTPDebug: 0 (or 1, 2, 3, 4)
         SMTPAuth: true or false
-        Port: 587 (number - 587 for tls or 465 for ssl)
-        Host: your_smtp_host_name (for instance smtp.gmail.com)
+        port: 587 (number - 587 for tls or 465 for ssl)
+        host: your_smtp_host_name (for instance smtp.gmail.com)
         SMTPSecure: tls or ssl
         SMTPUserName: your_mail_for_stmp_authentication (SMTPAuth set to true)
         SMTPPwd: your_password_for_stmp_authentication (SMTPAuth set to true)
-        HostedImagesAbsoluteURL: absolute url to load images in html message (https://www.example.com/assets/images/)
+        hostedImagesAbsoluteURL: absolute url to load images in html message (https://www.example.com/assets/images/)

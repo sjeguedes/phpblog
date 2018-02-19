@@ -48,10 +48,10 @@
                     <!-- // -->
                     {% set rank = 0 -%}
                     {% for i in 0..commentList|length - 1 -%}
-                        {# Begin slider item "div" if (i == 0) or (i % 5 == 0) -#}
-                        {% if (i == 0) or (i % 5 == 0) -%}
+                        {# Begin slider item "div" if (i == 0) or (i % commentPerSlide == 0) -#}
+                        {% if (i == 0) or (i % commentPerSlide == 0) -%}
                         {% set rank = rank + 1 -%}
-                        <!-- Begin Slick slider comment list slide item if (i == 0) or (i % 5 == 0) -->
+                        <!-- Begin Slick slider comment list slide item if (i == 0) or (i % commentPerSlide == 0) -->
                         <div class="slide-item" id="slide-item-{{ rank }}">
                     {# // -#}
                         <!-- // -->
@@ -96,14 +96,14 @@
                                     </div>
                                 </div>
                             </div>
-                            {# Add "hr" tag if ((i + 1) % 5 != 0) and (i < commentList|length - 1) -#}
-                            {% if ((i + 1) % 5 != 0) and (i < commentList|length - 1) -%}
+                            {# Add "hr" tag if ((i + 1) % commentPerSlide != 0) and (i < commentList|length - 1) -#}
+                            {% if ((i + 1) % commentPerSlide != 0) and (i < commentList|length - 1) -%}
                             <hr>
                             {% endif %}
-                        {#  End slider item "div" if (i + 1) % 5 == 0 or last i -#}
-                        {% if ((i + 1) % 5 == 0) or (i == commentList|length - 1) -%}
+                        {#  End slider item "div" if (i + 1) % commentPerSlide == 0 or last i -#}
+                        {% if ((i + 1) % commentPerSlide == 0) or (i == commentList|length - 1) -%}
                         <!-- End Slick slider comment list slide item -->
-                        {# Interval of 5 items -#}
+                        {# Interval of "commentPerSlide" items -#}
                         </div>
                         {# // -#}
                         <!-- // -->
@@ -123,7 +123,7 @@
 {# Use rank as reminder to know which slide comment item belongs to! -#}
  {% set rank = 0 -%}
 {% for i in 0..commentList|length - 1 -%}
-    {% if (i == 0) or (i % 5 == 0) -%}
+    {% if (i == 0) or (i % commentPerSlide == 0) -%}
         {% set rank = rank + 1 -%}
     {% endif -%}
 <!-- Comment content modal -->
