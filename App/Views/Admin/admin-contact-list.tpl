@@ -34,23 +34,23 @@
                 <div class="slider-navigation mt-2 mb-2">&nbsp;</div>
                 <div class="contact-box card">
                     {# Store last slide where contact action was performed! -#}
-                    {% if (success['contact'] is defined) and (success['contact']['slide_rank'] != 1) -%}
+                    {% if (success['contact'] is defined) and (success['contact']['slideRank'] != 1) -%}
                         {# Success state -#}
-                        {% set slide_rank = success['contact']['slide_rank'] -%}
-                    {% elseif slideRankAfterSubmit != 1 -%}
-                        {# Error state: there is no redirection after submission set, -#}
-                        {% set slide_rank = slideRankAfterSubmit -%}
+                        {% set slideRank = success['contact']['slideRank'] -%}
+                    {% elseif (slideRankAfterSubmit is defined) and (slideRankAfterSubmit != 1) -%}
+                        {# Error state: there is no redirection after submission -#}
+                        {% set slideRank = slideRankAfterSubmit -%}
                     {% else %}
-                        {% set slide_rank = 1 -%}
+                        {% set slideRank = 1 -%}
                     {% endif -%}
-                    <div class="contact-list-paging slider-paging" data-slide-rank="{{ slide_rank|e('html_attr') }}">
+                    <div class="contact-list-paging slider-paging" data-slide-rank="{{ slideRank|e('html_attr') }}">
                     {% set rank = 0 -%}
                     {% for i in 0..contactList|length - 1 -%}
                         {# Begin slider item "div" if (i == 0) or (i % contactPerSlide == 0) -#}
                         {% if (i == 0) or (i % contactPerSlide == 0) -%}
                         {% set rank = rank + 1 -%}
                         <!-- Begin Slick slider contact list slide item if (i == 0) or (i % contactPerSlide == 0) -->
-                        <div class="slide-item" id="slide-item-{{ rank }}">
+                        <div class="slide-item" data-slide-item="{{ rank }}">
                     {# // -#}
                         <!-- // -->
                             {% endif -%}

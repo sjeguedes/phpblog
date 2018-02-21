@@ -356,75 +356,6 @@ class AdminHomeController extends AdminController
     }
 
     /**
-     * Validate (or not) home admin comment forms (deleting, validation, publication, publication cancelation)
-     * @param array $params: an array of parameter to validate a simple form
-     * @return array: an array which contains result of validation (errors, form values, ...)
-     */
-    private function validateCommentForms($params)
-    {
-        // Use value as var name
-        $tokenIndex = $params['tokenIdentifier'] . 'TokenIndex';
-        $commentIdIndex = $params['tokenIdentifier'] . '_id';
-        $action = $params['action'] . 'Entity';
-        $arguments = [$_POST[$commentIdIndex], $params['datas']];
-        // Check token to avoid CSRF
-        $tokenValue = isset($_POST[$this->$tokenIndex]) ? $_POST[$this->$tokenIndex] : false;
-        $tokenPrefix = $params['tokenIdentifier'] . '_';
-        $this->adminHomeValidator->validateToken($tokenValue, $tokenPrefix);
-        // Get validation result
-        $result = $this->adminHomeValidator->getResult();
-        // Additional error message in case of form errors
-        if (!empty($result['haf_errors'])) {
-             // Check wrong comment id used in form
-            if ($this->currentModel->getCommentById($_POST[$commentIdIndex]) == false) {
-                $result['haf_errors']['haf_failed']['comment']['message'] = $params['errorMessage'] . htmlentities($_POST[$commentIdIndex]) . '.';
-            }
-        }
-        // Submit: comment form is correctly filled.
-        if (isset($result) && empty($result['haf_errors']) && isset($result['haf_check']) && $result['haf_check']) {
-            // Perform desired action in database
-            try {
-                // Check comment id used in form
-                // Is there an existing comment with this id?
-                if ($this->currentModel->getCommentById($_POST[$commentIdIndex]) != false) {
-                    // Delete or validate or publish comment or unpublish comment
-                    call_user_func_array([$this->currentModel, $action], $arguments);
-                    $performed = true;
-                } else {
-                    $result['haf_errors']['haf_failed']['comment']['message2'] = $this->config::isDebug('<span class="form-check-notice">Sorry an error happened! <strong>Wrong comment id</strong> is used.<br>Action [Debug trace: <strong>' . $params["action"] . '</strong>] on comment can not be performed correctly.<br>[Debug trace: comment id "<strong>' . htmlentities($_POST[$commentIdIndex]) . '</strong>" doesn\'t exist in database!]</span>');
-                    $performed = false;
-                }
-            } catch (\PDOException $e) {
-                $result['haf_errors']['haf_failed']['comment']['message2'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Please try again later.<br>Action [Debug trace: <strong>' . $params["action"] . '</strong>] on comment [Debug trace: <strong>comment id ' . htmlentities($_POST[$commentIdIndex]) . '</strong>] was not performed correctly.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
-                $performed = false;
-            }
-            // Action was performed successfuly on Comment entity!
-            if ($performed) {
-                // Reset form associated datas
-                $result = [];
-                // Delete current token
-                unset($_SESSION[$tokenPrefix . 'check']);
-                unset($_SESSION[$tokenPrefix . 'token']);
-                // Regenerate token to be updated in forms
-                session_regenerate_id(true);
-                $this->$tokenIndex = $this->adminHomeValidator->generateTokenIndex($tokenPrefix . 'check');
-                $this->$tokenValue = $this->adminHomeValidator->generateTokenValue($tokenPrefix . 'token');
-                // Initialize success state
-                $_SESSION['haf_success']['comment'] = [
-                    'state' => true, // show success message (not really useful)
-                    'id' => htmlentities($_POST[$commentIdIndex]), // retrieve comment id
-                    'message' => $params['successMessage'] . htmlentities($_POST[$commentIdIndex]), // customize success message as regards action
-                    'slide_rank' => htmlentities($_POST[$tokenPrefix . 'slide_rank']) // last slide item reminder to position slide after redirection
-                ];
-                // Redirect to admin home action (to reset submitted form)
-                $this->httpResponse->addHeader('Location: /admin');
-            }
-        }
-        // Update error notice messages and form values
-        return $result;
-    }
-
-    /**
      * Validate (or not) home admin actions forms on entity (deleting, validation, publication, publication cancelation)
      * @param array $params: an array of parameter to validate a simple form
      * @return array: an array which contains result of validation (errors, form values, ...)
@@ -486,7 +417,7 @@ class AdminHomeController extends AdminController
                     'state' => true, // show success message (not really useful)
                     'id' => htmlentities($_POST[$entityIdIndex]), // retrieve entity id
                     'message' => $params['successMessage'] . htmlentities($_POST[$entityIdIndex]), // customize success message as regards action
-                    'slide_rank' => htmlentities($_POST[$tokenPrefix . 'slide_rank']) // last slide item reminder to position slide after redirection
+                    'slideRank' => htmlentities($_POST[$tokenPrefix . 'slide_rank']) // last slide item reminder to position slide after redirection
                 ];
                 // Redirect to admin home action (to reset submitted form)
                 $this->httpResponse->addHeader('Location: /admin');

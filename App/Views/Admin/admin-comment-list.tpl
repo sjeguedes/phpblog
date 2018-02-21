@@ -35,16 +35,16 @@
                 <div class="comment-box card">
                     <!-- Begin Slick slider comment list paging -->
                     {# Store last slide where comment action was performed! -#}
-                    {% if (success['comment'] is defined) and (success['comment']['slide_rank'] != 1) -%}
+                    {% if (success['comment'] is defined) and (success['comment']['slideRank'] != 1) -%}
                         {# Success state -#}
-                        {% set slide_rank = success['comment']['slide_rank'] -%}
-                    {% elseif slideRankAfterSubmit != 1 -%}
-                        {# Error state: there is no redirection after submission set, -#}
-                        {% set slide_rank = slideRankAfterSubmit -%}
+                        {% set slideRank = success['comment']['slideRank'] -%}
+                    {% elseif (slideRankAfterSubmit is defined) and (slideRankAfterSubmit != 1) -%}
+                        {# Error state: there is no redirection after submission -#}
+                        {% set slideRank = slideRankAfterSubmit -%}
                     {% else %}
-                        {% set slide_rank = 1 -%}
+                        {% set slideRank = 1 -%}
                     {% endif -%}
-                    <div class="comment-list-paging slider-paging" data-slide-rank="{{ slide_rank|e('html_attr') }}">
+                    <div class="comment-list-paging slider-paging" data-slide-rank="{{ slideRank|e('html_attr') }}">
                     <!-- // -->
                     {% set rank = 0 -%}
                     {% for i in 0..commentList|length - 1 -%}
@@ -52,7 +52,7 @@
                         {% if (i == 0) or (i % commentPerSlide == 0) -%}
                         {% set rank = rank + 1 -%}
                         <!-- Begin Slick slider comment list slide item if (i == 0) or (i % commentPerSlide == 0) -->
-                        <div class="slide-item" id="slide-item-{{ rank }}">
+                        <div class="slide-item" data-slide-item="{{ rank }}">
                     {# // -#}
                         <!-- // -->
                             {% endif -%}

@@ -27,13 +27,22 @@ jQuery(function($) {
         // Position paging sliders correctly after form action submission (after error or success redirection)
         $('.slider-paging').each(function() {
             if ($(this).length > 0 && $(this)[0].hasAttribute('data-slide-rank') && parseInt($(this).data('slide-rank')) > 1) {
-                var slideRank = $(this).data('slide-rank');
-                var slideQuantity = $(this).find('.slide-item:last-child').attr('id').replace('slide-item-', '');
+                // Slick slider starts at 0 and var slide-rank starts at 1
+                var slideRank = parseInt($(this).data('slide-rank'));
+                var slideQuantity = parseInt($(this).find('.slide-item:last-child').data('slide-item'));
                 // Check validity of slideRank value
                 if (slideRank > 1 && slideRank <= slideQuantity) {
-                    $(this).slick('slickGoTo', slideRank, true);
+                    // Position on slide with rank "slideRank - 1": slick slider starts at 0
+                    $(this).slick('slickGoTo', slideRank - 1, true);
+                // This case happens if slideRank corresponds to the last slide and does not exist anymore after deleting action
+                // "slideRank" is not updated on client side contrary to "slideQuantity".
+                // (no more slide with "slideRank" rank exists because no more items are inside)
+                } else if (slideRank > slideQuantity) {
+                    // Position on last slide
+                    $(this).slick('slickGoTo', slideQuantity, false);
                 } else {
-                    $(this).slick('slickGoTo', 1, false);
+                    // Position on slide with rank 0: number 0 corresponds to slide 1
+                    $(this).slick('slickGoTo', 0, false);
                 }
             }
         });
