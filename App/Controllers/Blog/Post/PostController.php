@@ -284,9 +284,8 @@ class PostController extends BaseController
             $this->captchaUIParams = $this->commentFormCaptcha->call(['customized' => [0 => 'setNoSpamFormElements']]);
             // Store result from comment form validation
             $checkedForm = $this->validateCommentForm();
-
             // Is it already a succcess state?
-            if($this->isCommentSuccess()) {
+            if ($this->isCommentSuccess()) {
                 // Success state is returned: avoid previous $_POST with a redirection.
                 $this->httpResponse->addHeader('Location: /post/' . $post[0]->getSlug(). '-' . $post[0]->getId());
             } else {
@@ -347,16 +346,12 @@ class PostController extends BaseController
             if ($insertion) {
                 // Reset the form
                 $result = [];
-
                 // Delete current token
                 unset($_SESSION['pcf_check']);
                 unset($_SESSION['pcf_token']);
-
                 // Regenerate token to be updated in form
-                session_regenerate_id(true);
                 $this->pcfTokenIndex = $this->commentFormValidator->generateTokenIndex('pcf_check');
                 $this->pcfTokenValue = $this->commentFormValidator->generateTokenValue('pcf_token');
-
                 // Show success message
                 $_SESSION['pcf_success'] = true;
             }

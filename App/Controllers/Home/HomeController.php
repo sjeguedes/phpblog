@@ -85,7 +85,7 @@ class HomeController extends BaseController
             if (isset($_POST['cf_call']) && $_POST['cf_call'] == 'contact') {
                 $this->showContact();
             // Execute showHome entirely
-            } elseif(isset($_GET['url']) && count($_GET) == 1) {
+            } elseif (isset($_GET['url']) && count($_GET) == 1) {
                 $this->showHome();
             }
         }
@@ -207,11 +207,9 @@ class HomeController extends BaseController
                 'success' => isset($_SESSION['cf_success']) && $_SESSION['cf_success'] ? true : false,
                 'sending' => isset($checkedForm['cf_notSent']) && $checkedForm['cf_notSent'] ? 1 : 0
             ];
-
             // Render AJAX response with contact form only
             $this->httpResponse->addHeader('Cache-Control: no-cache, must-revalidate');
             echo $this->page->renderBlock('Home/home-contact-form.tpl', 'contactForm',  $varsArray);
-
             // Is it already a succcess state?
             if ($this->isContactSuccess()) {
                 unset($_SESSION['cf_success']);
@@ -282,7 +280,6 @@ class HomeController extends BaseController
                 unset($_SESSION['cf_check']);
                 unset($_SESSION['cf_token']);
                 // Regenerate token to be updated in form
-                session_regenerate_id(true);
                 $this->cfTokenIndex = $this->contactFormValidator->generateTokenIndex('cf_check');
                 $this->cfTokenValue = $this->contactFormValidator->generateTokenValue('cf_token');
                 // Show success message

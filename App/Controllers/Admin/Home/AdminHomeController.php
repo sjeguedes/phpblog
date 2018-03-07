@@ -416,7 +416,6 @@ class AdminHomeController extends AdminController
                 unset($_SESSION[$tokenPrefix . 'check']);
                 unset($_SESSION[$tokenPrefix . 'token']);
                 // Regenerate token to be updated in forms
-                session_regenerate_id(true);
                 $this->$tokenIndex = $this->adminHomeValidator->generateTokenIndex($tokenPrefix . 'check');
                 $this->$tokenValue = $this->adminHomeValidator->generateTokenValue($tokenPrefix . 'token');
                 // Initialize success state
