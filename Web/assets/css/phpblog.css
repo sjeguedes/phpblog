@@ -48,14 +48,24 @@ span.btn:hover,span.btn:focus {
 
 .g-recaptcha {
     display: inline-block;
+    margin-bottom: 5px;
 }
 
 body {
     height: 100%;
 }
 
+ul.phpblog-list {
+    display: inline-block;
+    padding: 1em;
+}
+
 .navbar.bg-phpblog-neutral {
     background-color: rgb(153, 153, 153);
+}
+
+.navbar {
+    min-height: 115px;
 }
 
 .navbar a {
@@ -98,7 +108,59 @@ body {
     top: 2px;
 }
 
+/* User profile */
+.navbar .navbar-nav .navbar-nav-profile {
+    position: fixed;
+    top: 0;
+    left: 2rem;
+    right: 2rem;
+    display: block;
+    text-align: right;
+}
+
+.navbar .navbar-nav .navbar-nav-profile a {
+    position: relative;
+    top: 0;
+    left: 0;
+    display: inline-block;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-bottom: 2px solid #ffb236;
+    padding: 0.3rem 0.5rem;
+    text-decoration: none;
+    text-align: center;
+    color: #fff;
+    transition: color, border 0.3s ease-out;
+}
+
+.navbar .navbar-nav .navbar-nav-profile a:hover {
+    color: #ffb236;
+    border-color: #fff;
+}
+
+.navbar .navbar-nav .navbar-nav-profile a small {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.navbar .navbar-nav .navbar-nav-profile a span {
+    position: relative;
+    top: 0.4rem;
+    left: 0;
+}
+
+@media screen and (max-width: 991px) {
+    .navbar .navbar-nav .navbar-nav-profile {
+        left: 1rem;
+        right: 1rem;
+        text-align: center;
+    }
+}
+/* End user profile */
+
 .navbar .navbar-nav .nav-link:not(.btn) i.fa {
+    color: #ffb236;
     top: -1px;
 }
 
@@ -141,7 +203,7 @@ body {
         transform: translate(0,7px);
         transition: all 0.5s linear;
         opacity: 1;
-        height: 100%;
+        height: auto;
     }
 }
 
@@ -159,6 +221,10 @@ body {
 
 .page-header-image.admin-home {
     background-image: url('/assets/images/phpblog/admin-home.jpg');
+}
+
+.page-header-image.admin-login {
+    background-image: url('/assets/images/phpblog/admin-login.jpg');
 }
 
 .page-header-image.admin-post {
@@ -311,6 +377,26 @@ form p.text-danger {
 .textarea-container.input-group .input-group-addon {
     padding-top: 19px;
     align-items: flex-start;
+}
+
+.phpblog-form-text {
+    font-weight: 400;
+    font-size: 0.85em;
+}
+
+.phpblog-form-text a {
+    font-weight: 600;
+    color: #9a9a9a;
+}
+
+.phpblog-form-text a:hover {
+    outline: none;
+    text-decoration: none;
+    color: #fff !important;
+}
+
+.phpblog-form-text a:focus {
+    outline: none;
 }
 
 /* Use it instead of .btn-warning */

@@ -48,6 +48,20 @@ routing:
         name: Admin\Home\AdminHome|showAdminHome
         method: GET
 
+    adminAccess:
+        path: /admin/login
+        module: Admin\User\AdminUser
+        action: showAdminAccess
+        name: Admin\User\AdminUser|showAdminAccess
+        method: GET
+
+    adminDisconnect:
+        path: /admin/logout
+        module: Admin\User\AdminUser
+        action: logoutUser
+        name: Admin\User\AdminUser|logoutUser
+        method: GET
+
     postCommentPOSTParams:
         path: /comment-post/:id
         module: Blog\Post\Post
@@ -60,6 +74,13 @@ routing:
         module: Home\Home
         action: isCalled
         name: Home\Home|isCalled
+        method: POST
+
+    adminConnect:
+        path: /admin/login
+        module: Admin\User\AdminUser
+        action: loginUser
+        name: Admin\User\AdminUser|loginUser
         method: POST
 
     adminHomeDeleteContact:

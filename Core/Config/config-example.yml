@@ -1,5 +1,6 @@
 config:
-    domain: www.example.com (or local virtual host)
+    domain: https://www.example.com (or local virtual host)
+    https: true or false (your type of protocol)
     appDebug: true or false (show debug details for exceptions)
     database:
         dbHost: your_db_host (local or remote server address)

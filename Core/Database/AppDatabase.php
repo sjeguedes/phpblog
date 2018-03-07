@@ -59,7 +59,7 @@ class AppDatabase
      */
     public static function getPDOWithMySQl()
 	{
-		return PDOFactory::getMySQLConnection(self::$_config::getParam('database.dbHost'), self::$_config::getParam('database.dbName'), self::$_config::getParam('database.dbUser'), self::$_config::getParam('database.dbPwd)'));
+		return PDOFactory::getMySQLConnection(self::$_config::getParam('database.dbHost'), self::$_config::getParam('database.dbName'), self::$_config::getParam('database.dbUser'), self::$_config::getParam('database.dbPwd'));
 	}
 
 	/**
@@ -68,6 +68,6 @@ class AppDatabase
      */
     public static function getPDOWithPostgreSQL()
     {
-        return PDOFactory::getPostgreSQLConnection(self::$_config::getParam('database.dbHost'), self::$_config::getParam('database.dbName'), self::$_config::getParam('database.dbUser'), self::$_config::getParam('database.dbPwd)'));
+        return PDOFactory::getPostgreSQLConnection(self::$_config::getParam('database.dbHost'), self::$_config::getParam('database.dbName'), self::$_config::getParam('database.dbUser'), self::$_config::getParam('database.dbPwd'));
     }
 }

@@ -28,12 +28,14 @@ abstract class BaseModel
     {
         $this->dbConnector = $dbConnector::getPDOWithMySQl();
         $this->config = $config;
+        // Store an instance of AdminUserModel
+        //$this->adminModels['AdminUserModel'] = new AdminUserModel($config);
     }
 
     // Common queries
 
     /**
-     * Check if a row id exists in a particular table
+     * Check if a row id exists in a particular database table
      * @param string $table: table name
      * @param string $columnPrefix: prefix column name
      * @param string $id: primary key
@@ -47,7 +49,6 @@ abstract class BaseModel
                                               LIMIT 1");
         $query->bindParam(1, $id, \PDO::PARAM_INT);
         $query->execute();
-
         // Count result
         $numRows = $query->rowCount(); // this PDO method equals mysql_num_rows($query).
         if ($numRows > 0) {
@@ -58,9 +59,32 @@ abstract class BaseModel
     }
 
     /**
+     * Get all datas for one row with its id in a particular database table
+     * @param string $id: table name
+     * @param string $columnPrefix: prefix column name
+     * @param string $id: primary key
+     * @return array|boolean: an array of datas which contains one row from the database or false
+     */
+    public function selectSingle($table, $columnPrefix, $id)
+    {
+        $query = $this->dbConnector->prepare("SELECT *
+                                              FROM $table
+                                              WHERE ${columnPrefix}_id =  ?");
+        $query->bindParam(1, $id, \PDO::PARAM_INT);
+        $query->execute();
+        $datas = $query->fetch(\PDO::FETCH_ASSOC);
+        // Is there a result?
+        if ($datas != false) {
+            return $datas;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Select all datas in a particular database table
      * @param string $table: table name
-     * @return array: an array of datas from the database
+     * @return array: an array of datas which contains all rows from the database
      */
     public function selectAll($table)
     {

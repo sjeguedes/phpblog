@@ -49,7 +49,7 @@ class AdminHomeModel extends AdminModel
      * @return array: an array of Comment entity datas
      */
     public function getCommentById($commentId) {
-        return $this->externaldModels['postModel']->getCommentById($commentId);
+        return $this->externalModels['postModel']->getCommentById($commentId);
     }
 
     /**
@@ -94,6 +94,6 @@ class AdminHomeModel extends AdminModel
      * @return array: an array of Post entities instances
      */
     public function getPostList() {
-        return $this->externaldModels['postModel']->getList();
+        return $this->externalModels['postModel']->getList();
     }
 }

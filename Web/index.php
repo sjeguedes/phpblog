@@ -1,5 +1,6 @@
 <?php
 use Core\Service\AppContainer;
+use Core\Session\AppSession;
 use Core\Routing\AppRouter;
 
 // Composer autoloader
@@ -9,6 +10,5 @@ if (!class_exists('Composer\\Autoload\\ClassLoader'))
 }
 // DIC is instantiated.
 $container = AppContainer::getInstance();
-
 // Controller is called with a router.
 $router = new AppRouter($_GET['url']);

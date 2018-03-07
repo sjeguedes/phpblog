@@ -1,5 +1,6 @@
 <?php
 namespace Core;
+use Core\Routing\AppRouter;
 
 /**
  * Load template engine to show front-end and set its parameters:
@@ -15,6 +16,10 @@ class AppPage
 	 * @var Twig_Environment instance
 	 */
 	private $templateEngineEnv;
+    /**
+     * @var AppRouter instance
+     */
+    private static $_router;
 	/**
 	 * @var array: an array of parameters to use for template engine configuration
 	 */
@@ -46,6 +51,15 @@ class AppPage
 		// Other parameters to declare: do stuff here!
 	}
 
+    /**
+     * Set router AppRouter instance
+     * @param AppRouter $currentRouter: an AppRouter instance
+     * @return void
+     */
+    public static function setRouter(AppRouter $currentRouter) {
+        self::$_router = $currentRouter;
+    }
+
 	/**
 	 * Render Entirely a particular Twig template
 	 * @param string $view: path for template to load
@@ -54,7 +68,12 @@ class AppPage
 	 */
 	public function renderTemplate($view, $vars = [])
 	{
-		$templateRendered = $this->templateEngineEnv->render($view, $vars);
+        // Pass authenticated user name datas to template
+        if (self::$_router->getSession()::isUserAuthenticated() != false) {
+            $user = self::$_router->getSession()::isUserAuthenticated();
+            $vars['authenticatedUser'] = $user['userName'];
+        }
+        $templateRendered = $this->templateEngineEnv->render($view, $vars);
 		return $templateRendered;
 	}
 
@@ -67,7 +86,12 @@ class AppPage
 	 */
 	public function renderBlock($view, $blockName, $vars = [])
 	{
-		$template = $this->templateEngineEnv->load($view);
+		// Pass authenticated user name datas to template
+        if (self::$_router->getSession()::isUserAuthenticated() != false) {
+            $user = self::$_router->getSession()::isUserAuthenticated();
+            $vars['authenticatedUser'] = $user['userName'];
+        }
+        $template = $this->templateEngineEnv->load($view);
 		$templateRendered = $template->renderBlock($blockName, $vars);
 		return $templateRendered;
 	}

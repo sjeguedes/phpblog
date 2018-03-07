@@ -155,7 +155,8 @@ class AdminHomeController extends AdminController
             // Error messages notice (only updated in actions)
             'errors' => false,
             // Update success state for each type of form after success redirection
-            'success' => isset($_SESSION['haf_success']) ? $_SESSION['haf_success'] : false
+            'success' => isset($_SESSION['haf_success']) ? $_SESSION['haf_success'] : false,
+            'loginSuccess' => isset($_SESSION['lif_success']) ? $_SESSION['lif_success'] : false
         ];
     }
 
@@ -194,6 +195,12 @@ class AdminHomeController extends AdminController
         if ($this->isActionSuccess()) {
             // Do not store a success state anymore!
             unset($_SESSION['haf_success']);
+        }
+        // Is it already a succcess state for admin login form?
+        // Enable authentication success message box, once a time, when user is logged in.
+        if (isset($_SESSION['lif_success'])) {
+            // Do not store a success state anymore!
+            unset($_SESSION['lif_success']);
         }
 	}
 

@@ -11,7 +11,7 @@ class AppHTTPResponse
 	/**
      * @var object: an instance of AppPage
      */
-    private $page;
+    private static $_page;
 
 	/**
      * Constructor
@@ -19,8 +19,6 @@ class AppHTTPResponse
      */
     public function __construct()
 	{
-		// TODO: use DIC to instantiate AppPage object!
-        $this->page = new AppPage();
 	}
 
     /**
@@ -36,6 +34,15 @@ class AppHTTPResponse
             // Wrong url is not refreshed.
             return $url;
         }
+    }
+
+    /**
+     * Set router AppPage instance
+     * @param AppPage $currentPage: an AppPage instance
+     * @return void
+     */
+    public static function setPage(AppPage $currentPage) {
+        self::$_page = $currentPage;
     }
 
 	/**
@@ -107,9 +114,9 @@ class AppHTTPResponse
             'homeURL' => $homeURL
         ];
         if ($isUncaught) {
-            echo $this->page->renderTemplate('HTTPStatus/http-uncaught-response.tpl', $varsArray);
+            echo self::$_page->renderTemplate('HTTPStatus/http-uncaught-response.tpl', $varsArray);
         } else {
-            echo $this->page->renderTemplate('HTTPStatus/http-error-response.tpl', $varsArray);
+            echo self::$_page->renderTemplate('HTTPStatus/http-error-response.tpl', $varsArray);
         }
     }
 
@@ -160,7 +167,7 @@ class AppHTTPResponse
      */
     public function set404ErrorResponse($message, AppRouter $router = null)
 	{
-        // Send "not found" HTTP headers
+        // Send "Not found" HTTP headers
         $this->addHeader('Status: 404 Not Found');
         $this->addHeader('HTTP/1.1 404 Not Found');
 		// Prepare permalink to website homepage
@@ -178,6 +185,35 @@ class AppHTTPResponse
 			'message' => $message,
 			'homeURL' => $homeURL
 		];
-		echo $this->page->renderTemplate('HTTPStatus/http-error-response.tpl', $varsArray);
+		echo self::$_page->renderTemplate('HTTPStatus/http-error-response.tpl', $varsArray);
 	}
+
+    /**
+     * Display 403 error customized page
+     * @param string $message: message to inform user
+     * @param AppRouter|null $router
+     * @return void
+     */
+    public function set403ErrorResponse($message, AppRouter $router = null)
+    {
+        // Send "Forbidden" HTTP headers
+        $this->addHeader('Status: 403 Forbidden');
+        $this->addHeader('HTTP/1.1 403 Forbidden');
+        // Prepare permalink to website homepage
+        if (!is_null($router)) {
+            $homeURL = $router->useURL('Home\Home|isCalled', null);
+        } else {
+            $homeURL = '/';
+        }
+        // Render template
+        $varsArray = [
+            'metaTitle' => '403 Error',
+            'metaDescription' => '',
+            'imgBannerCSSClass' => 'http-response',
+            'status' => 403,
+            'message' => $message,
+            'homeURL' => $homeURL
+        ];
+        echo self::$_page->renderTemplate('HTTPStatus/http-error-response.tpl', $varsArray);
+    }
 }

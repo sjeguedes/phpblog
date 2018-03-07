@@ -58,7 +58,7 @@ class HomeController extends BaseController
         $this->contactFormValidator = AppContainer::getFormValidator()[0];
         // Define used parameters to avoid CSRF
         $this->cfTokenIndex = $this->contactFormValidator->generateTokenIndex('cf_check');
-        $this->cfTokenValue = $this->contactFormValidator->generateTokenValue('cf_token');
+        $this->cfTokenValue = $this->contactFormValidator->generateTokenValue('cf_token', $this->config::getParam('contactForm.ajaxMode'));
         // Initialize contact form captcha
         $this->contactFormCaptcha = AppContainer::getCaptcha()[0];
         // Initialize contact form mailer

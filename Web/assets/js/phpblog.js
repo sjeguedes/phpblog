@@ -2,6 +2,7 @@
 
 jQuery(function($) {
     // --- Forms validation ---
+
     // -------------------------------------------------------------------------------------------------------
 
     // All forms (except contact form: look at /assets/js/sendContactMessage.js) are declared here:
@@ -13,7 +14,7 @@ jQuery(function($) {
         },
         1 : {
             cssClass : '.login-form',
-            identifier : 'lf'
+            identifier : 'lif'
         },
         2 : {
             cssClass : '.register-form',
@@ -27,10 +28,6 @@ jQuery(function($) {
             cssClass : '.update-post-form',
             identifier : 'upf'
         },
-        5 : {
-            cssClass : '.delete-post-form',
-            identifier : 'dpf'
-        }
     }, forms = '';
 
     // Initialize forms selectors in one string (if needed)
@@ -62,7 +59,7 @@ jQuery(function($) {
     $(document).on('click', 'body', function(e) {
         clicked ++;
         // Not the first click
-        if(clicked > 1) {
+        if (clicked > 1) {
             // Previous object clicked is identical to current element clicked
             previousObjectClicked.is($(e.target)) ? isSameElement = true : isSameElement = false;
 
@@ -70,26 +67,23 @@ jQuery(function($) {
             previousObjectClicked.closest(formHTMLElement).length > 0 ?
             isInside = true : isInside = false;
         }
-
         // Click is inside a ".phpblog-field-group" element
-        if($(e.target).closest(formHTMLElement).length > 0) {
-            if(!$(e.target).closest(formHTMLElement).hasClass('active-field')) {
+        if ($(e.target).closest(formHTMLElement).length > 0) {
+            if (!$(e.target).closest(formHTMLElement).hasClass('active-field')) {
                 $(e.target).closest(formHTMLElement).addClass('active-field');
             }
         } else {
              // Click is outside a ".phpblog-field-group" element
-            if($(formHTMLElement).hasClass('active-field')) {
+            if ($(formHTMLElement).hasClass('active-field')) {
                 $(formHTMLElement).removeClass('active-field');
             }
         }
-
         // Previous object clicked exists and was clicked at least twice and is inside a .phpblog-field-group element
-        if(previousObjectClicked !== undefined && !isSameElement && isInside) {
-            if(previousObjectClicked.closest(formHTMLElement).hasClass('active-field')) {
+        if (previousObjectClicked !== undefined && !isSameElement && isInside) {
+            if (previousObjectClicked.closest(formHTMLElement).hasClass('active-field')) {
                 previousObjectClicked.closest(formHTMLElement).removeClass('active-field');
             }
         }
-
         // Store current jQuery object clicked to become the previous element clicked
         previousObjectClicked = $(e.target);
     });
@@ -97,7 +91,7 @@ jQuery(function($) {
     // Manage focus around this fix
     $(document).on('focusin', '.form-control', function(e) {
         var parent = $(e.target).closest(formHTMLElement);
-        if( !parent.hasClass('active-field')) {
+        if (!parent.hasClass('active-field')) {
             parent.addClass('active-field');
         }
     });
@@ -122,30 +116,69 @@ var jsLcFirst = function(string) {
         return string.charAt(0).toLowerCase() + string.slice(1);
     }
 
+// Start a delay with a callback
+var delay = (function() {
+        var timer = 0;
+        return function(callback, ms) {
+            clearTimeout(timer);
+            timer = setTimeout(callback, ms);
+        };
+    })();
+
 /// callback for Google Recaptcha response
 var grcJSONResponse, grcResponse = false,
     verifyCallback = function(response) {
         $('#form-recaptcha').prev('.text-danger').fadeOut(700);
+        $('#form-recaptcha').trigger('recaptchaResponse');
         grcResponse = true;
         grcJSONResponse = response;
-        showNoticeMessage(false);
+        //showNoticeMessage(true, false);
     }
 
-// Call callback
+// Call Google Recaptcha callback
 var grc,
     onloadCallback = function() {
-        grc = grecaptcha.render('form-recaptcha', {
-            'callback' : verifyCallback
-        });
+        var mq = window.matchMedia("(max-width: 575px)");
+        mq.addListener(recaptchaRenderer);
+        recaptchaRenderer(mq);
+    }
+
+// Render Google Recaptcha with compact mode for mobile
+var recaptchaRenderer = function(mq) {
+        var recaptcha = $('#form-recaptcha'),
+            data = recaptcha.data(),
+            errorFieldElement = recaptcha.prev('.text-danger');
+            parent = recaptcha.parent();
+        recaptcha.empty().remove();
+        var recaptchaClone = recaptcha.clone();
+        errorFieldElement.after(recaptchaClone);
+        recaptchaClone.data(data);
+        var options = {
+            'callback' : verifyCallback,
+            'sitekey': data['sitekey'],
+            'size': 'compact'
+        };
+        if (!mq.matches) {
+            options['size'] = 'normal';
+        }
+        grecaptcha.render(recaptchaClone.get(0), options);
+    }
+
+// Manage error display when there is no response for Google Recaptcha
+var noGoogleRecaptchaResponse = function() {
+        if (!grcResponse) {
+            fieldErrorMessage = $('#form-recaptcha').prev('.text-danger');
+            fieldErrorMessage.html('&nbsp;Please confirm you are a human.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
+            $('#form-recaptcha').prev('.text-danger').fadeIn(700);
+        }
     }
 
 // Manage notice boxes display
 var showNoticeMessage = function(isGRC, isSubmitted) {
-        // !WARNING: Google recaptcha is not used: so behave like its response "grcResponse" is "true".
+        // !WARNING: Google Recaptcha is not used: so behaves like its response "grcResponse" is "true".
         if (!isGRC) {
-            grcResponse = true; // Cancel Google recaptcha necessary validation
+            grcResponse = true; // Cancel Google Recaptcha necessary validation
         }
-
         // Form is not submitted: simple JS validation
         if (!isSubmitted) { // In case of no AJAX MODE: notice box behaviour chosen
             if (success && grcResponse) {

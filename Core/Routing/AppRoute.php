@@ -118,14 +118,14 @@ class AppRoute
 		// We use parameters as a string to call and execute a controller method
 		$explode = explode('|', $this->name);
 		$controllerPath = $explode[0];
-		$controllerClass = 'App\Controllers\\' . $controllerPath . 'controller';
+		$controllerClass = 'App\Controllers\\' . $controllerPath . 'Controller';
 		try {
 			if (class_exists($controllerClass)) {
 				$controller = new $controllerClass($page, $httpResponse, $router, $config);
 				$action = $explode[1];
 
 				// is this action callable? If true, it exists : call it!
-				if($controller->checkAction($action) === true) {
+				if ($controller->checkAction($action) === true) {
 					return call_user_func_array([$controller, $action], [$this->matches]);
 				} else {
 					// Action called doesn't exist

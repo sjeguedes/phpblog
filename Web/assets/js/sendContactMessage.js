@@ -6,6 +6,30 @@ jQuery(function($) {
 
     // -------------------------------------------------------------------------------------------------------
 
+    $(window).on('load', function() {
+        // Scroll to contact form notice message box if it is visible (obviously, in case of no AJAX mode).
+        $('.cf-error, .cf-success').each(function() {
+            if ($(this).is(':visible')) {
+                $('html, body').animate({
+                    scrollTop: ($(this).offset().top - 125) + 'px'
+                }, '700');
+                return false;
+            }
+        });
+        // Update success state if Google recaptcha is the only one to validate after reload (no AJAX mode).
+        if (parseInt($('.contact-form').data('ajax')) != 1) {
+            $('.contact-form').find('.input-group input[type="text"], .input-group input[type="email"], .input-group textarea, input[id="cf_check"]').each(function() {
+                element = $(this);
+                if (element.val() != '') {
+                    checkForm(element, [getCurrentCheck, jsLcFirst]);
+                    return false;
+                }
+            });
+        }
+    });
+
+    // -------------------------------------------------------------------------------------------------------
+
     // Don't remove (Bootstrap normal behaviour) but hide notice message boxes
 	$(document).on('click', '.section-contact-us .alert .close', function(e) {
 		e.stopPropagation();
@@ -117,28 +141,6 @@ jQuery(function($) {
 			noGoogleRecaptchaResponse();
 			showNoticeMessage(true);
 		}
-	});
-
-	// -------------------------------------------------------------------------------------------------------
-
-	$(window).on('load', function() {
-		// Scroll to contact form notice message box if it is visible (obviously, in case of no AJAX mode).
-		$('.cf-error, .cf-success').each(function() {
-			if ($(this).is(':visible')) {
-				$('html, body').animate({
-					scrollTop: ($(this).offset().top - 125) + 'px'
-				}, '700');
-				return false;
-			}
-		});
-		// Update success state if Google recaptcha is the only one to validate after reload.
-		$('.contact-form').find('.input-group input[type="text"], .input-group input[type="email"], .input-group textarea, input[id="cf_check"]').each(function() {
-			element = $(this);
-			if (element.val() != '') {
-				checkForm(element, [getCurrentCheck, jsLcFirst]);
-				return false;
-			}
-		});
 	});
 
 	// -------------------------------------------------------------------------------------------------------

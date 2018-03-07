@@ -5,9 +5,9 @@ class User
 {
 	private $id;
 	private $creationDate;
-	private $name;
-	private $firstname;
-	private $pseudo; 
+	private $familyName;
+	private $firstName;
+	private $pseudo;
 	private $email;
 	private $password;
 	private $activationCode;
@@ -18,7 +18,7 @@ class User
 	// Temporary params which are not in database but useful in methods
 	private $temporaryParams = [];
 
-	public function __construct(array $array)   
+	public function __construct(array $array)
 	{
 		$this->hydrate($array);
 	}
@@ -29,8 +29,8 @@ class User
 		$classPrefix = strtolower($classShortName) . '_';
 		foreach ($datas as $key => $value) {
 			// Define setter: replace "classname_" tables fields prefix syntax by nothing
-		    $method = 'set' . ucfirst(str_replace($classPrefix, '', $key)); 
-		    
+		    $method = 'set' . ucfirst(str_replace($classPrefix, '', $key));
+
 		    // Does setter exist?
 		    if (method_exists($this, $method)) {
 		      	// Call setter
@@ -41,17 +41,17 @@ class User
 		    	$this->$key = $value;
 		    }
 		}
-	 
+
 	}
 
 	public function __set($name, $value)
-	{	    
+	{
 	    if(method_exists($this, $name)) {
 	      	$this->$name($value);
 	    }
 	    else{
 	      	// Setter is not defined so set as property of object
-	      	$key = lcfirst(str_replace('set', '', $name)); 
+	      	$key = lcfirst(str_replace('set', '', $name));
 	      	$this->temporaryParams[$key] = $value;
 	    }
   	}
@@ -70,17 +70,17 @@ class User
 	    }
 	    else {
 	    	return null;
-	    }  
+	    }
 	}
 
-	public function getTemporaryParams() 
+	public function getTemporaryParams()
 	{
 		return $this->temporaryParams;
 	}
 
 	// Getters
-	
-	public function getId() 
+
+	public function getId()
 	{
 		return $this->id;
 	}
@@ -90,14 +90,14 @@ class User
 		return $this->creationDate;
 	}
 
-	public function getName()
+	public function getFamilyName()
 	{
-		return $this->name;
+		return $this->familyName;
 	}
 
-	public function getFirstname() 
+	public function getFirstname()
 	{
-		return $this->firstname;
+		return $this->firstName;
 	}
 
 	public function getPseudo()
@@ -130,14 +130,14 @@ class User
 		return $this->isActivated;
 	}
 
-	public function getUserTypeId() 
+	public function getUserTypeId()
 	{
 		return $this->userTypeId;
 	}
-	
+
 	// Setters
-	
-	public function setId($id) 
+
+	public function setId($id)
 	{
 		$id = (int) $id;
 		if ($id > 0) {
@@ -153,17 +153,17 @@ class User
 	    }
 	}
 
-	public function setName($name)
+	public function setFamilyName($familyName)
 	{
-		if(is_string($name)) {
-	      	$this->name = $name;
+		if(is_string($familyName)) {
+	      	$this->familyName = $familyName;
 	    }
 	}
 
-	public function setFirstname($firstname) 
+	public function setFirstname($firstName)
 	{
-		if(is_string($firstname)) {
-	      	$this->firstname = $firstname;
+		if(is_string($firstName)) {
+	      	$this->firstName = $firstName;
 	    }
 	}
 
@@ -211,7 +211,7 @@ class User
 	    }
 	}
 
-	public function setUserTypeId($userTypeId) 
+	public function setUserTypeId($userTypeId)
 	{
 		$userTypeId = (int) $userTypeId;
 		if ($userTypeId > 0) {

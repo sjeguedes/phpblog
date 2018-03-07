@@ -2,7 +2,7 @@
 namespace App\Models\Admin;
 use App\Models\BaseModel;
 use Core\Config\AppConfig;
-use App\Models\Blog\Entity\User;
+use App\Models\Admin\Entity\User;
 
 /**
  * Create an admin model to manage posts

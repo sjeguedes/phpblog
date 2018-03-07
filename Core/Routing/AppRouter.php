@@ -5,6 +5,7 @@ use Core\Routing\AppRoute;
 use Core\AppPage;
 use Core\AppHTTPResponse;
 use Core\Config\AppConfig;
+use Core\Session\AppSession;
 
 /**
  * Create a router class to:
@@ -45,6 +46,10 @@ class AppRouter
 	 * @var object: store unique AppConfig instance
 	 */
 	private $config;
+    /**
+     * @var object: store unique AppSession instance
+     */
+    private $session;
 
 	/**
 	 * Constructor
@@ -55,14 +60,24 @@ class AppRouter
 	{
 		// Store $_GET['url'] value
 		$this->url = $url;
+        // Store the same instance
+        $this->router = &$this;
 		// TODO: use DIC to instantiate AppPage object!
 		$this->page = new AppPage();
+        // Set router instance for page instance
+        $this->page::setRouter($this->router);
 		// TODO: use DIC to instantiate HTTPResponse object!
 		$this->httpResponse = new AppHTTPResponse();
-		// Store the same instance
-		$this->router = &$this;
+        // Set page instance used by router for http response instance
+        $this->httpResponse::setPage($this->page);
 		// TODO: use DIC to instantiate AppConfig object!
 		$this->config = AppConfig::getInstance();
+        // TODO: use DIC to instantiate AppSession object!
+        $this->session = AppSession::getInstance();
+        // Set router instance for session instance
+        $this->session::setRouter($this->router);
+        // Start session
+        $this->session::start(true);
 		// Get existing routes
 		$this->getRoutesConfig();
     }
@@ -73,6 +88,38 @@ class AppRouter
      */
     public function getUrl() {
         return $this->url;
+    }
+
+    /**
+     * Get router AppPage instance
+     * @return object: an AppPage instance
+     */
+    public function getPage() {
+        return $this->page;
+    }
+
+    /**
+     * Get router page AppHTTPResponse
+     * @return object: an AppHTTPResponse instance
+     */
+    public function getHTTPResponse() {
+        return $this->httpResponse;
+    }
+
+    /**
+     * Get router AppConfig instance
+     * @return object: an AppConfig instance
+     */
+    public function getConfig() {
+        return $this->config;
+    }
+
+    /**
+     * Get router AppSession instance
+     * @return object: an AppSession instance
+     */
+    public function getSession() {
+        return $this->session;
     }
 
 	/**

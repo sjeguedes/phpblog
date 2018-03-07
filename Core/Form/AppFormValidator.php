@@ -10,11 +10,11 @@ use Core\Helper\AppStringModifier;
 class AppFormValidator
 {
     /**
-     * @var array: $_POST values before validation
+     * @var array: $_POST/$_GET values before validation
      */
     private $datas = [];
     /**
-     * @var string: form prefix name to distinguish values in $_POST
+     * @var string: form prefix name to distinguish values in $_POST/$_GET
      */
     private $formIdentifier;
         /**
@@ -22,7 +22,7 @@ class AppFormValidator
      */
     private $errorIndex;
     /**
-     * @var array: $_POST values filtered with PHP filters
+     * @var array: $_POST/$_GET values filtered with PHP filters
      */
     private $filteredDatas = [];
     /**
@@ -83,7 +83,6 @@ class AppFormValidator
                         'options' => function($data) use($validator, $modifiers) {
                             $data = $validator->modifyData($data, $modifiers);
                             return $data = filter_var($data, FILTER_SANITIZE_STRING);
-
                         }
                     ]);
                 break;
@@ -147,7 +146,7 @@ class AppFormValidator
     }
 
     /**
-     * Check if user input is an email
+     * Check if user input is a valid email
      * @param string $name: field name
      * @param string $label: field name to show
      * @param string $value: field value
@@ -157,9 +156,8 @@ class AppFormValidator
     {
         $required = $this->validateRequired($name, $label, false);
         $name = $this->formIdentifier . $name;
-
         if ($required) {
-            if(!filter_var(trim($value), FILTER_VALIDATE_EMAIL)) {
+            if (!filter_var(trim($value), FILTER_VALIDATE_EMAIL)) {
                 $this->result[$this->errorIndex][$name] = 'Sorry, <span class="text-muted">' . $value . '</span> is not a valid email address!<br>Please check its format.';
                 $this->result[$name] = $value;
             } else {
@@ -171,41 +169,69 @@ class AppFormValidator
     }
 
     /**
+     * Check if user input is a valid password
+     * @param string $name: field name
+     * @param string $label: field name to show
+     * @param string $value: field value
+     * @return void
+     */
+    public function validatePassword($name, $label, $value)
+    {
+        $required = $this->validateRequired($name, $label, false);
+        $name = $this->formIdentifier . $name;
+        if ($required) {
+            // At least 1 number, 1 lowercase letter, 1 uppercase letter, 1 special character, a minimum of 8 characters
+            $passwordFormat = '#^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,}$#';
+            // A minimum of 8 characters
+            if (strlen($value) < 8) {
+                $this->result[$this->errorIndex][$name] = 'Sorry, your password must contain at least 8 characters!';
+                $this->result[$name] = $value;
+            } elseif (!preg_match($passwordFormat, $value)) {
+                $this->result[$this->errorIndex][$name] = 'Sorry, your password format is not valid!<br>Please check it or verify required characters<br>before login try.';
+                $this->result[$name] = $value;
+            } else {
+                // No filter on user input: hash will only be checked with value in database.
+                $this->result[$name] = $value;
+            }
+        } else {
+            $this->result[$this->errorIndex][$name] = 'Please fill in your password.';
+        }
+    }
+
+    /**
      * Validate anti CSRF token
-     * @param string $dynamicToken: dynamic token value in $_POST with dynamic token index name
+     * @param string $dynamicToken: dynamic token value in $_REQUEST with dynamic token index name
      * @param string $tokenPrefix: prefix used to override form identifier
      * if form validator manages multiple forms
      * @return void
      */
     public function validateToken($dynamicToken, $tokenPrefix = null) {
         $prefix = !is_null($tokenPrefix) ? $tokenPrefix : $this->formIdentifier;
-
-        // Check if value from form match value stored in $_SESSION
+        // Check if form value matches value stored in $_SESSION
         if (isset($dynamicToken) && isset($_SESSION[$prefix . 'token'])) {
-            if($this->checkTokenValue($dynamicToken, $prefix . 'token')) {
+            if ($this->checkTokenValue($dynamicToken, $prefix . 'token')) {
                 $this->result[$this->formIdentifier . 'check'] = true;
             }
             else {
                 $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-check-notice">- Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)</span>';
                 $this->result[$this->formIdentifier . 'check'] = false;
             }
-        // Wrong token index or anything else happened
+        // Wrong token index or anything else happened.
         } else {
-
             $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-check-notice"> - Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)</span>';
             $this->result[$this->formIdentifier . 'check'] = false;
         }
     }
 
     /**
-     * Create a dynamic $_POST check (token) index in addition to token value to prevent CSRF
+     * Create a dynamic $_POST/$_GET check (token) index in addition to token value to prevent CSRF
      * @param string $name: name of field which contains token
      * @return string stored in $_SESSION
      */
     public function generateTokenIndex($name)
     {
         if (!isset($_SESSION[$name])) {
-            $_SESSION[$name] = $name . mt_rand(0,mt_getrandmax());
+            $_SESSION[$name] = $name . mt_rand(0, mt_getrandmax());
         }
         return $_SESSION[$name];
     }
@@ -217,6 +243,7 @@ class AppFormValidator
      */
     public function generateTokenValue($varName)
     {
+        // Check if a token does not exist,
         if (!isset($_SESSION[$varName])) {
             $_SESSION[$varName] = hash('sha256', $varName . bin2hex(openssl_random_pseudo_bytes(8)) . session_id());
         }
@@ -224,13 +251,13 @@ class AppFormValidator
     }
 
     /**
-     * Check if created token matches with token in $_POST value
-     * @param string $token: $_POST value
+     * Check if created token matches with token in $_POST/$_GET value
+     * @param string $token: $_POST/$_GET value
      * @param string $varName: name which corresponds to token index in $_SESSION
      * @return boolean
      */
     public function checkTokenValue($token, $varName)
     {
-        return $token === $this->generateTokenValue($varName);
+        return $token === $_SESSION[$varName];
     }
 }
