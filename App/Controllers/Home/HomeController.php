@@ -1,10 +1,7 @@
 <?php
 namespace App\Controllers\Home;
 use App\Controllers\BaseController;
-use Core\AppPage;
-use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
-use Core\Config\AppConfig;
 use Core\Service\AppContainer;
 
 /**
@@ -43,26 +40,23 @@ class HomeController extends BaseController
 
     /**
      * Constructor
-     * @param AppPage $page
-     * @param AppHTTPResponse $httpResponse
      * @param AppRouter $router
-     * @param AppConfig $config
      * @return void
      */
-    public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
+    public function __construct(AppRouter $router)
     {
-        parent::__construct($page, $httpResponse, $router, $config);
+        parent::__construct($router);
         // Get homepage model
         $this->currentModel = $this->getCurrentModel(__CLASS__);
         // Initialize contact form validator
-        $this->contactFormValidator = AppContainer::getFormValidator()[0];
+        $this->contactFormValidator = $this->container::getFormValidator()[0];
         // Define used parameters to avoid CSRF
         $this->cfTokenIndex = $this->contactFormValidator->generateTokenIndex('cf_check');
         $this->cfTokenValue = $this->contactFormValidator->generateTokenValue('cf_token', $this->config::getParam('contactForm.ajaxMode'));
         // Initialize contact form captcha
-        $this->contactFormCaptcha = AppContainer::getCaptcha()[0];
+        $this->contactFormCaptcha = $this->container::getCaptcha()[0];
         // Initialize contact form mailer
-        $this->contactFormMailer = AppContainer::getMailer()[0];
+        $this->contactFormMailer = $this->container::getMailer()[0];
     }
 
     /**
@@ -189,6 +183,7 @@ class HomeController extends BaseController
             // Success state is returned: avoid previous $_POST with a redirection.
             } else {
                 $this->httpResponse->addHeader('Location: /');
+                exit();
             }
         }
         // Ajax mode

@@ -67,6 +67,7 @@
             </div>
         </div>
         <!-- End login form -->
+        <p><a class="btn" href="/admin/register" title="Please register to create an account."><i class="fa fa-angle-right" aria-hidden="true"></i>&nbsp;Not registered yet, please click here!&nbsp;<i class="fa fa-user-plus fa-lg" aria-hidden="true"></i></a></p>
     </div>
 </div>
 <!-- Password info modal -->

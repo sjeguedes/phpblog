@@ -1,25 +1,63 @@
 <?php
-namespace Core;
+namespace Core\HTTP;
 use Core\Routing\AppRouter;
-use Core\AppPage;
 
 /**
  * Create a HTTP response class
  */
 class AppHTTPResponse
 {
-	/**
-     * @var object: an instance of AppPage
+    use \Core\Helper\Shared\UseRouterTrait;
+    use \Core\Helper\Shared\UseConfigTrait;
+    use \Core\Helper\Shared\UsePageTrait;
+
+    /**
+     * @var object: a unique instance of AppHTTPResponse
+     */
+    private static $_instance;
+    /**
+     * @var AppRouter instance
+     */
+    private static $_router;
+    /**
+     * @var AppConfig instance
+     */
+    private static $_config;
+    /**
+     * @var AppPage instance
      */
     private static $_page;
 
 	/**
+     * Instanciate a unique AppHTTPResponse object (Singleton)
+     * @return AppHTTPResponse: a unique instance of AppSession
+     */
+    public static function getInstance()
+    {
+        if (is_null(self::$_instance)) {
+            self::$_instance = new AppHTTPResponse();
+        }
+        return self::$_instance;
+    }
+
+    /**
      * Constructor
      * @return void
      */
-    public function __construct()
-	{
-	}
+    private function __construct()
+    {
+        // WARNING: don't initialize properties from helpers "Traits" here!
+    }
+
+    /**
+    * Magic method __clone
+    * @return void
+    */
+    public function __clone()
+    {
+        $this->set404ErrorResponse(self::$_config::isDebug('Technical error [Debug trace: Don\'t try to clone singleton ' . __CLASS__ . '!]'), self::$_router);
+        exit();
+    }
 
     /**
      * Get wrong used "url" parameter
@@ -34,15 +72,6 @@ class AppHTTPResponse
             // Wrong url is not refreshed.
             return $url;
         }
-    }
-
-    /**
-     * Set router AppPage instance
-     * @param AppPage $currentPage: an AppPage instance
-     * @return void
-     */
-    public static function setPage(AppPage $currentPage) {
-        self::$_page = $currentPage;
     }
 
 	/**
@@ -211,6 +240,35 @@ class AppHTTPResponse
             'metaDescription' => '',
             'imgBannerCSSClass' => 'http-response',
             'status' => 403,
+            'message' => $message,
+            'homeURL' => $homeURL
+        ];
+        echo self::$_page->renderTemplate('HTTPStatus/http-error-response.tpl', $varsArray);
+    }
+
+    /**
+     * Display 401 error customized page
+     * @param string $message: message to inform user
+     * @param AppRouter|null $router
+     * @return void
+     */
+    public function set401ErrorResponse($message, AppRouter $router = null)
+    {
+        // Send "Unauthorized" HTTP headers
+        $this->addHeader('Status: 401 Unauthorized');
+        $this->addHeader('HTTP/1.1 401 Unauthorized');
+        // Prepare permalink to website homepage
+        if (!is_null($router)) {
+            $homeURL = $router->useURL('Home\Home|isCalled', null);
+        } else {
+            $homeURL = '/';
+        }
+        // Render template
+        $varsArray = [
+            'metaTitle' => '401 Error',
+            'metaDescription' => '',
+            'imgBannerCSSClass' => 'http-response',
+            'status' => 401,
             'message' => $message,
             'homeURL' => $homeURL
         ];

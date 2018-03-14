@@ -1,6 +1,5 @@
 <?php
 namespace Core\Config;
-use Core\AppHTTPResponse;
 // Symfony Yaml parser Component
 use Symfony\Component\Yaml\Yaml;
 
@@ -9,18 +8,25 @@ use Symfony\Component\Yaml\Yaml;
  */
 class AppConfig
 {
-	/**
+	use \Core\Helper\Shared\UseRouterTrait;
+    use \Core\Helper\Shared\UseHTTPResponseTrait;
+
+    /**
      * @var object: a unique instance of AppConfig
      */
     private static $_instance;
     /**
-     * @var array: an array of config yaml file parameters
+     * @var AppRouter instance
      */
-    private static $_params;
+    private static $_router;
     /**
      * @var object: an instance of AppHTTPResponse
      */
 	private static $_httpResponse;
+    /**
+     * @var array: an array of config yaml file parameters
+     */
+    private static $_params;
 
     /**
      * Instanciate a unique AppConfig object (Singleton)
@@ -40,8 +46,7 @@ class AppConfig
      */
     private function __construct()
 	{
-		self::$_params = self::getConfigParams();
-		self::$_httpResponse = new AppHTTPResponse();
+		// WARNING: don't initialize properties from  helpers "Traits" here!
 	}
 
     /**
@@ -50,7 +55,8 @@ class AppConfig
     */
     public function __clone()
     {
-        self::$_httpResponse->set404ErrorResponse(self::isDebug('Technical error [Debug trace: Don\'t try to clone singleton ' . __CLASS__ . '!]'));
+        self::$_httpResponse->set404ErrorResponse(self::isDebug('Technical error [Debug trace: Don\'t try to clone singleton ' . __CLASS__ . '!]'), self::$_router);
+        exit();
     }
 
 	/**
@@ -71,10 +77,11 @@ class AppConfig
      */
     public static function getParam($keys)
     {
+        $params = self::getConfigParams();
         $keys = explode('.', $keys);
         // Check if first array key exists
-        if (isset(self::$_params[$keys[0]])) {
-            $currentValue = self::$_params[$keys[0]];
+        if (isset($params[$keys[0]])) {
+            $currentValue = $params[$keys[0]];
         } else {
             return false;
         }
@@ -122,7 +129,8 @@ class AppConfig
 		} catch (ParseException $e) {
 			// show error view
     		$errorMessage = printf("Unable to parse the YAML string - %s", $e->getMessage());
-    		$this->httpResponse->set404ErrorResponse(self::isDebug('Technical error [Debug trace: ' . $errorMessage . ']'));
+    		self::$_httpResponse->set404ErrorResponse(self::isDebug('Technical error [Debug trace: ' . $errorMessage . ']'), self::$_router);
+            exit();
 		}
 		return $fileDatas;
 	}
@@ -141,7 +149,8 @@ class AppConfig
 		} catch (DumpException $e) {
 			// show error view
     		$errorMessage = printf("Unable to dump datas - %s", $e->getMessage());
-    		$this->httpResponse->set404ErrorResponse(self::isDebug('Technical error [Debug trace: ' . $errorMessage . ']'));
+    		self::$_httpResponse->set404ErrorResponse(self::isDebug('Technical error [Debug trace: ' . $errorMessage . ']'), self::$_router);
+            exit();
 		}
 	}
 

@@ -1,7 +1,7 @@
 <?php
 namespace App\Models\Admin;
 use App\Models\BaseModel;
-use Core\Config\AppConfig;
+use Core\Routing\AppRouter;
 use App\Models\Admin\Entity\User;
 
 /**
@@ -10,12 +10,12 @@ use App\Models\Admin\Entity\User;
 class AdminPostModel extends AdminModel
 {
 	/**
-	 * Constructor
-	 * @param AppConfig $config: an instance of AppConfig
+     * Constructor
+     * @param AppRouter $router: an instance of AppRouter
      * @return void
-	 */
-	public function __construct(AppConfig $config)
-	{
-        parent::__construct($config);
-	}
+     */
+    public function __construct(AppRouter $router)
+    {
+        parent::__construct($router);
+    }
 }

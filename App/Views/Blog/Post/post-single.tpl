@@ -15,7 +15,7 @@
                     <div class="post-header">
                         <ul class="post-header-infos">
                             <li>
-                                {% if post[0].temporaryParams['author'] %} <i class="fa fa-user">&nbsp;</i>by {{ post[0].temporaryParams['author'].pseudo|raw }}<br>{% endif %}
+                                {% if post[0].temporaryParams['author'] %} <i class="fa fa-user">&nbsp;</i>by {{ post[0].temporaryParams['author'].nickName|raw }}<br>{% endif %}
                                 <i class="fa fa-calendar">&nbsp;</i>Published on {{ post[0].creationDate }}&nbsp;-&nbsp;Updated on {{ post[0].updateDate }}
                             </li>
                             <li>

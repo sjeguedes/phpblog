@@ -13,6 +13,10 @@ service:
       formIdentifier: haf_
       formDatasRequest: POST
     -
+      name: user.registerForm
+      formIdentifier: ref_
+      formDatasRequest: POST
+    -
       name: user.loginForm
       formIdentifier: lif_
       formDatasRequest: POST
@@ -40,6 +44,9 @@ service:
         -
           callable: createHumanSwitchInput
           arguments: [false]
+    -
+      name: user.registerForm
+      type: ReCaptcha
     -
       name: user.loginForm
       type: ReCaptcha

@@ -1,10 +1,7 @@
 <?php
 namespace App\Controllers\Admin\User;
 use App\Controllers\Admin\AdminController;
-use Core\AppPage;
-use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
-use Core\Config\AppConfig;
 use Core\Service\AppContainer;
 use App\Models\Admin\Entity\User;
 
@@ -16,7 +13,19 @@ class AdminUserController extends AdminController
     /**
      * @var object: an instance of validator object
      */
+    private $registerFormValidator;
+    /**
+     * @var object: an instance of validator object
+     */
     private $loginFormValidator;
+     /**
+     * @var string: dynamic index name for register form token
+     */
+    private $refTokenIndex;
+    /**
+     * @var string: dynamic value for register form token
+     */
+    private $refTokenValue;
     /**
      * @var string: dynamic index name for login form token
      */
@@ -28,27 +37,237 @@ class AdminUserController extends AdminController
     /**
      * @var object: an instance of captcha object
      */
+    private $registerFormCaptcha;
+    /**
+     * @var object: an instance of captcha object
+     */
     private $loginFormCaptcha;
 
     /**
      * Constructor
-     * @param AppPage $page
-     * @param AppHTTPResponse $httpResponse
      * @param AppRouter $router
-     * @param AppConfig $config
      * @return void
      */
-    public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
+    public function __construct(AppRouter $router)
     {
-        parent::__construct($page, $httpResponse, $router, $config);
+        parent::__construct($router);
         $this->currentModel = $this->getCurrentModel(__CLASS__);
+        // Initialize register form validator
+        $this->registerFormValidator = $this->container::getFormValidator()[3];
         // Initialize login form validator
-        $this->loginFormValidator = AppContainer::getFormValidator()[3];
+        $this->loginFormValidator = $this->container::getFormValidator()[4];
+        // Define used parameters to avoid CSRF on register form
+        $this->refTokenIndex = $this->registerFormValidator->generateTokenIndex('ref_check');
+        $this->refTokenValue = $this->registerFormValidator->generateTokenValue('ref_token');
         // Define used parameters to avoid CSRF on login form
         $this->lifTokenIndex = $this->loginFormValidator->generateTokenIndex('lif_check');
         $this->lifTokenValue = $this->loginFormValidator->generateTokenValue('lif_token');
+        // Initialize register form captcha
+        $this->registerFormCaptcha = $this->container::getCaptcha()[2];
         // Initialize login form captcha
-        $this->loginFormCaptcha = AppContainer::getCaptcha()[2];
+        $this->loginFormCaptcha = $this->container::getCaptcha()[3];
+    }
+
+    /**
+     * Initialize admin register template parameters
+     * @param array: an array which contains result of form validation (error on fields, filtered form values, ...)
+     * @return array: an array of template parameters
+     */
+    private function initAdminRegister($checkedForm = null)
+    {
+        $jsArray = [
+            0 => [
+                'placement' => 'bottom',
+                'attributes' => 'async defer',
+                'src' => 'https://www.google.com/recaptcha/api.js?hl=en&onload=onloadCallback&render=explicit'
+            ],
+            1 => [
+                'placement' => 'bottom',
+                'src' => '/assets/js/phpblog.js'
+            ],
+            2 => [
+                'placement' => 'bottom',
+                'src' => '/assets/js/registerUser.js'
+            ]
+        ];
+        return [
+            'JS' => $jsArray,
+            'metaTitle' => 'Admin registration',
+            'metaDescription' => 'Please register as a member to use application back office.',
+            'metaRobots' => 'noindex, nofollow',
+            'imgBannerCSSClass' => 'admin-register',
+            'familyName' => isset($checkedForm['ref_familyName']) ? $checkedForm['ref_familyName'] : '',
+            'firstName' => isset($checkedForm['ref_firstName']) ? $checkedForm['ref_firstName'] : '',
+            'nickName' => isset($checkedForm['ref_nickName']) ? $checkedForm['ref_nickName'] : '',
+            'email' => isset($checkedForm['ref_email']) ? $checkedForm['ref_email'] : '',
+            'password' => isset($checkedForm['ref_password']) ? $checkedForm['ref_password'] : '',
+            'passwordConfirmation' => isset($checkedForm['ref_passwordConfirmation']) ? $checkedForm['ref_passwordConfirmation'] : '',
+            'siteKey' => $this->config::getParam('googleRecaptcha.siteKey'),
+            // Token for registration form
+            'refTokenIndex' => $this->refTokenIndex,
+            'refTokenValue' => $this->refTokenValue,
+            // Does validation submit already exist with error?
+            'tryValidation' => isset($_POST['ref_submit']) ? 1 : 0,
+            'submit' => isset($_SESSION['ref_success']) && $_SESSION['ref_success'] ? 1 : 0,
+            // Error messages
+            'errors' => isset($checkedForm['ref_errors']) ? $checkedForm['ref_errors'] : false,
+            // Update success state if the same template is loaded (no redirection to admin homepage)
+            'success' => isset($_SESSION['ref_success']) ? $_SESSION['ref_success'] : false
+        ];
+    }
+
+    /**
+     * Render admin register template (template based on Twig template engine)
+     * @param array $vars: an array of template engine parameters
+     * @return void
+     */
+    private function renderAdminRegister($vars)
+    {
+        echo $this->page->renderTemplate('Admin/admin-register-form.tpl', $vars);
+    }
+
+    /**
+     * Check if there is already a success state for admin register form
+     * @return boolean
+     */
+    private function isRegisterSuccess() {
+        if (isset($_SESSION['ref_success'])) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Show default register template
+     * @return void
+     */
+    public function showAdminRegister()
+    {
+        // Call template with methods for more flexibility
+        // (No need here to update user form inputs! "$checkedForm" argument is null)
+        $varsArray = $this->initAdminRegister();
+        $this->renderAdminRegister($varsArray);
+        // Is it already a succcess state for admin register form?
+        // Enable registration success message box once a time
+        if ($this->isRegisterSuccess()) {
+            // Do not store a success state anymore!
+            unset($_SESSION['ref_success']);
+        }
+    }
+
+    /**
+     * Register a user with form validation try (on submission) template
+     * @return void
+     */
+    public function registerUser() {
+        // Store result from register form validation
+        $checkedForm = $this->validateRegisterForm();
+        // Is it already a succcess state?
+        if ($this->isRegisterSuccess()) {
+            // Success state is returned: avoid previous $_POST with a redirection to the same page
+            $this->httpResponse->addHeader('Location: /admin/register');
+            exit();
+        } else {
+            // Call template with methods for more flexibility
+            $varsArray = $this->initAdminRegister($checkedForm);
+            $this->renderAdminRegister($varsArray);
+        }
+    }
+
+    /**
+     * Validate (or not) register form
+     * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
+     */
+    private function validateRegisterForm()
+    {
+        // Prepare filters for form datas
+        $datas = [
+            0 => ['name' => 'familyName', 'filter' => 'alphanum', 'modifiers' => ['trimStr', 'strtoupperStr']],
+            1 => ['name' => 'firstName',  'filter' => 'alphanum', 'modifiers' => ['trimStr', 'ucfirstStr']],
+            2 => ['name' => 'nickName', 'filter' => 'alphanum', 'modifiers' => ['trimStr', 'ucfirstStr']],
+            3 => ['name' => 'email', 'filter' => 'email', 'modifiers' => ['trimStr']]
+            // Password must not be filtered (no sanitization), it will only be hashed to check matching in database.
+        ];
+        // Filter user inputs in $_POST datas
+        $this->registerFormValidator->filterDatas($datas);
+        // Family name
+        $this->registerFormValidator->validateRequired('familyName', 'family name');
+        // First name
+        $this->registerFormValidator->validateRequired('firstName', 'first name');
+        // Nickname
+        $this->registerFormValidator->validateRequired('nickName', 'nickname');
+        // Email
+        $this->registerFormValidator->validateEmail('email', 'email', $_POST['ref_email']);
+        // Password
+        $this->registerFormValidator->validatePassword('password', 'password', $_POST['ref_password']);
+        // Password confirmation
+        $this->registerFormValidator->validatePassword('passwordConfirmation', 'password', $_POST['ref_passwordConfirmation']);
+        // Check if password confirmation and password are identical
+        $this->registerFormValidator->validatePasswordConfirmation('passwordConfirmation', $_POST['ref_password'], $_POST['ref_passwordConfirmation']);
+        // Check token to avoid CSRF
+        $this->registerFormValidator->validateToken(isset($_POST[$this->refTokenIndex]) ? $_POST[$this->refTokenIndex] : false);
+        // Get validation result without captcha
+        $result = $this->registerFormValidator->getResult();
+        // Update validation result with Google Recaptcha antispam validation
+        $result = $this->registerFormCaptcha->call([$_POST['g-recaptcha-response'], $result, 'ref_errors']);
+        // Submit: register form is correctly filled.
+        if (isset($result) && empty($result['ref_errors']) && isset($result['g-recaptcha-response']) && $result['g-recaptcha-response'] && isset($result['ref_check']) && $result['ref_check']) {
+             try {
+                // Check not existing email account or nickname in database
+                $existingEmail = false;
+                $existingNickName = false;
+                $users = $this->currentModel->getUserList();
+                foreach ($users as $user) {
+                    if ($result['ref_email'] === $user->email) {
+                        $existingEmail = true;
+                        break;
+                    } elseif (strtolower($result['ref_nickName']) === strtolower($user->nickName)) {
+                        $existingNickName = true;
+                        break;
+                    }
+                }
+                // Show any existing errors
+                if ($existingEmail) {
+                    // Email account already exists in database!
+                    $result['ref_errors']['ref_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account registration was refused!<br>A user already exists with this email address: <strong>' . htmlentities($result['ref_email']) . '</strong>!<br>Please declare another one.</span>');
+                    $insertion = false;
+                } elseif ($existingNickName) {
+                    // Nickname already exists in database!
+                    $result['ref_errors']['ref_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account registration was refused!<br>A user already exists with this nickname: <strong>' . htmlentities($result['ref_nickName']) . '</strong>!<br><strong><em class="text-muted">Advice: Change at least one character.<br>You can try to combine numbers and letters.<br>Caution: Play with case make no result!</em></strong><br>Please declare another one.</span>');
+                    $insertion = false;
+                } else {
+                    // User entity insertion:
+                    // Hash user password before insertion
+                    $result['ref_password'] = $this->generateUserPasswordEncryption($result['ref_password']);
+                    // Create account activation code to insert and send to user (thanks to his email address!)
+                    $result['ref_activationCode'] = $this->generateUserActivationCode($result['ref_email']);
+                    // Create (Insert) User entity account in database
+                    $this->currentModel->insertUser($result);
+                    $insertion = true;
+                }
+            } catch (\PDOException $e) {
+                $result['ref_errors']['ref_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to create an account at this time: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $insertion = false;
+            }
+            // User entity was saved successfuly!
+            if ($insertion) {
+                // Send account activation email
+                // TODO: do stuff here in next commit $this->sendUserActivationEmail($result);
+                // Reset the form
+                $result = [];
+                // Delete current token
+                unset($_SESSION['ref_check']);
+                unset($_SESSION['ref_token']);
+                // Regenerate token to be updated in form
+                $this->refTokenIndex = $this->registerFormValidator->generateTokenIndex('ref_check');
+                $this->refTokenValue = $this->registerFormValidator->generateTokenValue('ref_token');
+                // Show success message
+                $_SESSION['ref_success'] = true;
+            }
+        }
+        return $result;
     }
 
     /**
@@ -154,7 +373,7 @@ class AdminUserController extends AdminController
      * Validate (or not) login form
      * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
      */
-    public function validateLoginForm()
+    private function validateLoginForm()
     {
         // Prepare filters for form email data
         $datas = [
@@ -180,38 +399,44 @@ class AdminUserController extends AdminController
                 $user = $this->currentModel->getUserByEmail($result['lif_email']);
                 // Email account exists in database
                 if ($user != false) {
-                    // Check existing password for email account
-                    $password = $this->verifyUserPassword($result['lif_password'], $user->password);
-                    // Password matches with password in database
-                    if ($password) {
-                        // Reset login form
-                        $result = [];
-                        // Delete login form token
-                        unset($_SESSION['lif_check']);
-                        unset($_SESSION['lif_token']);
-                        // Regenerate all other existing form tokens on website
-                        $this->regenerateAllFormTokens();
-                        // Regenerate token to be updated in login form
-                        $this->lifTokenIndex = $this->loginFormValidator->generateTokenIndex('lif_check');
-                        $this->lifTokenValue = $this->loginFormValidator->generateTokenValue('lif_token');
-                        // Show success message
-                        $_SESSION['lif_success'] = true;
-                        // ------------------------------------------------------------------------------
-                        // couple email and password belong to User entity in database: login user with session values
-                        // So, initialize user session values (store user id, session id and generate user session token) with user id as part of index
-                        $_SESSION['user'] = [
-                            'userId' => $user->id,
-                            'userName' => [$user->firstName, $user->familyName],
-                            'sessionId' => session_id(),
-                            'sessionToken' => $this->generateUserSessionTokenValue('user' . $user->id . '_token')
-                        ];
+                    if ($user->isActivated == false) {
+                        // User hasn't activated his account yet (or not at all)!
+                        $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry, authentication failed! Please activate your account first!<br>Please <a href="/" class="text-muted" title="Contact us">contact us</a> if it\'s necessary.<br>[Debug trace: user with email account "<strong>' . htmlentities($result['lif_email']) . '</strong>" must be activated in database!]</span>');
                     } else {
-                        // No existing password (no existing password or no match with email account)
-                        $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry, authentication failed! Please check your email and password!<br>[Debug trace: password "<strong>' . $result['lif_password'] . '</strong>" doesn\'t exist in database<br>or doesn\'t match with email account "<strong>' . $result['lif_email'] . '</strong>"!]</span>');
+                        // Check existing password for email account
+                        $password = $this->verifyUserPassword($result['lif_password'], $user->password);
+                        // Password matches with password in database
+                        if ($password) {
+                            // Reset login form
+                            $result = [];
+                            // Delete login form token
+                            unset($_SESSION['lif_check']);
+                            unset($_SESSION['lif_token']);
+                            // Regenerate all other existing form tokens on website
+                            $this->regenerateAllFormTokens();
+                            // Regenerate token to be updated in login form
+                            $this->lifTokenIndex = $this->loginFormValidator->generateTokenIndex('lif_check');
+                            $this->lifTokenValue = $this->loginFormValidator->generateTokenValue('lif_token');
+                            // Show success message
+                            $_SESSION['lif_success'] = true;
+                            // ------------------------------------------------------------------------------
+                            // couple email and password belong to User entity in database: login user with session values
+                            // So, initialize user session values (store user id, session id and generate user session token) with user id as part of index
+                            $_SESSION['user'] = [
+                                'userId' => $user->id,
+                                'userKey' => substr($this->generateUserSessionTokenValue('user' . $user->id . '_key'), 0, 30),
+                                'userName' => [$user->firstName, $user->familyName],
+                                'sessionId' => session_id(),
+                                'sessionToken' => $this->generateUserSessionTokenValue('user' . $user->id . '_token')
+                            ];
+                        } else {
+                            // No existing password (no existing password or no match with email account)
+                            $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry, authentication failed! Please check your email and password!<br>[Debug trace: hashed password string "<strong>' . htmlentities($result['lif_password']) . '</strong>" doesn\'t exist in database<br>or doesn\'t match with email account "<strong>' . htmlentities($result['lif_email']) . '</strong>"!]</span>');
+                        }
                     }
                 } else {
                     // No existing email account
-                    $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry, authentication failed! Please check your email and password!<br>[Debug trace: email account "<strong>' . $result['lif_email'] . '</strong>" doesn\'t exist in database!]</span>');
+                    $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry, authentication failed! Please check your email and password!<br>[Debug trace: email account "<strong>' . htmlentities($result['lif_email']) . '</strong>" doesn\'t exist in database!]</span>');
                 }
             } catch (\PDOException $e) {
                 $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to login at this time: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
@@ -224,6 +449,8 @@ class AdminUserController extends AdminController
 
     /**
      * Logout a back office user
+     * $_GET['userKey'] is a personal key to identify a particular user
+     * This key is regenerated each time a new session is created.
      * @return void
      */
     public function logoutUser()
@@ -231,16 +458,13 @@ class AdminUserController extends AdminController
         // Add control to check if there is an active user session
         $user = $this->session::isUserAuthenticated();
         // Destroy current user session
-        if ($user != false) {
-            // Reset custom cookie which stores user token
-            foreach ($_COOKIE as $key => $value) {
-                if (preg_match('#^UPDATEDUST((?=.\w)(?=.\d).*)$#', $key)) {
-                    //unset($_COOKIE[$key]);
-                    $this->session::resetCookie($key);
-                }
-            }
+        if ($user != false && isset($_GET['userKey']) && $_GET['userKey'] == $_SESSION['user']['userKey']) {
             $this->session::destroy();
             $this->httpResponse->addHeader('Location: /admin/login');
+            exit();
+        } else {
+            // Wrong user key is applied to logout!
+            $this->httpResponse->set401ErrorResponse('Logout refused: user was not recognized! [Debug trace: wrong user key is applied!]', $this->router);
             exit();
         }
     }

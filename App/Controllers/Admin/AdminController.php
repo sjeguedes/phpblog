@@ -1,10 +1,7 @@
 <?php
 namespace App\Controllers\Admin;
 use App\Controllers\BaseController;
-use Core\AppPage;
-use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
-use Core\Config\AppConfig;
 
 /**
  * Create a parent controller for common actions in back-end
@@ -19,15 +16,12 @@ class AdminController extends BaseController
 
     /**
      * Constructor
-     * @param AppPage $page
-     * @param AppHTTPResponse $httpResponse
      * @param AppRouter $router
-     * @param AppConfig $config
      * @return void
      */
-    public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
+    public function __construct(AppRouter $router)
     {
-        parent::__construct($page, $httpResponse, $router, $config);
+        parent::__construct($router);
         // Session id was regenerated: so, update user tokens.
         if ($this->session::isSessionIdRegenerated()) {
             $this->updateUserTokens();
@@ -65,7 +59,7 @@ class AdminController extends BaseController
      */
     private function allowAdminAccess() {
         // Check access to admin pages but not user login
-        $adminPageRequest = preg_match('#/?admin((?!/login)(?=.*[\d\w-/]).*)?$#', $_GET['url']);
+        $adminPageRequest = preg_match('#^/?admin((?!/login|/register)(?=.*[\d\w-/]).*)?$#', $_GET['url']);
         $authenticatedUser = $this->session::isUserAuthenticated();
         $matchedTokenValues = true;
         $matchedCookieTokenIndex = true;
@@ -103,6 +97,7 @@ class AdminController extends BaseController
             // or user cookie token index does not match, or user session/cookie tokens don't match:
             // So prevent admin access!
             if (!$authenticatedUser || !$matchedCookieTokenIndex || !$matchedTokenValues) {
+                // Redirect to user login page if access is refused.
                 $this->httpResponse->addHeader('Location: /admin/login');
                 exit();
             }
@@ -123,16 +118,15 @@ class AdminController extends BaseController
     }
 
     /**
-     * Generate activation code for new user to validate his account
-     * @param string $UserId
-     * @param string $UserNickName
+     * Generate activation code for new user (User entity) to validate his account
+     * @param string $UserEmail: user email address
      * @see http://php.net/manual/fr/function.hash.php
      * @return string: a part of long hash
      */
-    protected function generateUserActivationCode($UserId, $UserNickName)
+    protected function generateUserActivationCode($UserEmail)
     {
         $salt = substr(md5(microtime()), rand(0, 5), rand(5, 10));
-        $activationCode = substr(hash('sha256', $UserId . $salt . $UserNickName), 0, 45);
+        $activationCode = substr(hash('sha256', $salt . $UserEmail), 0, 45);
         return $activationCode;
     }
 

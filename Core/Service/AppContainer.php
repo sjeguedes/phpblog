@@ -1,7 +1,5 @@
 <?php
 namespace Core\Service;
-use Core\Config\AppConfig;
-use Core\AppHTTPResponse;
 use Core\Form\AppFormValidator;
 use Core\Form\AppCaptcha;
 use Core\Form\AppMailer;
@@ -17,16 +15,24 @@ use Core\Form\Element\AppNoSpamTools;
  */
 class AppContainer
 {
-	/**
+	use \Core\Helper\Shared\UseRouterTrait;
+    use \Core\Helper\Shared\UseConfigTrait;
+    use \Core\Helper\Shared\UseHTTPResponseTrait;
+
+    /**
 	 * @var object: unique instance of AppContainer
 	 */
 	private static $_instance;
+    /**
+     * @var AppRouter instance
+     */
+    private static $_router;
 	/**
-	 * @var object: AppConfig
+	 * @var AppConfig instance
 	 */
 	private static $_config;
     /**
-     * @var object: an instance of AppHTTPResponse
+     * @var AppHTTPResponse instance
      */
     private static $_httpResponse;
 	/**
@@ -35,8 +41,8 @@ class AppContainer
 	private static $_params;
 
 	/**
-	 * Singleton
-	 * @return object AppContainer
+	 * Instanciate a unique AppContainer object (Singleton)
+	 * @return AppContainer: a unique instance of AppContainer
 	 */
 	public static function getInstance()
     {
@@ -52,9 +58,7 @@ class AppContainer
      */
     private function __construct()
     {
-    	self::$_config = AppConfig::getInstance();
-        self::$_httpResponse = new AppHTTPResponse();
-    	self::$_params = self::addParameters();
+        // WARNING: don't initialize properties from helpers "Traits" here!
     }
 
     /**
@@ -63,18 +67,39 @@ class AppContainer
     */
     public function __clone()
     {
-        self::$_httpResponse->set404ErrorResponse(self::isDebug('Technical error [Debug trace: Don\'t try to clone singleton ' . __CLASS__ . '!]'));
+        self::$_httpResponse->set404ErrorResponse(self::$_config::isDebug('Technical error [Debug trace: Don\'t try to clone singleton ' . __CLASS__ . '!]'), self::$_router);
+        exit();
     }
 
     /**
-     * Feed DIC parameters
-     * @return array an array of service parameters
+     * Get DIC parameters
+     * @return array: an array of service parameters
      */
-    private static function addParameters()
+    private static function getParams()
     {
     	// Get parameters from yaml file
 		$yaml = self::$_config::parseYAMLFile(__DIR__ . '/service.yml');
 		return $yaml;
+    }
+
+    /**
+     * Set DIC parameters
+     * @param array $params: an array of service parameters
+     * @return void
+     */
+    private static function setParams($params)
+    {
+        // Get parameters from yaml file
+        self::$_params = self::getParams();
+    }
+
+    /**
+     * Init DIC
+     * @return void
+     */
+    public static function init()
+    {
+        self::setParams(self::getParams());
     }
 
 	/**
@@ -86,10 +111,10 @@ class AppContainer
 		for ($i = 0; $i < count(self::$_params['service']['formValidator']); $i++) {
 			switch (self::$_params['service']['formValidator'][$i]['formDatasRequest']) {
 				case 'POST':
-					$validators[$i] = new AppFormValidator($_POST, self::$_params['service']['formValidator'][$i]['formIdentifier']);
+					$validators[$i] = new AppFormValidator(self::$_router, $_POST, self::$_params['service']['formValidator'][$i]['formIdentifier']);
 				break;
 				case 'GET':
-					$validators[$i] = new AppFormValidator($_GET, self::$_params['service']['formValidator'][$i]['formIdentifier']);
+					$validators[$i] = new AppFormValidator(self::$_router, $_GET, self::$_params['service']['formValidator'][$i]['formIdentifier']);
 				break;
 				// Other types: do stuff here!
 			}

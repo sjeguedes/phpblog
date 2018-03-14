@@ -18,8 +18,8 @@
                 {% if authenticatedUser is defined %}
                 <!-- Show user profile -->
                 <li class="navbar-nav-profile">
-                    <a href="/admin/logout" title="logout">
-                        <strong><small>CONNECTED USER</small><span>{{ authenticatedUser[0]|title ~' '~ authenticatedUser[1]|upper }}&nbsp;<i class="fa fa-user fa-lg" aria-hidden="true"></i></span></strong>
+                    <a href="/admin/logout/?userKey={{ authenticatedUser['userKey']|e('html_attr') }}" title="Logout">
+                        <strong><small>CONNECTED USER</small><span>{{ authenticatedUser['userName'][0]|title ~' '~ authenticatedUser['userName'][1]|upper }}&nbsp;<i class="fa fa-user fa-lg" aria-hidden="true"></i></span></strong>
                     </a>
                 </li>
                 <!-- End show ser profile -->
@@ -39,7 +39,7 @@
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="/admin/#post-list" title="Edit/Delete a post"><i class="fa fa-chevron-right" aria-hidden="true"></i>&nbsp;Edit/Delete a post</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="/admin/logout" title="logout"><i class="fa fa-chevron-right" aria-hidden="true"></i>&nbsp;<strong>Session logout</strong>&nbsp;<i class="fa fa-user-times fa-lg" aria-hidden="true"></i></a>
+                        <a class="dropdown-item" href="/admin/logout/?userKey={{ authenticatedUser['userKey']|e('html_attr') }}" title="Logout"><i class="fa fa-chevron-right" aria-hidden="true"></i>&nbsp;<strong>Session logout</strong>&nbsp;<i class="fa fa-user-times fa-lg" aria-hidden="true"></i></a>
                     </div>
                 </li>
                 {% endif %}

@@ -1,8 +1,7 @@
 <?php
 namespace App\Models\Blog\Post;
 use App\Models\BaseModel;
-use Core\Database\AppDatabase;
-use Core\Config\AppConfig;
+use Core\Routing\AppRouter;
 use App\Models\Blog\Entity\Post;
 use App\Models\Admin\Entity\User;
 use App\Models\Admin\Entity\Comment;
@@ -14,12 +13,12 @@ class PostModel extends BaseModel
 {
 	/**
      * Constructor
-     * @param AppConfig $config: an instance of AppConfig
+     * @param AppRouter $router: an instance of AppRouter
      * @return void
      */
-    public function __construct(AppConfig $config)
+    public function __construct(AppRouter $router)
     {
-        parent::__construct(AppDatabase::getInstance(), $config);
+        parent::__construct($router);
     }
 
     /**
@@ -88,7 +87,7 @@ class PostModel extends BaseModel
      * Get a single post with its author datas
      * @param string $postId
      * @param string|null $postSlug
-     * @return array: an array which contains a Post entity instance
+     * @return array|boolean: an array which contains a Post entity instance, or false
      */
 	public function getSingleWithAuthor($postId, $postSlug = null)
 	{
@@ -102,12 +101,20 @@ class PostModel extends BaseModel
 		// Will associate author datas for each post
 		$postWithAuthor = [];
 		$post = $this->getSingleById($postId);
-		// Get and store user who is also an author for current post
-		$author = $this->getAuthorByPostUserId($post->userId);
-        // Temporary parameter is created here:
-		$post->author = $author;
-		array_push($postWithAuthor, $post);
-		return $postWithAuthor;
+        if ($post != false) {
+    		// Get and store user who is also an author for current post
+    		$author = $this->getAuthorByPostUserId($post->userId);
+            if ($author != false) {
+                // Temporary parameter is created here:
+                $post->author = $author;
+                array_push($postWithAuthor, $post);
+                return $postWithAuthor;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
 	}
 
     /**
@@ -227,11 +234,11 @@ class PostModel extends BaseModel
     /**
      * Get author infos with its post user id
      * @param string $postUserId
-     * @return object: a User entity instance
+     * @return object|boolean: a User entity instance, or false
      */
 	public function getAuthorByPostUserId($postUserId)
 	{
-	    $query = $this->dbConnector->prepare('SELECT u.user_id, u.user_firstName, u.user_familyName, u.user_pseudo, u.user_email,
+	    $query = $this->dbConnector->prepare('SELECT u.user_id, u.user_firstName, u.user_familyName, u.user_nickName, u.user_email,
 	    									  u.user_password, u.user_isActivated, u.user_userTypeId
 	    									  FROM posts p
 	    									  INNER JOIN users u ON (p.post_userId = u.user_id)
@@ -239,7 +246,11 @@ class PostModel extends BaseModel
 	    $query->bindParam(':postUserId', $postUserId, \PDO::PARAM_INT);
 	    $query->execute();
 	    $datas = $query->fetch(\PDO::FETCH_ASSOC);
-	    return new User($datas);
+        if ($datas != false) {
+            return new User($datas);
+        } else {
+            return false;
+        }
 	}
 
     /**
@@ -270,13 +281,12 @@ class PostModel extends BaseModel
         // Secure query
         $query = $this->dbConnector->prepare('INSERT INTO comments
                                               (comment_creationDate, comment_nickName, comment_email, comment_title, comment_content, comment_postId)
-                                              VALUES (NOW(), ?, ?, ?, ?, ?)');
-        $query->bindParam(1, $nickName);
-        $query->bindParam(2, $email);
-        $query->bindParam(3, $title);
-        $query->bindParam(4, $content);
-        $query->bindParam(5, $postId);
-
+                                              VALUES (NOW(), :nickName, :email, :title, :content, :postId)');
+        $query->bindParam(':nickName', $nickName, \PDO::PARAM_STR);
+        $query->bindParam(':email', $email, \PDO::PARAM_STR);
+        $query->bindParam(':title', $title, \PDO::PARAM_STR);
+        $query->bindParam(':content', $content, \PDO::PARAM_STR);
+        $query->bindParam(':postId', $postId, \PDO::PARAM_INT);
         // Insertion
         $nickName = $commentDatas['pcf_nickName'];
         $email = $commentDatas['pcf_email'];

@@ -1,7 +1,6 @@
 <?php
 namespace Core\Form;
-use Core\Config\AppConfig;
-use Core\Service\AppContainer;
+use Core\Routing\AppRouter;
 use Core\Helper\AppStringModifier;
 
 /**
@@ -9,6 +8,10 @@ use Core\Helper\AppStringModifier;
  */
 class AppFormValidator
 {
+    /**
+     * @var AppRouter: an AppRouter instance to use
+     */
+    private $router;
     /**
      * @var array: $_POST/$_GET values before validation
      */
@@ -26,11 +29,11 @@ class AppFormValidator
      */
     private $filteredDatas = [];
     /**
-     * @var object: configuration to use
+     * @var AppConfig: an AppConfig instance for configuration to use
      */
     private $config;
     /**
-     * @var object: helper to use
+     * @var AppStringModifier: an AppStringModifier helper instance to use
      */
     private $helper;
     /**
@@ -40,17 +43,19 @@ class AppFormValidator
 
     /**
      * Constructor
+     * @param object $router: an AppRouter instance
      * @param array $datas to validate
      * @param string $formIdentifier
      * @return void
      */
-    public function __construct($datas, $formIdentifier)
+    public function __construct(AppRouter $router, $datas, $formIdentifier)
     {
+        $this->router = $router;
         $this->datas = $datas;
         $this->formIdentifier = $formIdentifier;
         $this->errorIndex = $this->formIdentifier . 'errors';
-        $this->config = AppConfig::getInstance();
-        $this->helper = AppStringModifier::getInstance();
+        $this->config = $this->router->getConfig();
+        $this->helper = AppStringModifier::getInstance($router);
     }
 
     /**
@@ -184,7 +189,7 @@ class AppFormValidator
             $passwordFormat = '#^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,}$#';
             // A minimum of 8 characters
             if (strlen($value) < 8) {
-                $this->result[$this->errorIndex][$name] = 'Sorry, your password must contain at least 8 characters!';
+                $this->result[$this->errorIndex][$name] = 'Sorry, your password must contain<br>at least 8 characters!';
                 $this->result[$name] = $value;
             } elseif (!preg_match($passwordFormat, $value)) {
                 $this->result[$this->errorIndex][$name] = 'Sorry, your password format is not valid!<br>Please check it or verify required characters<br>before login try.';
@@ -195,6 +200,20 @@ class AppFormValidator
             }
         } else {
             $this->result[$this->errorIndex][$name] = 'Please fill in your password.';
+        }
+    }
+
+    /**
+     * Check if password confirmation user input is identical to main password user input
+     * @param string $name: field name
+     * @param string $password: main password
+     * @param string $passwordConfirmation: password confirmation
+     * @return void
+     */
+    public function validatePasswordConfirmation($name, $password, $passwordConfirmation) {
+        $name = $this->formIdentifier . $name;
+        if ($passwordConfirmation !== $password) {
+            $this->result[$this->errorIndex][$name] = 'Password confirmation does not match your password!<br>Please check it to be identical.';
         }
     }
 
@@ -258,6 +277,6 @@ class AppFormValidator
      */
     public function checkTokenValue($token, $varName)
     {
-        return $token === $_SESSION[$varName];
+        return $token === $this->generateTokenValue($varName);
     }
 }

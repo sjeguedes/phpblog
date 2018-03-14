@@ -14,7 +14,7 @@
             <section class="posts-list">
                 <h1>Posts list</h1>
                 <p class="important">
-                    <strong>Here, you can have look at all the published posts.</strong>
+                    <strong>Here, you can have a look at all the published posts.</strong>
                 </p>
             {% for item in postsDatas %}
                 <article class="post-item card px-3 py-4" ">
@@ -23,7 +23,7 @@
                     <div class="post-header">
                         <ul class="post-header-infos">
                             <li>
-                                {% if item.author %} <i class="fa fa-user">&nbsp;</i>by {{ item.author.pseudo|raw }} {% endif %}
+                                {% if item.author is defined %} <i class="fa fa-user">&nbsp;</i>by {{ item.author.nickName|raw }} {% endif %}
                                 <i class="fa fa-calendar">&nbsp;</i>Published on {{ item.creationDate }}&nbsp;-&nbsp;Updated on {{ item.updateDate }}
                             </li>
                             {% if item.temporaryParams['postComments'] is defined %}

@@ -1,9 +1,6 @@
 <?php
 namespace App\Controllers;
-use Core\AppPage;
-use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
-use Core\Config\AppConfig;
 
 /**
  * Create a parent controller to use in each controller
@@ -11,6 +8,14 @@ use Core\Config\AppConfig;
 abstract class BaseController
 {
 	/**
+     * @var AppRouter instance
+     */
+    protected $router;
+    /**
+     * @var AppContainer instance
+     */
+    protected $container;
+    /**
 	 * @var AppPage instance
 	 */
 	protected $page;
@@ -18,10 +23,6 @@ abstract class BaseController
 	 * @var AppHTTPResponse instance
 	 */
 	protected $httpResponse;
-	/**
-	 * @var AppRouter instance
-	 */
-	protected $router;
 	/**
 	 * @var AppConfig instance
 	 */
@@ -42,31 +43,42 @@ abstract class BaseController
 
 	/**
 	 * Constructor
-	 * @param AppPage $page: an instance of AppPage
-	 * @param AppHTTPResponse $httpResponse: an instance of AppHTTPResponse
 	 * @param AppRouter $router: an instance of AppRouter
-	 * @param AppConfig $config: an instance of AppConfig
 	 * @return void
 	 */
-	public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
+	public function __construct(AppRouter $router)
 	{
         // Initialize router
         $this->router = $router;
-        // Get page instance used by router
+        // Initialize a service DIC
+        $this->container = $this->router->getContainer();
         $this->page = $this->router->getPage();
-        // Set router instance for page instance
-        $this->page::setRouter($this->router);
-        // Get http response instance used by router
         $this->httpResponse = $this->router->getHTTPResponse();
-        // Set page instance used by router for http response instance
-        $this->httpResponse::setPage($this->page);
-        // Get config instance used by router
         $this->config = $this->router->getConfig();
-        // Get session instance used by router
         $this->session = $this->router->getSession();
-        // Set router instance for session instance
-        $this->session::setRouter($this->router);
+        $this->session::start(true);
+        // If session expired, then reset its dedicated session value
+        $this->ManageExpiredCSRFtokens();
 	}
+
+    /**
+     * Manage Expired CSRF tokens
+     * This code is used to manage form tokens issue (not show expired token error box message anymore)
+     * when they are regenerated with new session
+     * and user is trying to submit a form with existing $_POST/$_GET old token values
+     * @see AppSession::expire() and AppPage::addSessionTemplateParams()
+     * @return void
+     */
+    private function ManageExpiredCSRFtokens() {
+        if (isset($_SESSION['expiredSession'])) {
+            if (isset($_SESSION['newSession'])) {
+                unset($_SESSION['expiredSession']);
+                unset($_SESSION['newSession']);
+            }
+            // Used to unset expiration/new session values after next page load
+            $_SESSION['newSession'] = true;
+        }
+    }
 
 	/**
 	 * Check if called method exists
@@ -96,7 +108,7 @@ abstract class BaseController
 	protected function getCurrentModel($className)
 	{
 		$className = str_replace('Controller', 'Model', $className);
-		$currentModel = new $className($this->config);
+		$currentModel = new $className($this->router);
 		return $currentModel;
 	}
 }

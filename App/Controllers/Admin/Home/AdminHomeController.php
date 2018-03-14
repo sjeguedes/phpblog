@@ -1,10 +1,7 @@
 <?php
 namespace App\Controllers\Admin\Home;
 use App\Controllers\Admin\AdminController;
-use Core\AppPage;
-use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
-use Core\Config\AppConfig;
 use Core\Service\AppContainer;
 
 /**
@@ -59,18 +56,15 @@ class AdminHomeController extends AdminController
 
     /**
 	 * Constructor
-	 * @param AppPage $page
-	 * @param AppHTTPResponse $httpResponse
 	 * @param AppRouter $router
-	 * @param AppConfig $config
 	 * @return void
 	 */
-	public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router,  AppConfig $config)
+	public function __construct(AppRouter $router)
 	{
-		parent::__construct($page, $httpResponse, $router, $config);
+		parent::__construct($router);
 		$this->currentModel = $this->getCurrentModel(__CLASS__);
         // Initialize home admin forms validator
-        $this->adminHomeValidator = AppContainer::getFormValidator()[2];
+        $this->adminHomeValidator = $this->container::getFormValidator()[2];
         // Define used parameters to avoid CSRF:
         // Contact deleting token
         $this->cdTokenIndex = $this->adminHomeValidator->generateTokenIndex('cd_check');
@@ -427,6 +421,7 @@ class AdminHomeController extends AdminController
                 ];
                 // Redirect to admin home action (to reset submitted form)
                 $this->httpResponse->addHeader('Location: /admin');
+                exit();
             }
         }
         // Update error notice messages and form values

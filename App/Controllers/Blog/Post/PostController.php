@@ -1,10 +1,7 @@
 <?php
 namespace App\Controllers\Blog\Post;
 use App\Controllers\BaseController;
-use Core\AppPage;
-use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
-use Core\Config\AppConfig;
 use Core\Service\AppContainer;
 
 /**
@@ -35,23 +32,20 @@ class PostController extends BaseController
 
     /**
      * Constructor
-     * @param AppPage $page
-     * @param AppHTTPResponse $httpResponse
      * @param AppRouter $router
-     * @param AppConfig $config
      * @return void
      */
-    public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router,  AppConfig $config)
+    public function __construct(AppRouter $router)
 	{
-		parent::__construct($page, $httpResponse, $router, $config);
+		parent::__construct($router);
 		$this->currentModel = $this->getCurrentModel(__CLASS__);
         // Initialize comment form validator
-        $this->commentFormValidator = AppContainer::getFormValidator()[1];
+        $this->commentFormValidator = $this->container::getFormValidator()[1];
         // Define used parameters to avoid CSRF
         $this->pcfTokenIndex = $this->commentFormValidator->generateTokenIndex('pcf_check');
         $this->pcfTokenValue = $this->commentFormValidator->generateTokenValue('pcf_token');
         // Initialize comment form captcha
-        $this->commentFormCaptcha = AppContainer::getCaptcha()[1];
+        $this->commentFormCaptcha = $this->container::getCaptcha()[1];
 	}
 
 	/**
@@ -82,7 +76,8 @@ class PostController extends BaseController
 		$currentPageId = $matches[0];
 		// $currentPageId doesn't exist (string or int < 0)
 		if ((int) $currentPageId <= 0) {
-			echo $this->httpResponse->set404ErrorResponse('Sorry this page doesn\'t exist!', $this->router);
+			$this->httpResponse->set404ErrorResponse('Sorry this page doesn\'t exist!', $this->router);
+            exit();
 		} else {
 			// Get posts datas for current page and get post Quantity to show per page
 			$postListOnPage = $this->currentModel->getListByPaging($currentPageId, $this->config::getParam('posts.postPerPage'));
@@ -107,7 +102,8 @@ class PostController extends BaseController
 				echo $this->page->renderTemplate('Blog/Post/post-list.tpl', $varsArray);
 			} else {
                 // $currentPageId value is too high!
-				echo $this->httpResponse->set404ErrorResponse($this->config::isDebug('The content you try to access doesn\'t exist! [Debug trace: reason is $currentPageId > $postListOnPage["pageQuantity"]]'), $this->router);
+				$this->httpResponse->set404ErrorResponse($this->config::isDebug('The content you try to access doesn\'t exist! [Debug trace: reason is $currentPageId > $postListOnPage["pageQuantity"]]'), $this->router);
+                exit();
 			}
 		}
 	}
@@ -216,13 +212,13 @@ class PostController extends BaseController
         }
         // Wrong number of parameters or postId is not a valid id
         if (count($matches) > 2 || $postId <= 0) {
-            echo $this->httpResponse->set404ErrorResponse($this->config::isDebug('The content you try to access doesn\'t exist! [Debug trace: reason is $count($matches) > 2 || $postId <= 0]'), $this->router);
+            $this->httpResponse->set404ErrorResponse($this->config::isDebug('The content you try to access doesn\'t exist! [Debug trace: reason is $count($matches) > 2 || $postId <= 0]'), $this->router);
             return false;
         } else {
             $post = $this->currentModel->getSingleWithAuthor($postId, $postSlug);
             if (!$post) {
                 // No post was found because visitor tries to use wrong parameters!
-                echo $this->httpResponse->set404ErrorResponse($this->config::isDebug('The content you try to access doesn\'t exist! [Debug trace: reason is !$post]'), $this->router);
+                $this->httpResponse->set404ErrorResponse($this->config::isDebug('The content you try to access doesn\'t exist! [Debug trace: reason is !$post]'), $this->router);
                 return false;
             } else {
                 // A post exists.
@@ -288,6 +284,7 @@ class PostController extends BaseController
             if ($this->isCommentSuccess()) {
                 // Success state is returned: avoid previous $_POST with a redirection.
                 $this->httpResponse->addHeader('Location: /post/' . $post[0]->getSlug(). '-' . $post[0]->getId());
+                exit();
             } else {
                 // Call template with a method for more flexibility
                 $this->renderSingle($post, $checkedForm);

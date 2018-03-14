@@ -1,6 +1,5 @@
 <?php
 namespace Core\Session;
-use Core\Routing\AppRouter;
 
 /**
  * Manage a user session
@@ -8,6 +7,10 @@ use Core\Routing\AppRouter;
  */
 class AppSession
 {
+    use \Core\Helper\Shared\UseRouterTrait;
+    use \Core\Helper\Shared\UseConfigTrait;
+    use \Core\Helper\Shared\UseHTTPResponseTrait;
+
     /**
      * @var object: a unique instance of AppSession
      */
@@ -17,11 +20,19 @@ class AppSession
      */
     private static $_router;
     /**
-     * @var integer: Inactivity duration (in seconds) before a session expires.
+     * @var AppConfig instance
+     */
+    private static $_config;
+    /**
+     * @var AppHTTPResponse instance
+     */
+    private static $_httpResponse;
+    /**
+     * @var integer: inactivity duration (in seconds) before a session expires.
      */
     private const SESSION_TIME_LIMIT = 1800;
     /**
-     * @var integer: Duration (in seconds) before a session id is regenerated.
+     * @var integer: duration (in seconds) before a session id is regenerated.
      */
     private const SESSION_ID_TIME_LIMIT = 600;
 
@@ -43,6 +54,7 @@ class AppSession
      */
     private function __construct()
     {
+        // WARNING: don't initialize properties from helpers "Traits" here!
     }
 
     /**
@@ -51,16 +63,8 @@ class AppSession
     */
     public function __clone()
     {
-        self::$_router->getHTTPResponse()->set404ErrorResponse(self::$_router->getConfig()::isDebug('Technical error [Debug trace: Don\'t try to clone singleton ' . __CLASS__ . '!]'), self::$_router);
-    }
-
-    /**
-     * Set router AppRouter instance
-     * @param AppRouter $currentRouter: an AppRouter instance
-     * @return void
-     */
-    public static function setRouter(AppRouter $currentRouter) {
-        self::$_router = $currentRouter;
+        self::$_httpResponse->set404ErrorResponse(self::$_config::isDebug('Technical error [Debug trace: Don\'t try to clone singleton ' . __CLASS__ . '!]'), self::$_router);
+        exit();
     }
 
     /**
@@ -72,36 +76,54 @@ class AppSession
     private static function init($regenerateSessionId)
     {
         try {
+            $isSessionIssue = false;
             if (function_exists('session_status')) {
                 // PHP 5.4.0+
                 if (session_status() == PHP_SESSION_DISABLED) {
-                    throw new \Exception(self::$_router->getConfig()::isDebug('Sorry, a session error happened! [Debug trace: session is disabled.]'));
+                    $isSessionIssue = true;
+                    throw new \Exception(self::$_config::isDebug('Sorry, a session error happened! [Debug trace: session is disabled.]'));
                 }
             }
             if ('' === session_id()) {
                 // Disallow session passing as a GET parameter.
                 if (ini_set('session.use_only_cookies', 1) === false) {
-                    throw new \Exception(self::$_router->getConfig()::isDebug('Sorry, a session error happened! [Debug trace: session is passed as a GET parameter.]'));
+                    $isSessionIssue = true;
+                    throw new \Exception(self::$_config::isDebug('Sorry, a session error happened! [Debug trace: session is passed as a GET parameter.]'));
                 }
                 // Mark the cookie as accessible only through the HTTP protocol.
                 if (ini_set('session.cookie_httponly', 1) === false) {
-                    throw new \Exception(self::$_router->getConfig()::isDebug('Sorry, a session error happened! [Debug trace: cookie is accessible only through the HTTP protocol.]'));
+                    $isSessionIssue = true;
+                    throw new \Exception(self::$_config::isDebug('Sorry, a session error happened! [Debug trace: cookie is accessible only through the HTTP protocol.]'));
                 }
+                // Fix the domain to accept domains with and without 'www.'.
+                $domain = preg_replace('#^https?://#', '', self::$_config::getParam('domain'));
+                if (strtolower(substr($domain, 0, 4)) == 'www.') $domain = substr($domain, 4);
+                // Add the dot prefix to ensure compatibility with subdomains
+                if (substr($domain, 0, 1) != '.') $domain = '.' . $domain;
                 // Set default session cookie params
                 $params = [
-                    'lifetime' => self::SESSION_TIME_LIMIT,
+                    'lifetime' => 0,
                     'path' => '/',
-                    'domain' => preg_replace('#^https?://#', '', self::$_router->getConfig()::getParam('domain')),
-                    'secure' => self::$_router->getConfig()::getParam('https') ? 1 : 0, // true or false
+                    'domain' => $domain,
+                    'secure' => self::$_config::getParam('https') ? 1 : 0, // true or false
                     'httponly' => 1 // true
                 ];
-                session_set_cookie_params($params['lifetime'], $params['path'], $params['domain'],  $params['secure'], $params['httponly']);
+                session_set_cookie_params($params['lifetime'], $params['path'], $params['domain'], $params['secure'], $params['httponly']);
 
+                // Start an effective session
+                session_start();
             }
-            // Start an effective session
-            session_start();
-            // Check if session must expire in case of no page loaded.
-            self::expire();
+            // Check if session must expire in case of no page loaded during expiration time limit.
+            $isSessionExpired = self::expire();
+            if ($isSessionExpired) {
+                if (isset($_SESSION['userAuthenticated'])) {
+                    $link = 'href="' . self::$_router->useUrl('Admin\User\AdminUser|showAdminAccess', null) . '"';
+                    unset($_SESSION['userAuthenticated']);
+                } else {
+                    $link = 'href="#" onclick="window.location.reload(window.history.go(-1)); return false;"';
+                }
+                throw new \Exception('Your request expired due to inactivity, then it was unauthorized! Please go back to <a ' . $link . ' title="Previous visited page">previous page</a> and try again.');
+            }
             // Help prevent session hijacking by resetting the session id each time a particular delay is reached.
             if ($regenerateSessionId) {
                 // Store current timestamp only for the first time
@@ -136,8 +158,15 @@ class AppSession
             }
             return $newSID;
         } catch (\Exception $e) {
-            // Show error view with 403 error
-            self::$_router->getHTTPResponse()->set403ErrorResponse(self::$_router->getConfig()::isDebug($e->getMessage()), self::$_router);
+            if ($isSessionIssue) {
+                // Show error view with 403 error
+                self::$_httpResponse->set403ErrorResponse(self::$_config::isDebug($e->getMessage()), self::$_router);
+                exit();
+            } elseif ($isSessionExpired) {
+                // Show error view with 401 error ("Unauthorized": require an authentication)
+                self::$_httpResponse->set401ErrorResponse($e->getMessage(), self::$_router);
+                exit();
+            }
         }
     }
 
@@ -152,6 +181,15 @@ class AppSession
     {
         // Start session with init() method
         return self::init($regenerateSessionId);
+    }
+
+    /**
+     * Return current session datas.
+     * @return array: entire array $_SESSION
+     */
+    public static function getDatas()
+    {
+        return $_SESSION;
     }
 
     /**
@@ -210,14 +248,20 @@ class AppSession
      */
     private static function expire()
     {
-        $last = isset($_SESSION['lastActive']) ? $_SESSION['lastActive'] : false;
-        $isDestroyed = false;
-        if (false !== $last && (time() - $last > self::SESSION_TIME_LIMIT)) {
+        $now = time();
+        $last = isset($_SESSION['lastActive']) ? $_SESSION['lastActive'] : null;
+        $user = self::isUserAuthenticated();
+        if (!is_null($last) && ($now > $last + self::SESSION_TIME_LIMIT)) {
             self::destroy();
-            $isDestroyed = true;
+            session_start();
+            $_SESSION['expiredSession'] = true;
+            if ($user != false) $_SESSION['userAuthenticated'] = true;
+            $isExpired =  true;
+        } else {
+            $isExpired =  false;
         }
-        $_SESSION['lastActive'] = time();
-        return $isDestroyed;
+        $_SESSION['lastActive'] = $now;
+        return $isExpired;
     }
 
     /**
@@ -227,12 +271,20 @@ class AppSession
     public static function destroy()
     {
         if ('' !== session_id()) {
+            $_SESSION = [];
             // If choice is to kill the session, also delete the session cookie.
             // Note: this will destroy the session, and not just the session data!
             if (ini_get('session.use_cookies')) {
                 self::resetCookie(session_name());
             }
-            $_SESSION = [];
+            // Reset custom cookie which stores user session token
+            // No break to be sure to reset multiple unexpected cookies
+            foreach ($_COOKIE as $key => $value) {
+                if (preg_match('#^UPDATEDUST((?=.\w)(?=.\d).*)$#', $key)) {
+                    unset($_COOKIE[$key]);
+                    self::resetCookie($key);
+                }
+            }
             session_destroy();
         }
     }

@@ -1,7 +1,7 @@
 <?php
 namespace App\Models\Admin\User;
 use App\Models\Admin\AdminModel;
-use Core\Config\AppConfig;
+use Core\Routing\AppRouter;
 use App\Models\Admin\Entity\User;
 
 /**
@@ -11,12 +11,12 @@ class AdminUserModel extends AdminModel
 {
     /**
      * Constructor
-     * @param AppConfig $config: an instance of AppConfig
+     * @param AppRouter $router: an instance of AppRouter
      * @return void
      */
-    public function __construct(AppConfig $config)
+    public function __construct(AppRouter $router)
     {
-        parent::__construct($config);
+        parent::__construct($router);
     }
 
     /**
@@ -77,5 +77,38 @@ class AdminUserModel extends AdminModel
             $users[] = new User($datas);
         }
         return $users;
+    }
+
+    /**
+     * Insert a User entity in database
+     * @param array $userDatas: an array of user datas
+     * @return void
+     */
+    public function insertUser($userDatas)
+    {
+        // Secure query
+        $query = $this->dbConnector->prepare('INSERT INTO users
+                                              (user_creationDate, user_familyName, user_firstName, user_nickName, user_email, user_password, user_activationCode,   user_activationDate, user_isActivated, user_userTypeId)
+                                              VALUES (NOW(), :familyName, :firstName, :nickName, :email, :password, :activationCode, :activationDate, :isActivated, :userTypeId)');
+        $query->bindParam(':familyName', $familyName, \PDO::PARAM_STR);
+        $query->bindParam(':firstName', $firstName, \PDO::PARAM_STR);
+        $query->bindParam(':nickName', $nickName, \PDO::PARAM_STR);
+        $query->bindParam(':email', $email, \PDO::PARAM_STR);
+        $query->bindParam(':password', $password, \PDO::PARAM_STR);
+        $query->bindParam(':activationCode', $activationCode, \PDO::PARAM_STR);
+        $query->bindParam(':activationDate', $activationDate, \PDO::PARAM_STR);
+        $query->bindParam(':isActivated', $isActivated, \PDO::PARAM_INT);
+        $query->bindParam(':userTypeId', $userTypeId, \PDO::PARAM_INT);
+        // Insertion
+        $familyName = $userDatas['ref_familyName'];
+        $firstName = $userDatas['ref_firstName'];
+        $nickName = $userDatas['ref_nickName'];
+        $email = $userDatas['ref_email'];
+        $password = $userDatas['ref_password'];
+        $activationCode = $userDatas['ref_activationCode'];
+        $activationDate = ''; // no activation at this level
+        $isActivated = 0; // false
+        $userTypeId = 2; // type 1: admin, type 2: member (default)
+        $query->execute();
     }
 }

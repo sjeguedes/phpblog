@@ -1,8 +1,7 @@
 <?php
 namespace App\Models\Home;
 use App\Models\BaseModel;
-use Core\Database\AppDatabase;
-use Core\Config\AppConfig;
+use Core\Routing\AppRouter;
 
 /**
  * Create a Homepage model
@@ -10,14 +9,14 @@ use Core\Config\AppConfig;
 class HomeModel extends BaseModel
 {
 	/**
-	 * Constructor
-	 * @param AppConfig $config: an instance of AppConfig
-	 * @return void
-	 */
-	public function __construct(AppConfig $config)
-	{
-		parent::__construct(AppDatabase::getInstance(), $config);
-	}
+     * Constructor
+     * @param AppRouter $router: an instance of AppRouter
+     * @return void
+     */
+    public function __construct(AppRouter $router)
+    {
+        parent::__construct($router);
+    }
 
 	/**
 	 * Insert a Contact entity in database

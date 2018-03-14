@@ -1,5 +1,6 @@
 <?php
 namespace App\Models;
+use Core\Routing\AppRouter;
 use Core\Database\AppDatabase;
 use Core\Database\PDOFactory;
 use Core\Config\AppConfig;
@@ -12,6 +13,10 @@ abstract class BaseModel
     /**
      * @var AppDatabase instance
      */
+    protected $db;
+    /**
+     * @var PDO instance
+     */
     protected $dbConnector;
     /**
      * @var AppConfig instance
@@ -20,16 +25,17 @@ abstract class BaseModel
 
     /**
      * Constructor
-     * @param AppDatabase $dbConnector: an instance of AppDatabase
-     * @param AppConfig $config: an instance of AppConfig
+     * @param AppRouter $router: an instance of AppRouter
      * @return void
      */
-    public function __construct(AppDatabase $dbConnector, AppConfig $config)
+    public function __construct(AppRouter $router)
     {
-        $this->dbConnector = $dbConnector::getPDOWithMySQl();
-        $this->config = $config;
-        // Store an instance of AdminUserModel
-        //$this->adminModels['AdminUserModel'] = new AdminUserModel($config);
+        // Instanciate an AppDatabase object: can be overridden in each Model
+        $this->db = AppDatabase::getInstance($router);
+        // Instanciate a PDO with MySQL connector object: can be overridden in each Model
+        $this->dbConnector = $this->db::getPDOWithMySQl();
+        // Instanciate an AppConfig object
+        $this->config = $router->getConfig();
     }
 
     // Common queries

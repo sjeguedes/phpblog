@@ -227,6 +227,10 @@ ul.phpblog-list {
     background-image: url('/assets/images/phpblog/admin-login.jpg');
 }
 
+.page-header-image.admin-register {
+    background-image: url('/assets/images/phpblog/admin-register.jpg');
+}
+
 .page-header-image.admin-post {
     background-image: url('/assets/images/phpblog/admin-post.jpg');
 }
@@ -336,6 +340,9 @@ ul.phpblog-list {
 }
 
 /* Forms */
+body.new-session .cf-error .cf-check-notice, body.new-session .form-check-notice {
+    display: none;
+}
 .cf-error .cf-check-notice, .form-check-notice {
     display: block;
     color: rgba(255, 54, 54, 0.8);

@@ -2,8 +2,7 @@
 namespace App\Models\Admin;
 use App\Models\BaseModel;
 use App\Models\Blog\Post\PostModel;
-use Core\Database\AppDatabase;
-use Core\Config\AppConfig;
+use Core\Routing\AppRouter;
 use App\Models\Blog\Entity\User;
 
 /**
@@ -18,14 +17,14 @@ abstract class AdminModel extends BaseModel
 
     /**
      * Constructor
-     * @param AppConfig $config: an instance of AppConfig
+     * @param AppRouter $router: an instance of AppRouter
      * @return void
      */
-    public function __construct(AppConfig $config)
+    public function __construct(AppRouter $router)
     {
-        parent::__construct(AppDatabase::getInstance(), $config);
+        parent::__construct($router);
         // Store an instance of PostModel
-        $this->externalModels['postModel'] = new PostModel($config);
+        $this->externalModels['postModel'] = new PostModel($router);
     }
 
     /**
@@ -56,23 +55,25 @@ abstract class AdminModel extends BaseModel
     public function updateEntity($entityId, $newDatas)
     {
         // Declare type to secure (add other params in array if necessary)
-        $PDOParams = [\PDO::PARAM_INT];
+        $PDOParams = [\PDO::PARAM_INT, \PDO::PARAM_STR, \PDO::PARAM_BOOL, \PDO::PARAM_NULL];
         $table = $newDatas['entity'] . 's';
         $columnPrefix = $newDatas['entity'] . '_';
         $set = '';
         $newValues = $newDatas['values'];
         for ($i = 0; $i < count($newValues); $i ++) {
             if ($i == 0) {
-                $set .= $columnPrefix . $newValues[$i]['column'] . '=' .  $newValues[$i]['value'];
+                $set .= $columnPrefix . $newValues[$i]['column'] . ' = :' . $newValues[$i]['column'];
             } else {
-                $set .= ', ' . $columnPrefix . $newValues[$i]['column'] . '=' .  $newValues[$i]['value'];
+                $set .= ', ' . $columnPrefix . $newValues[$i]['column'] . ' = :' . $newValues[$i]['column'];
             }
         }
-
         $query = $this->dbConnector->prepare("UPDATE $table
                                               SET $set
-                                              WHERE ${columnPrefix}id = ?");
-        $query->bindParam(1, $entityId, \PDO::PARAM_INT);
+                                              WHERE ${columnPrefix}id = :entityId");
+        for ($i = 0; $i < count($newValues); $i ++) {
+             $query->bindParam(':' . $newValues[$i]['column'], $newValues[$i]['value'], $newValues[$i]['type']);
+        }
+        $query->bindParam(':entityId', $entityId, \PDO::PARAM_INT);
         $query->execute();
     }
 }

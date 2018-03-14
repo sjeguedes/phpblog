@@ -1,9 +1,6 @@
 <?php
 namespace Core\Routing;
-use Core\AppPage;
-use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
-use Core\Config\AppConfig;
 
 /**
  * Define a route used by router
@@ -107,13 +104,10 @@ class AppRoute
 
 	/**
 	 * Call and execute controller action method with its arguments
-	 * @param AppPage $page instance
-	 * @param AppHTTPResponse $httpResponse instance
 	 * @param AppRouter $router instance
-	 * @param AppConfig $config instance
 	 * @return string|callable: error message or controller action method is executed
 	 */
-	public function getControllerAction(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
+	public function getControllerAction(AppRouter $router)
 	{
 		// We use parameters as a string to call and execute a controller method
 		$explode = explode('|', $this->name);
@@ -121,7 +115,7 @@ class AppRoute
 		$controllerClass = 'App\Controllers\\' . $controllerPath . 'Controller';
 		try {
 			if (class_exists($controllerClass)) {
-				$controller = new $controllerClass($page, $httpResponse, $router, $config);
+				$controller = new $controllerClass($router);
 				$action = $explode[1];
 
 				// is this action callable? If true, it exists : call it!

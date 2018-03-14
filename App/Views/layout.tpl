@@ -39,7 +39,7 @@
 
 </head>
 
-<body class="landing-page sidebar-collapse">
+<body class="landing-page sidebar-collapse{% if (expiredSession is defined) and (expiredSession == 1) %} new-session{% endif %}">
     <!-- Javascript disabled -->
     <noscript>
         <div class="no-js-box">

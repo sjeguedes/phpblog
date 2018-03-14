@@ -1,7 +1,7 @@
 <?php
 namespace App\Models\Admin\Home;
 use App\Models\Admin\AdminModel;
-use Core\Config\AppConfig;
+use Core\Routing\AppRouter;
 use App\Models\Admin\Entity\Contact;
 use App\Models\Blog\Entity\User;
 use App\Models\Admin\Entity\Comment;
@@ -13,12 +13,12 @@ class AdminHomeModel extends AdminModel
 {
     /**
      * Constructor
-     * @param AppConfig $config: an instance of AppConfig
+     * @param AppRouter $router: an instance of AppRouter
      * @return void
      */
-    public function __construct(AppConfig $config)
+    public function __construct(AppRouter $router)
     {
-        parent::__construct($config);
+        parent::__construct($router);
     }
 
     /**

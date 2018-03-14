@@ -2,23 +2,30 @@
 namespace Core\Routing;
 use Core\Routing\RoutingException;
 use Core\Routing\AppRoute;
-use Core\AppPage;
-use Core\AppHTTPResponse;
 use Core\Config\AppConfig;
+use Core\HTTP\AppHTTPResponse;
+use Core\Service\AppContainer;
+use Core\Page\AppPage;
 use Core\Session\AppSession;
 
 /**
  * Create a router class to:
+* - instantiate all necessary objects to run application (to render correctly error responses, controllers actions)
+*   (AppConfig, AppHTTPResponse, AppContainer, AppPage, AppSession and AppRoute)
 * - load routes from external YAML file.
 * - create objects routes and store them in array.
 * - find corresponding controller and action if URL matches with a route.
 * - send a 404 response (with or without particular error redirection)
-* if URL doesn't match, or anything wrong happens.
+*   if URL doesn't match, or anything wrong happens.
 * - create URL with route thanks to a name and defined path parameters.
 */
 class AppRouter
 {
 	/**
+     * @var object: a unique instance of AppRouter
+     */
+    private static $_instance;
+    /**
 	 * @var string: URL called
 	 */
 	private $url;
@@ -30,56 +37,97 @@ class AppRouter
 	 * @var array: will store routes names
 	 */
 	private $namedRoutes = [];
+    /**
+     * @var object: store the current unique AppRouter instance
+     */
+    private $router;
+    /**
+     * @var AppContainer instance
+     */
+    private $container;
 	/**
-	 * @var object: store AppPage instance
+	 * @var AppPage instance
 	 */
 	private $page;
 	/**
-	 * @var object: store AppHTTPResponse instance
+	 * @var AppHTTPResponse instance
 	 */
 	private $httpResponse;
 	/**
-	 * @var object: store the current unique AppRouter instance
-	 */
-	private $router;
-	/**
-	 * @var object: store unique AppConfig instance
+	 * @var AppConfig instance
 	 */
 	private $config;
     /**
-     * @var object: store unique AppSession instance
+     * @var AppSession instance
      */
     private $session;
+
+    /**
+     * Instanciate a unique AppRouter object (Singleton)
+     * @param string $url
+     * @return AppRouter: a unique instance of AppRouter
+     */
+    public static function getInstance($url)
+    {
+        if (is_null(self::$_instance)) {
+            self::$_instance = new AppRouter($url);
+        }
+        return self::$_instance;
+    }
 
 	/**
 	 * Constructor
 	 * @param string $url
 	 * @return void
 	 */
-	public function __construct($url)
+	private function __construct($url)
 	{
 		// Store $_GET['url'] value
 		$this->url = $url;
         // Store the same instance
-        $this->router = &$this;
-		// TODO: use DIC to instantiate AppPage object!
-		$this->page = new AppPage();
-        // Set router instance for page instance
-        $this->page::setRouter($this->router);
-		// TODO: use DIC to instantiate HTTPResponse object!
-		$this->httpResponse = new AppHTTPResponse();
-        // Set page instance used by router for http response instance
-        $this->httpResponse::setPage($this->page);
-		// TODO: use DIC to instantiate AppConfig object!
-		$this->config = AppConfig::getInstance();
-        // TODO: use DIC to instantiate AppSession object!
+        $this->router = $this;
+        // Instantiate AppConfig object!
+        // This instance needs a http response instance
+        $this->config = AppConfig::getInstance(); // httpResponse (httpResponse + page + session ?)
+        $this->config::setRouter($this->router);
+        // Instantiate HTTPResponse object!
+        // This instance needs router, config, httpResponse, page (see below) instances
+        $this->httpResponse = AppHTTPResponse::getInstance();
+        $this->httpResponse::setRouter($this->router);
+        $this->config::setHTTPResponse($this->httpResponse);
+        $this->httpResponse::setConfig($this->config);
+        // DIC is instantiated.
+        // This instance needs router, config, httpResponse, instances
+        $this->container = AppContainer::getInstance();
+        $this->container::setRouter($this->router);
+        $this->container::setConfig($this->config);
+        $this->container::setHTTPResponse($this->httpResponse);
+        $this->container::init();
+        // Instantiate AppSession object!
+        // This instance needs router, config, httpResponse, instances
         $this->session = AppSession::getInstance();
-        // Set router instance for session instance
         $this->session::setRouter($this->router);
-        // Start session
-        $this->session::start(true);
-		// Get existing routes
-		$this->getRoutesConfig();
+        $this->session::setHTTPResponse($this->httpResponse);
+        $this->session::setConfig($this->config);
+		// Instantiate AppPage object!
+        // This instance needs router, config, httpResponse, session instances
+		$this->page = AppPage::getInstance();
+        $this->page::setRouter($this->router);
+        $this->page::setHTTPResponse($this->httpResponse);
+        $this->page::setConfig($this->config);
+        $this->page::setSession($this->session);
+        // Set page instance for http response
+        $this->httpResponse::setPage($this->page);
+    }
+
+    /**
+    * Magic method __clone
+    * @return void
+    */
+    public function __clone()
+    {
+        $this->httpResponse->set404ErrorResponse($this->config->isDebug('Technical error [Debug trace: Don\'t try to clone singleton ' . __CLASS__ . '!]'), $this->router);
+        exit();
     }
 
     /**
@@ -88,6 +136,14 @@ class AppRouter
      */
     public function getUrl() {
         return $this->url;
+    }
+
+    /**
+     * Get router AppContainer instance
+     * @return object: an AppContainer instance
+     */
+    public function getContainer() {
+        return $this->container;
     }
 
     /**
@@ -122,6 +178,16 @@ class AppRouter
         return $this->session;
     }
 
+    /**
+     * Init application router getting routes
+     * @return void
+     */
+    public function init()
+    {
+        // Get existing routes
+        $this->getRoutesConfig();
+    }
+
 	/**
 	 * Parse routes configuration, call routes creation and call routes checking
 	 * @return void
@@ -142,11 +208,11 @@ class AppRouter
 	/**
 	 * Create routes and their names
 	 * @param string $path: a path to compare with url which may contain parameters
-	 * @param string|null $name: route name
+	 * @param string $name: route name
 	 * @param string $method: http request method ('POST', 'GET')
 	 * @return void
 	 */
-	private function createRoute($path, $name = null, $method)
+	private function createRoute($path, $name, $method)
 	{
 		// TODO: use DIC to instantiate AppRoute object!
 		$route = new AppRoute($path, $name);
@@ -170,7 +236,7 @@ class AppRouter
 					if ($route->isMatched($this->url)) {
                         $isNoRoute = false;
                         // Call controller and its appropriate action if both exist.
-                        $result = $route->getControllerAction($this->page, $this->httpResponse, $this->router, $this->config);
+                        $result = $route->getControllerAction($this->router);
                         // Does action exist or does exception happen when action is called (PDOException, ...)?
                         if (is_string($result)) {
                             // Get initial requested URL
@@ -193,7 +259,7 @@ class AppRouter
                     if (isset($_GET['refreshException']) && $_GET['refreshException']) {
                         // Manage exception after refresh for "isRefreshed" parameter in HTTPResponse setError() method
                         // An exception happens when action is called (PDOException, ...)
-                        $result = $route->getControllerAction($this->page, $this->httpResponse, $this->router, $this->config);
+                        $result = $route->getControllerAction($this->router);
                         // HTTP response refresh case
                         throw new RoutingException((string) $result . "<br>Your initial request was \"<strong>$request</strong>\".");
                     // No existing route! (with or without custom error URL refresh)
@@ -207,6 +273,7 @@ class AppRouter
 		} catch (RoutingException $e) {
 			// Show error view with 404 error
             $this->httpResponse->setError(404, $this->config::isDebug($e->getMessage()), $this->router);
+            exit();
 		}
 	}
 
@@ -233,6 +300,7 @@ class AppRouter
 		catch(RoutingException $e) {
 			// Show error view with 404 error
             $this->httpResponse->setError(404, $this->config::isDebug($e->getMessage()), $this->router);
+            exit();
 		}
 	}
 }

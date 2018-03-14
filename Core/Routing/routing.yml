@@ -48,11 +48,18 @@ routing:
         name: Admin\Home\AdminHome|showAdminHome
         method: GET
 
-    adminAccess:
+    adminShowAccess:
         path: /admin/login
         module: Admin\User\AdminUser
         action: showAdminAccess
         name: Admin\User\AdminUser|showAdminAccess
+        method: GET
+
+    adminShowRegister:
+        path: /admin/register
+        module: Admin\User\AdminUser
+        action: showAdminRegister
+        name: Admin\User\AdminUser|showAdminRegister
         method: GET
 
     adminDisconnect:
@@ -81,6 +88,13 @@ routing:
         module: Admin\User\AdminUser
         action: loginUser
         name: Admin\User\AdminUser|loginUser
+        method: POST
+
+    adminRegister:
+        path: /admin/register
+        module: Admin\User\AdminUser
+        action: registerUser
+        name: Admin\User\AdminUser|registerUser
         method: POST
 
     adminHomeDeleteContact:

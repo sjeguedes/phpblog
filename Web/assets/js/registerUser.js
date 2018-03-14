@@ -5,8 +5,8 @@ jQuery(function($) {
 
     // -------------------------------------------------------------------------------------------------------
 
-    var formSelector = '.login-form',
-        formIdentifier = 'lif_';
+    var formSelector = '.register-form',
+        formIdentifier = 'ref_';
 
     // -------------------------------------------------------------------------------------------------------
 
@@ -36,6 +36,10 @@ jQuery(function($) {
 
     // Manage errors on fields but not for current field which is modified
     $(document).on('change keyup input paste recaptchaResponse', fieldType + ',' + recaptchaType, function(e) {
+        // Particular case: show "family name" in uppercase when typing without delay
+        if ($(this).attr('id') == formIdentifier + 'familyName') {
+            $(this).val($(this).val().toUpperCase());
+        }
         // Look at /assets/js/phpblog.js for declared functions
         // Particular case to exclude Google Recaptcha widget
         if ($(this)[0] == $(recaptchaType)[0]) {
@@ -51,7 +55,7 @@ jQuery(function($) {
                 var elementInLoop = $(this);
                 delay(function() {
                     // Check all fields but not current element
-                    checkForm(formIdentifier, elementInLoop, null);
+                    checkForm(formIdentifier, elementInLoop, [jsLcFirst]);
                     // Update show/hide notice message box
                     showNoticeMessage(true, false);
                 }, 1000);
@@ -64,7 +68,7 @@ jQuery(function($) {
             // Check current field but not for Google Recaptcha
             if ($(this)[0] != $(recaptchaType)[0]) {
                 delay(function() {
-                    checkForm(formIdentifier, currentElement, null);
+                    checkForm(formIdentifier, currentElement, [jsLcFirst]);
                 }, 1000);
             }
         }
@@ -74,7 +78,7 @@ jQuery(function($) {
      $(document).on('otherFieldsChecked', fieldType, function(e) {
         delay(function() {
                 // Check current element
-                checkForm(formIdentifier, currentElement, null);
+                checkForm(formIdentifier, currentElement, [jsLcFirst]);
                 // Update show/hide notice message box
                 showNoticeMessage(true, false);
             }, 1000);
@@ -83,17 +87,19 @@ jQuery(function($) {
     // Mask/unmask password to help user
     var checked = false;
     $(document).on('click', '.unmask-pwd', function() {
-        $('#lif_show_password').trigger('change');
+        $('#ref_show_password').trigger('change');
         if (checked) {
-            changeType($('input#lif_password'), 'text');
+            changeType($('input#ref_password'), 'text');
+            changeType($('input#ref_passwordConfirmation'), 'text');
         } else {
-            changeType($('input#lif_password'), 'password');
+            changeType($('input#ref_password'), 'password');
+            changeType($('input#ref_passwordConfirmation'), 'password');
             return false;
         }
     });
 
     // Manage custom checkbox "change" event to switch show/hide password
-    $(document).on('change', '#lif_show_password', function() {
+    $(document).on('change', '#ref_show_password', function() {
         var attr = $(this).prop('checked');
         if ($(this).is(":checked")) {
             $(this).prop('checked', false);
@@ -116,6 +122,21 @@ var checkForm = function(formIdentifier, element, functionsArray) {
         // Check element field
         fieldErrorMessage = element.parent('.input-group').prev('.text-danger');
         switch (element.attr('id')) {
+            case formIdentifier + 'familyName':
+            case formIdentifier + 'firstName':
+            case formIdentifier + 'nickName':
+                if (element.val().replace(/^\s+|\s+$/gm,'') == '') {
+                    var elementLabel = functionsArray[0](element.attr('aria-label'));
+                    fieldErrorMessage.html('&nbsp;Please fill in ' + elementLabel +
+                                      '.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
+                    if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
+                    fieldErrorMessage.fadeIn(700);
+                    errorsOnFields[element.attr('id')] = true;
+                } else {
+                    fieldErrorMessage.fadeOut(700);
+                    errorsOnFields[element.attr('id')] = false;
+                }
+            break;
             case formIdentifier + 'email':
                 var pattern = /^\s*\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+\s*$/g;
                 var is_email = pattern.test(element.val());
@@ -136,10 +157,10 @@ var checkForm = function(formIdentifier, element, functionsArray) {
                 }
                 break;
             case formIdentifier + 'password':
+            case formIdentifier + 'passwordConfirmation':
                 // At least 1 number, 1 lowercase letter, 1 uppercase letter, 1 special character, a minimum of 8 characters
                 var pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,}$/gm;
                 var is_password = pattern.test(element.val());
-
                 if (element.val().replace(/^\s+|\s+$/gm,'') == '') {
                     fieldErrorMessage.html('&nbsp;Please fill in your password.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
                     if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
@@ -153,6 +174,12 @@ var checkForm = function(formIdentifier, element, functionsArray) {
                     errorsOnFields[element.attr('id')] = true;
                 } else if (!is_password) {
                     fieldErrorMessage.html('&nbsp;Sorry, your password format is not valid!<br>Please check it or verify required characters<br>before login try.' +
+                    '&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
+                    if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
+                    fieldErrorMessage.fadeIn(700);
+                    errorsOnFields[element.attr('id')] = true;
+                } else if (element.attr('id') == formIdentifier + 'passwordConfirmation' && element.val() != $('#' + formIdentifier + 'password').val()) {
+                    fieldErrorMessage.html('&nbsp;Password confirmation does not match your password!<br>Please check it to be identical.' +
                     '&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
                     if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
                     fieldErrorMessage.fadeIn(700);
