@@ -41,7 +41,7 @@ class AppCaptcha
             case 'AppNoSpamTools':
                 if (isset($arguments['customized'])) {
                     return call_user_func_array([$this->captcha, $arguments['customized'][0]], isset($arguments['customized'][1]) ? $arguments['customized'][1] : []);
-                } elseif ((is_array($arguments))) {
+                } elseif ((is_array($arguments))) { // Only arguments
                     return call_user_func_array([$this, 'validateAppNoSpamTools'], $arguments);
                 }
             break;

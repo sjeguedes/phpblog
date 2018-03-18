@@ -7,7 +7,7 @@ namespace App\Models\Admin\Entity;
 class Contact
 {
 	/**
-	 * @var string
+	 * @var integer
 	 */
 	private $id;
 	/**
@@ -37,17 +37,17 @@ class Contact
 
 	/**
 	 * Constructor
-	 * @param array $array: an array of properties 
+	 * @param array $array: an array of properties
 	 * @return void
 	 */
-	public function __construct($array)   
+	public function __construct($array)
 	{
 		$this->hydrate($array);
 	}
 
 	/**
 	 * Hydrate entity
-	 * @param array $datas 
+	 * @param array $datas
 	 * @return void
 	 */
 	public function hydrate($datas)
@@ -56,14 +56,12 @@ class Contact
 		$classPrefix = strtolower($classShortName) . '_';
 		foreach ($datas as $key => $value) {
 			// Define setter: replace "classname_" tables fields prefix syntax by nothing
-		    $method = 'set' . ucfirst(str_replace($classPrefix, '', $key)); 
-		    
+		    $method = 'set' . ucfirst(str_replace($classPrefix, '', $key));
 		    // Does setter exist?
 		    if (method_exists($this, $method)) {
 		      	// Call setter
 		      	$this->$method($value);
-		    }
-		    else {
+		    } else {
 		    	// Call magic __set
 		    	$this->$key = $value;
 		    }
@@ -73,23 +71,23 @@ class Contact
 	/**
 	 * __set() magic method
 	 * @param string $name: name of property
-	 * @param string $value: value of property to set 
+	 * @param string $value: value of property to set
 	 * @return void
 	 */
 	public function __set($name, $value)
-	{	    
+	{
 	    if (method_exists($this, $name)) {
 	      	$this->$name($value);
 	    } else {
 	      	// Setter is not defined so set as property of object
-	      	$key = lcfirst(str_replace('set', '', $name)); 
+	      	$key = lcfirst(str_replace('set', '', $name));
 	      	$this->temporaryParams[$key] = $value;
 	    }
   	}
 
 	/**
 	 * __get() magic method
-	 * @param type $name: name of property to get 
+	 * @param type $name: name of property to get
 	 * @return callable|string|null
 	 */
 	public function __get($name)
@@ -103,31 +101,31 @@ class Contact
 	    	return $this->temporaryParams[$name];
 	    } else {
 	    	return null;
-	    }  
+	    }
 	}
 
 	/**
 	 * Get temporary entity properties which do not exist in database
 	 * @return array: an array of temporary properties which are not hydrated
 	 */
-	public function getTemporaryParams() 
+	public function getTemporaryParams()
 	{
 		return $this->temporaryParams;
 	}
 
 	// Getters
-	
+
 	/**
-	 * Get property id
-	 * @return string
+	 * Get property: id
+	 * @return integer
 	 */
-	public function getId() 
+	public function getId()
 	{
 		return $this->id;
 	}
 
 	/**
-	 * Get property sendingDate
+	 * Get property: sendingDate
 	 * @return string
 	 */
 	public function getSendingDate()
@@ -136,7 +134,7 @@ class Contact
 	}
 
 	/**
-	 * Get property familyName
+	 * Get property: familyName
 	 * @return string
 	 */
 	public function getFamilyName()
@@ -145,16 +143,16 @@ class Contact
 	}
 
 	/**
-	 * Get property firstName
+	 * Get property: firstName
 	 * @return string
 	 */
-	public function getFirstName() 
+	public function getFirstName()
 	{
 		return $this->firstName;
 	}
 
 	/**
-	 * Get property email
+	 * Get property: email
 	 * @return string
 	 */
 	public function getEmail()
@@ -163,22 +161,22 @@ class Contact
 	}
 
 	/**
-	 * Get property message
+	 * Get property: message
 	 * @return string
 	 */
 	public function getMessage()
 	{
 		return $this->message;
 	}
-	
+
 	// Setters
-	
+
 	/**
-	 * Set property id
-	 * @param string $id
+	 * Set property: id
+	 * @param integer $id
 	 * @return void
 	 */
-	public function setId($id) 
+	public function setId($id)
 	{
 		$id = (int) $id;
 		if ($id > 0) {
@@ -187,24 +185,24 @@ class Contact
 	}
 
 	/**
-	 * Set property sendingDate
-	 * @param string $sendingDate 
+	 * Set property: sendingDate
+	 * @param string $sendingDate
 	 * @return void
 	 */
 	public function setSendingDate($sendingDate)
 	{
 		if (is_string($sendingDate)) {
 			$date = new \DateTime($sendingDate);
-	      	$this->sendingDate = date_format($date, 'd-m-Y H:i:s');
+	      	$this->sendingDate = $date->format( 'd-m-Y H:i:s');
 	    }
 	}
 
 	/**
-	 * Set property familyName
-	 * @param string $familyName 
+	 * Set property: familyName
+	 * @param string $familyName
 	 * @return void
 	 */
-	public function setFamilyName($familyName) 
+	public function setFamilyName($familyName)
 	{
 		if (is_string($familyName)) {
 	      	$this->familyName = $familyName;
@@ -212,11 +210,11 @@ class Contact
 	}
 
 	/**
-	 * Set property firstName
-	 * @param string $firstName 
+	 * Set property: firstName
+	 * @param string $firstName
 	 * @return void
 	 */
-	public function setFirstName($firstName) 
+	public function setFirstName($firstName)
 	{
 		if (is_string($firstName)) {
 	      	$this->firstName = $firstName;
@@ -224,11 +222,11 @@ class Contact
 	}
 
 	/**
-	 * Set property email
-	 * @param string $email 
+	 * Set property: email
+	 * @param string $email
 	 * @return void
 	 */
-	public function setEmail($email) 
+	public function setEmail($email)
 	{
 		if (is_string($email)) {
 	      	$this->email = $email;
@@ -236,11 +234,11 @@ class Contact
 	}
 
 	/**
-	 * Set property message
-	 * @param string $message 
+	 * Set property: message
+	 * @param string $message
 	 * @return void
 	 */
-	public function setMessage($message) 
+	public function setMessage($message)
 	{
 		if (is_string($message)) {
 	      	$this->message = $message;

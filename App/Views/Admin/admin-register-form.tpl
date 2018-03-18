@@ -8,6 +8,7 @@
         <div class="row">
             <div class="col-lg-8 text-center col-md-10 ml-auto mr-auto">
                 <!-- Success message box is used here when no redirection is processed! -->
+                {% if activationSuccess is not defined %}
                 <p class="alert alert-success form-success{{ success == 0 ? ' form-hide'}}" role="alert">
                     <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>WELL DONE!</strong>&nbsp;You registered successfully.<br>You are going to receive an account validation email in a few minutes!<br>You will be able to activate your registration definitively<br>by clicking on your personal link.
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -16,6 +17,17 @@
                         </span>
                     </button>
                 </p>
+                {% else %}
+                <p class="alert alert-success form-success" role="alert">
+                    <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>ACCOUNT REGISTRATION ACTIVATION IS DONE!</strong><br>You activated your account successfully.<br>We are proud to have you among our new members!<br>Until now, <a href="/admin/login" class="text-muted text-lower" title="Member access"><strong>you are able to login</strong></a>.
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">
+                            <i class="now-ui-icons ui-1_simple-remove"></i>
+                        </span>
+                    </button>
+                </p>
+                {% endif %}
+                {% if activationErrors is not defined %}
                 <p class="alert alert-danger form-error{{ errors == 0 ? ' form-hide'}}" role="alert">
                     <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERRORS!</strong>&nbsp;Change a few things up and try submitting again.{% if errors['ref_register'] is defined %}<br>{{ errors['ref_register']|raw }}{% endif %}{% if errors['ref_check'] is defined %}<br>{{ errors['ref_check']|raw }}{% endif %}
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -24,6 +36,16 @@
                         </span>
                     </button>
                 </p>
+                {% else %}
+                <p class="alert alert-danger form-error" role="alert">
+                    <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ACCOUNT REGISTRATION ACTIVATION FAILED!</strong><br>Something went wrong during process!{% if activationErrors['ref_act_register'] is defined %}<br>{{ activationErrors['ref_act_register']|raw }}{% endif %}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">
+                            <i class="now-ui-icons ui-1_simple-remove"></i>
+                        </span>
+                    </button>
+                </p>
+                {% endif %}
             </div>
         </div>
         <!-- End user notice message -->

@@ -167,19 +167,13 @@ var checkForm = function(formIdentifier, element, functionsArray) {
                     fieldErrorMessage.fadeIn(700);
                     errorsOnFields[element.attr('id')] = true;
                 } else if (element.val().length < 8) {
-                    fieldErrorMessage.html('&nbsp;Sorry, your password must contain<br>at least 8 characters!<br>Please check it before login try.' +
+                    fieldErrorMessage.html('&nbsp;Sorry, your password must contain<br>at least 8 characters!<br>Please check it.' +
                     '&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
                     if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
                     fieldErrorMessage.fadeIn(700);
                     errorsOnFields[element.attr('id')] = true;
                 } else if (!is_password) {
-                    fieldErrorMessage.html('&nbsp;Sorry, your password format is not valid!<br>Please check it or verify required characters<br>before login try.' +
-                    '&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
-                    if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
-                    fieldErrorMessage.fadeIn(700);
-                    errorsOnFields[element.attr('id')] = true;
-                } else if (element.attr('id') == formIdentifier + 'passwordConfirmation' && element.val() != $('#' + formIdentifier + 'password').val()) {
-                    fieldErrorMessage.html('&nbsp;Password confirmation does not match your password!<br>Please check it to be identical.' +
+                    fieldErrorMessage.html('&nbsp;Sorry, your password format is not valid!<br>Please check it or verify required characters.' +
                     '&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
                     if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
                     fieldErrorMessage.fadeIn(700);
@@ -187,6 +181,18 @@ var checkForm = function(formIdentifier, element, functionsArray) {
                 } else {
                     fieldErrorMessage.fadeOut(700);
                     errorsOnFields[element.attr('id')] = false;
+                }
+                if ($('#' + formIdentifier + 'passwordConfirmation').val() != '' && element.attr('id') == formIdentifier + 'password') {
+                    // Password confirmation is not empty, and password is changed, so check password confirmation.
+                    // Show password confirmation error with trigger
+                    $('#' + formIdentifier + 'passwordConfirmation').trigger('input');
+                } else if (element.attr('id') == formIdentifier + 'passwordConfirmation' && element.val() != $('#' + formIdentifier + 'password').val()) {
+                     // Password confirmation is changed and does not match password.
+                    fieldErrorMessage.html('&nbsp;Password confirmation does not match<br>your password!<br>Please check both to be identical.<br>Unwanted authorized space character(s) " "<br>may be an issue!' +
+                    '&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
+                    if ($('#' + formIdentifier + 'passwordConfirmation').parent('.input-group').prev('.text-danger').hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
+                    fieldErrorMessage.fadeIn(700);
+                    errorsOnFields[element.attr('id')] = true;
                 }
                 break;
         }

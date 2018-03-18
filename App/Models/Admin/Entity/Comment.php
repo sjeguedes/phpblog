@@ -7,7 +7,7 @@ namespace App\Models\Admin\Entity;
 class Comment
 {
     /**
-     * @var string
+     * @var integer
      */
     private $id;
     /**
@@ -31,15 +31,15 @@ class Comment
      */
     private $content;
     /**
-     * @var string
+     * @var boolean
      */
     private $isValidated;
     /**
-     * @var string
+     * @var boolean
      */
     private $isPublished;
     /**
-     * @var string
+     * @var integer
      */
     private $postId;
     /**
@@ -69,13 +69,11 @@ class Comment
         foreach ($datas as $key => $value) {
             // Define setter: replace "classname_" tables fields prefix syntax by nothing
             $method = 'set' . ucfirst(str_replace($classPrefix, '', $key));
-
             // Does setter exist?
             if (method_exists($this, $method)) {
                 // Call setter
                 $this->$method($value);
-            }
-            else {
+            } else {
                 // Call magic __set
                 $this->$key = $value;
             }
@@ -130,8 +128,8 @@ class Comment
     // Getters
 
     /**
-     * Get property id
-     * @return string
+     * Get property: id
+     * @return integer
      */
     public function getId()
     {
@@ -139,7 +137,7 @@ class Comment
     }
 
     /**
-     * Get property creationDate
+     * Get property: creationDate
      * @return string
      */
     public function getCreationDate()
@@ -148,7 +146,7 @@ class Comment
     }
 
     /**
-     * Get property nickName
+     * Get property: nickName
      * @return string
      */
     public function getNickName()
@@ -157,7 +155,7 @@ class Comment
     }
 
     /**
-     * Get property email
+     * Get property: email
      * @return string
      */
     public function getEmail()
@@ -166,7 +164,7 @@ class Comment
     }
 
     /**
-     * Get property title
+     * Get property: title
      * @return string
      */
     public function getTitle()
@@ -175,7 +173,7 @@ class Comment
     }
 
     /**
-     * Get property content
+     * Get property: content
      * @return string
      */
     public function getContent()
@@ -184,8 +182,8 @@ class Comment
     }
 
     /**
-     * Get property isValidated
-     * @return string
+     * Get property: isValidated
+     * @return boolean
      */
     public function getIsValidated()
     {
@@ -193,8 +191,8 @@ class Comment
     }
 
     /**
-     * Get property isPublished
-     * @return string
+     * Get property: isPublished
+     * @return boolean
      */
     public function getIsPublished()
     {
@@ -202,8 +200,8 @@ class Comment
     }
 
     /**
-     * Get property postId
-     * @return string
+     * Get property: postId
+     * @return integer
      */
     public function getPostId()
     {
@@ -213,8 +211,8 @@ class Comment
     // Setters
 
     /**
-     * Set property id
-     * @param string $id
+     * Set property: id
+     * @param integer $id
      * @return void
      */
     public function setId($id)
@@ -226,7 +224,7 @@ class Comment
     }
 
     /**
-     * Set property creationDate
+     * Set property: creationDate
      * @param string $creationDate
      * @return void
      */
@@ -234,12 +232,12 @@ class Comment
     {
         if (is_string($creationDate)) {
             $date = new \DateTime($creationDate);
-            $this->creationDate = date_format($date, 'd-m-Y H:i:s');
+            $this->creationDate = $date->format('d-m-Y H:i:s');
         }
     }
 
     /**
-     * Set property nickName
+     * Set property: nickName
      * @param string $nickName
      * @return void
      */
@@ -251,7 +249,7 @@ class Comment
     }
 
     /**
-     * Set property email
+     * Set property: email
      * @param string $email
      * @return void
      */
@@ -263,7 +261,7 @@ class Comment
     }
 
     /**
-     * Set property title
+     * Set property: title
      * @param string $title
      * @return void
      */
@@ -275,7 +273,7 @@ class Comment
     }
 
     /**
-     * Set property content
+     * Set property: content
      * @param string $content
      * @return void
      */
@@ -287,32 +285,32 @@ class Comment
     }
 
     /**
-     * Set property isValidated
-     * @param string $isValidated
+     * Set property: isValidated
+     * @param boolean $isValidated
      * @return void
      */
     public function setIsValidated($isValidated)
     {
-        if (is_string($isValidated)) {
+        if (is_bool($isValidated)) {
             $this->isValidated = $isValidated;
         }
     }
 
     /**
-     * Set property isPublished
-     * @param string $isPublished
+     * Set property: isPublished
+     * @param boolean $isPublished
      * @return void
      */
     public function setIsPublished($isPublished)
     {
-        if (is_string($isPublished)) {
+        if (is_bool($isPublished)) {
             $this->isPublished = $isPublished;
         }
     }
 
     /**
-     * Set property postId
-     * @param string $postId
+     * Set property: postId
+     * @param integer $postId
      * @return void
      */
     public function setPostId($postId)

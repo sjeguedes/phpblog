@@ -2,7 +2,6 @@
 namespace App\Controllers\Admin\User;
 use App\Controllers\Admin\AdminController;
 use Core\Routing\AppRouter;
-use Core\Service\AppContainer;
 use App\Models\Admin\Entity\User;
 
 /**
@@ -140,20 +139,48 @@ class AdminUserController extends AdminController
     }
 
     /**
+     * Check if there is already a success state for user registration activation
+     * @return boolean
+     */
+    private function isActivationSuccess() {
+        if (isset($_SESSION['ref_act_success'])) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
      * Show default register template
      * @return void
      */
     public function showAdminRegister()
     {
-        // Call template with methods for more flexibility
         // (No need here to update user form inputs! "$checkedForm" argument is null)
         $varsArray = $this->initAdminRegister();
+        // Account activation case
+        if (isset($_GET['userAccount']) && isset($_GET['activationKey'])) {
+            $activationResult = $this->activateUserAccount($_GET);
+            if ($this->isActivationSuccess()) {
+                $varsArray['activationSuccess'] = $_SESSION['ref_act_success'];
+            } else {
+                $varsArray['activationErrors'] = $activationResult['ref_act_errors'];
+            }
+        }
+        // Call template with methods for more flexibility
         $this->renderAdminRegister($varsArray);
         // Is it already a succcess state for admin register form?
         // Enable registration success message box once a time
         if ($this->isRegisterSuccess()) {
             // Do not store a success state anymore!
             unset($_SESSION['ref_success']);
+        }
+        // Is it already a succcess state for user registration activation?
+        // Enable activation success message box once a time
+        if ($this->isActivationSuccess()) {
+            // Do not store a success state anymore!
+            unset($_SESSION['ref_act_success']);
         }
     }
 
@@ -203,9 +230,9 @@ class AdminUserController extends AdminController
         // Password
         $this->registerFormValidator->validatePassword('password', 'password', $_POST['ref_password']);
         // Password confirmation
-        $this->registerFormValidator->validatePassword('passwordConfirmation', 'password', $_POST['ref_passwordConfirmation']);
+        $this->registerFormValidator->validatePassword('passwordConfirmation', 'password', isset($_POST['ref_passwordConfirmation']) ? $_POST['ref_passwordConfirmation'] : '');
         // Check if password confirmation and password are identical
-        $this->registerFormValidator->validatePasswordConfirmation('passwordConfirmation', $_POST['ref_password'], $_POST['ref_passwordConfirmation']);
+        $this->registerFormValidator->validatePasswordConfirmation('passwordConfirmation', $_POST['ref_password'], isset($_POST['ref_passwordConfirmation']) ? $_POST['ref_passwordConfirmation'] : '');
         // Check token to avoid CSRF
         $this->registerFormValidator->validateToken(isset($_POST[$this->refTokenIndex]) ? $_POST[$this->refTokenIndex] : false);
         // Get validation result without captcha
@@ -254,7 +281,7 @@ class AdminUserController extends AdminController
             // User entity was saved successfuly!
             if ($insertion) {
                 // Send account activation email
-                // TODO: do stuff here in next commit $this->sendUserActivationEmail($result);
+                $this->sendUserActivationEmail($result);
                 // Reset the form
                 $result = [];
                 // Delete current token
@@ -267,6 +294,106 @@ class AdminUserController extends AdminController
                 $_SESSION['ref_success'] = true;
             }
         }
+        return $result;
+    }
+
+    /**
+     * Send a user registration activation email
+     * @param array $result: register form datas
+     * @return void
+     */
+    private function sendUserActivationEmail($result)
+    {
+        // Time limit to activate account (+ 2 days)
+        $date = new \DateTime(date('d-m-Y H:i:s'));
+        $date->add(new \DateInterval('P2D'));
+        // Prepare email
+        $headers  = 'MIME-Version: 1.0' . "\r\n";
+        $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+        $headers .= 'From: "' . $this->config->getParam('websiteName') . '" <' . $this->config->getParam('contactForm.contactEmail') . '>'. "\r\n";
+        $emailMessage = '<html><head></head><body>' . PHP_EOL .
+        '<p style="text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'dotprogs-logo-2016.jpg" alt="phpBlog - Registration activation" with="150" height="150" /></p>' . PHP_EOL .
+        '<p style="text-align:center;"><strong>ACCOUNT REGISTRATION ACTIVATION</strong><br><br></p>' . PHP_EOL .
+        '<p style="width: 600px; margin: 0 auto; text-align:center; border-top: 2px solid #ffb236; border-bottom: 2px solid #2ca8ff"><br>Dear ' . htmlentities($result['ref_firstName']) . ' ' . htmlentities($result['ref_familyName']) . ',<br>Thank you to be registered on <a href="' . $this->config->getParam('domain'). '" title="phpBlog"><font color="#888"><u><strong>' . $this->config->getParam('domain') . '</u></strong></font></a>.<br>Now, you have to activate your account to be able to use it on our website.<br>Please click on <a href="' . $this->config->getParam('domain') .'/admin/register/?userAccount=' . $result['ref_email'] . '&amp;activationKey=' . $result['ref_activationCode'] . '" title="Activate your user account"><font color="#f96332"><u>your personal link</u></font></a> to perform this action.<br>Important: please consider your account will be deleted automatically in 48 hours<br>if no activation happens before time limit: <strong>' . $date->format('d-m-Y H:i:s') . '</strong>.<br>Best regards.<br><br>&copy; ' . date('Y') . ' phpBlog<br><br></p>' . PHP_EOL .
+        '</body></html>';
+        // Send email
+        mail( $result['ref_email'], 'Registration activation on ' . $this->config->getParam('websiteName'), $emailMessage, $headers);
+    }
+
+    /**
+     * Activate user account if it's possible
+     * @return array: error to show in message box, or empty array if activation is a success
+     */
+    private function activateUserAccount()
+    {
+        try {
+            // Check email format
+            $checkedEmail = filter_var(trim($_GET['userAccount']), FILTER_VALIDATE_EMAIL);
+            if ($checkedEmail) {
+                // Check email account in database
+                $user = $this->currentModel->getUserByEmail($checkedEmail);
+                // Existing user email account
+                if ($user != false) {
+                    // Account is already activated!
+                    if ($user->isActivated) {
+                        $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account activation failed!<br>This account is already activated: <strong>' . htmlentities($_GET['userAccount']) . '</strong>!<br>Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br></span>');
+                        $activation = false;
+                    } else {
+                        // Activation code matches activation key parameter
+                        if ($_GET['activationKey'] === $user->activationCode) {
+                            $datas = [
+                                'entity' => 'user',
+                                'values' => [
+
+                                    0 => [
+                                        'type' => 4, // null
+                                        'column' => 'activationCode',
+                                        'value' => 'NULL' // set to NULL
+                                    ],
+                                    1 => [
+                                        'type' => 2, // string
+                                        'column' => 'activationDate',
+                                        'value' => date('Y-m-d H:i:s') // set to current date time (SQL format)
+                                    ],
+                                    2 => [
+                                        'type' => 1, // int
+                                        'column' => 'isActivated',
+                                        'value' => 1 // set to true
+                                    ]
+                                ]
+                            ];
+                            // Update user activation datas
+                            $this->currentModel->updateEntity($user->id, $datas);
+                            $activation = true;
+                        } else {
+                            // Wrong activation code
+                            $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account activation was refused!<br>Your activation key is not valid: <strong>' . htmlentities($_GET['activationKey']) . '</strong>!<br>Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br></span>');
+                            $activation = false;
+                        }
+                    }
+
+                } else {
+                    // Unknown user email account
+                    $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account activation was refused!<br>This email address is unknown: <strong>' . htmlentities($_GET['userAccount']) . '</strong>!<br>Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br></span>');
+                    $activation = false;
+                }
+            } else {
+                // Invalid email
+                $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account activation was refused!<br>This email address is not valid: <strong>' . htmlentities($_GET['userAccount']) . '</strong>!<br>Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br></span>');
+                $activation = false;
+            }
+        } catch (\PDOException $e) {
+            $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to activate your account at this time: please try again later<br>or <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+            $activation = false;
+        }
+        // User entity was activated successfuly!
+        if ($activation) {
+            // Reset activation result
+            $result = [];
+            // Show success message
+            $_SESSION['ref_act_success'] = true;
+        }
+        // Update notice error/success message
         return $result;
     }
 
@@ -401,7 +528,7 @@ class AdminUserController extends AdminController
                 if ($user != false) {
                     if ($user->isActivated == false) {
                         // User hasn't activated his account yet (or not at all)!
-                        $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry, authentication failed! Please activate your account first!<br>Please <a href="/" class="text-muted" title="Contact us">contact us</a> if it\'s necessary.<br>[Debug trace: user with email account "<strong>' . htmlentities($result['lif_email']) . '</strong>" must be activated in database!]</span>');
+                        $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry, authentication failed! Please activate your account first!<br>Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br>[Debug trace: user with email account "<strong>' . htmlentities($result['lif_email']) . '</strong>" must be activated in database!]</span>');
                     } else {
                         // Check existing password for email account
                         $password = $this->verifyUserPassword($result['lif_password'], $user->password);

@@ -213,7 +213,7 @@ class AppFormValidator
     public function validatePasswordConfirmation($name, $password, $passwordConfirmation) {
         $name = $this->formIdentifier . $name;
         if ($passwordConfirmation !== $password) {
-            $this->result[$this->errorIndex][$name] = 'Password confirmation does not match your password!<br>Please check it to be identical.';
+            $this->result[$this->errorIndex][$name] = 'Password confirmation does not match<br>your password!<br>Please check both to be identical.<br>Unwanted authorized space character(s) " "<br>may be an issue!';
         }
     }
 

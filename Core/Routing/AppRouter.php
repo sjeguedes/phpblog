@@ -88,7 +88,7 @@ class AppRouter
         $this->router = $this;
         // Instantiate AppConfig object!
         // This instance needs a http response instance
-        $this->config = AppConfig::getInstance(); // httpResponse (httpResponse + page + session ?)
+        $this->config = AppConfig::getInstance();
         $this->config::setRouter($this->router);
         // Instantiate HTTPResponse object!
         // This instance needs router, config, httpResponse, page (see below) instances
@@ -134,7 +134,8 @@ class AppRouter
      * Get used "url" parameter
      * @return string: url to route
      */
-    public function getUrl() {
+    public function getUrl()
+    {
         return $this->url;
     }
 
@@ -142,7 +143,8 @@ class AppRouter
      * Get router AppContainer instance
      * @return object: an AppContainer instance
      */
-    public function getContainer() {
+    public function getContainer()
+    {
         return $this->container;
     }
 
@@ -150,7 +152,8 @@ class AppRouter
      * Get router AppPage instance
      * @return object: an AppPage instance
      */
-    public function getPage() {
+    public function getPage()
+    {
         return $this->page;
     }
 
@@ -158,7 +161,8 @@ class AppRouter
      * Get router page AppHTTPResponse
      * @return object: an AppHTTPResponse instance
      */
-    public function getHTTPResponse() {
+    public function getHTTPResponse()
+    {
         return $this->httpResponse;
     }
 
@@ -166,7 +170,8 @@ class AppRouter
      * Get router AppConfig instance
      * @return object: an AppConfig instance
      */
-    public function getConfig() {
+    public function getConfig()
+    {
         return $this->config;
     }
 
@@ -174,7 +179,8 @@ class AppRouter
      * Get router AppSession instance
      * @return object: an AppSession instance
      */
-    public function getSession() {
+    public function getSession()
+    {
         return $this->session;
     }
 

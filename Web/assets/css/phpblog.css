@@ -34,14 +34,20 @@ span.btn:hover,span.btn:focus {
     position: relative;
 }
 
-.alert .close {
+.alert a.text-lower strong {
+    font-size: 1em;
+    text-transform: lowercase;
+}
+
+.alert button.close {
     position: absolute;
-    top: 0;
+    top: 0px;
     right: 5px;
+    transform: none;
     cursor: pointer;
 }
 
-.alert .close .now-ui-icons:before {
+.alert button.close .now-ui-icons:before {
     font-size: 0.75em;
 }
 /* End override Now ui */

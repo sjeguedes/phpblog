@@ -153,9 +153,9 @@ class AppContainer
 		for ($i = 0; $i < count(self::$_params['service']['mailer']); $i++) {
 			switch (self::$_params['service']['mailer'][$i]['type']) {
 				case 'PHPMailer':
-					$mailers[$i] = new AppMailer(new PHPMailer(self::$_config::getParam('contactPHPMailer.enableExceptions')), self::$_params['service']['mailer'][$i]['sendingMethod'], self::$_params['service']['mailer'][$i]['use']);
+					$mailers[$i] = new AppMailer(new PHPMailer(self::$_config::getParam('contactPHPMailer.enableExceptions')), self::$_router, self::$_params['service']['mailer'][$i]['sendingMethod'], self::$_params['service']['mailer'][$i]['use']);
 				break;
-				// Other types: do stuff here!
+				// Other types: do stuff here! Example: swiftMailer
 			}
 		}
 		return $mailers;

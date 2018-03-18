@@ -1,5 +1,6 @@
 config:
     domain: https://www.example.com (or local virtual host)
+    websiteName: your website name
     https: true or false (your type of protocol)
     appDebug: true or false (show debug details for exceptions)
     database:
@@ -35,3 +36,5 @@ config:
         SMTPUserName: your_mail_for_stmp_authentication (SMTPAuth set to true)
         SMTPPwd: your_password_for_stmp_authentication (SMTPAuth set to true)
         hostedImagesAbsoluteURL: absolute url to load images in html message (https://www.example.com/assets/images/)
+    mailing:
+        hostedImagesAbsoluteURL: absolute url to load images in html emails in general
