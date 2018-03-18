@@ -255,9 +255,9 @@ class HomeController extends BaseController
             // Insert Contact entity in database to keep it
             try {
                 $this->currentModel->insertContact($result);
-                $this->insertionInfos = '<span style="color:#ffffff;background-color:#18ce0f;padding:5px">Success notice - Contact entity was successfully saved in database.</span>';
+                $this->insertionInfos = '<font color="#18ce0f"><strong>Success notice - Contact entity was successfully saved in database.</strong></font>';
             } catch (\PDOException $e) {
-                $this->insertionInfos = '<span style="color:#ffffff;background-color:#ff3636;padding:5px">Error warning - Contact entity was unsaved in database:</span><br><br><span style="color:#ffffff;background-color:#ff3636;padding:5px">' . $e->getMessage() . '</span>';
+                $this->insertionInfos = '<font color="#ff3636"><strong>Error warning - Contact entity was unsaved in database:</strong></font><br><br><font color="#ff3636"><strong>' . $e->getMessage() . '</strong></font>';
             }
             // Is message sent?
             $datas = [

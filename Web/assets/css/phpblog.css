@@ -34,9 +34,9 @@ span.btn:hover,span.btn:focus {
     position: relative;
 }
 
-.alert a.text-lower strong {
-    font-size: 1em;
-    text-transform: lowercase;
+.alert a.text-lower strong, .text-lower {
+    font-size: 1em !important;
+    text-transform: lowercase !important;
 }
 
 .alert button.close {
@@ -346,10 +346,10 @@ ul.phpblog-list {
 }
 
 /* Forms */
-body.new-session .cf-error .cf-check-notice, body.new-session .form-check-notice {
+body.new-session .form-token-notice {
     display: none;
 }
-.cf-error .cf-check-notice, .form-check-notice {
+.form-check-notice,.form-token-notice {
     display: block;
     color: rgba(255, 54, 54, 0.8);
     background-color: #fff;
@@ -424,7 +424,6 @@ form p.text-danger {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
-.section-contact-us .cf-hide,
 .form-hide {
     display: none;
 }

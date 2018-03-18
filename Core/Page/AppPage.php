@@ -4,7 +4,7 @@ use Core\Page\AppTwig;
 
 /**
  * Load template engine to show front-end and set its parameters:
- * Example: here Twig template engine is used
+ * Example: here Twig template engine is used, but others can be added (Smarty ...).
  */
 class AppPage
 {
@@ -124,6 +124,6 @@ class AppPage
         // Pass session datas to template
         $vars = self::addSessionTemplateParams($vars);
         // Render block
-		return self::$_templateEngine->renderTwigBlock($blockName, $vars);
+		return self::$_templateEngine->renderTwigBlock($view, $blockName, $vars);
 	}
 }

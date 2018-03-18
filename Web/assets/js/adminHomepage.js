@@ -5,14 +5,14 @@ jQuery(function($) {
     // -------------------------------------------------------------------------------------------------------
 
     // Better user experience with scroll
-    $(window).on('load hashchange', function() {
+    $(window).on('load hashchange', function(e) {
         // Scroll to bloc-"name-of-bloc"
-		var hash = window.location.hash;
-		if (hash) {
-			$('html, body').animate({
-				scrollTop: $('#bloc-' + hash.replace('#', '')).offset().top + 'px'
-			}, '700');
-		}
+        var hash = window.location.hash;
+        if (hash) {
+            $('html, body').animate({
+                scrollTop: ($('#bloc-' + hash.replace('#', '')).offset().top - 125) + 'px'
+            }, '700');
+        }
 
         // Scroll to form notice messages boxes if it is visible (obviously, in case of no AJAX mode).
         $('.form-error, .form-success').each(function() {

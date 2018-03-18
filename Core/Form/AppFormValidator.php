@@ -232,12 +232,12 @@ class AppFormValidator
                 $this->result[$this->formIdentifier . 'check'] = true;
             }
             else {
-                $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-check-notice">- Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)</span>';
+                $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-token-notice">- Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)</span>';
                 $this->result[$this->formIdentifier . 'check'] = false;
             }
         // Wrong token index or anything else happened.
         } else {
-            $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-check-notice"> - Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)</span>';
+            $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-token-notice"> - Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)</span>';
             $this->result[$this->formIdentifier . 'check'] = false;
         }
     }

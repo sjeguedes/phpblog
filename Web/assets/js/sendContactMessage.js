@@ -6,9 +6,9 @@ jQuery(function($) {
 
     // -------------------------------------------------------------------------------------------------------
 
-    $(window).on('load', function() {
+    $(window).on('load hashchange', function(e) {
         // Scroll to contact form notice message box if it is visible (obviously, in case of no AJAX mode).
-        $('.cf-error, .cf-success').each(function() {
+        $('.form-error, .form-success').each(function() {
             if ($(this).is(':visible')) {
                 $('html, body').animate({
                     scrollTop: ($(this).offset().top - 125) + 'px'
@@ -16,6 +16,14 @@ jQuery(function($) {
                 return false;
             }
         });
+
+        // Scroll to bloc-"name-of-bloc"
+        var hash = window.location.hash;
+        if (hash) {
+            $('html, body').animate({
+                scrollTop: ($('#bloc-' + hash.replace('#', '')).offset().top - 125) + 'px'
+            }, '700');
+        }
         // Update success state if Google recaptcha is the only one to validate after reload (no AJAX mode).
         if (parseInt($('.contact-form').data('ajax')) != 1) {
             $('.contact-form').find('.input-group input[type="text"], .input-group input[type="email"], .input-group textarea, input[id="cf_check"]').each(function() {
@@ -33,7 +41,7 @@ jQuery(function($) {
     // Don't remove (Bootstrap normal behaviour) but hide notice message boxes
 	$(document).on('click', '.section-contact-us .alert .close', function(e) {
 		e.stopPropagation();
-		$(this).parent('.alert').slideUp(700, function() { $(this).addClass('cf-hide'); });
+		$(this).parent('.alert').slideUp(700, function() { $(this).addClass('form-hide'); });
 	})
 
 	// -------------------------------------------------------------------------------------------------------
@@ -108,11 +116,11 @@ jQuery(function($) {
 						$('button[name="cf_submit"]').remove('.ajax-loader');
 						// Is message really sent? $(data) corresponds to $('.contact-form').
 						if (parseInt($(data).data('not-sent')) == 1) {
-							$('.cf-success').slideUp(700);
-							if ($('.cf-error').is(':hidden')) {
-							 	$('.cf-error').slideDown(700, function() { $(this).removeClass('cf-hide'); });
+							$('.form-success').slideUp(700);
+							if ($('.form-error').is(':hidden')) {
+							 	$('.form-error').slideDown(700, function() { $(this).removeClass('form-hide'); });
 							}
-							$('.cf-error').empty().html('<i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERROR!</strong>' +
+							$('.form-error').empty().html('<i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERROR!</strong>' +
 							'&nbsp;Sorry, a technical error happened!<br>Your message was not sent.<br>' +
 							'Please, try again later.' +
 		                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
@@ -120,16 +128,16 @@ jQuery(function($) {
 		                    '</button>');
 							}
 						else {
-							$('.cf-success').slideDown(700);
+							$('.form-success').slideDown(700);
 						}
 				  	},
 				  	error: function(xhr, error, status) {
 				  		// Manage error
 				  		// console.warn(xhr, xhr.responseText, error, status);
-				  		if ($('.cf-error').is(':hidden')) {
-						 	$('.cf-error').slideDown(700, function() { $(this).removeClass('cf-hide'); });
+				  		if ($('.form-error').is(':hidden')) {
+						 	$('.form-error').slideDown(700, function() { $(this).removeClass('form-hide'); });
 						}
-						$('.cf-error').empty().html('<i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERROR!</strong>' +
+						$('.form-error').empty().html('<i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERROR!</strong>' +
 						'&nbsp;Sorry, a technical error happened when the form was submitted!<br>' +
 						'Please, try again later.' +
 	                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
@@ -244,7 +252,7 @@ var check = [],
 		 	dataType: 'json',
 		 	success: function(json) {
 		 		check.push(json.key, json.value);
-		 		$('.cf-error').empty().html('<i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;' +
+		 		$('.form-error').empty().html('<i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;' +
 		 		'<strong>ERRORS!</strong>&nbsp;Change a few things up and try submitting again.' +
                 '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
                 '<span aria-hidden="true"><i class="now-ui-icons ui-1_simple-remove"></i></span>' +
@@ -254,15 +262,17 @@ var check = [],
 		 	error: function(xhr, error, status) {
 		 		// Manage error
 		 		// console.warn(xhr, xhr.responseText, error, status);
-		 		if ($('.cf-error').is(':hidden')) {
-				 	$('.cf-error').slideDown(700, function() { $(this).removeClass('cf-hide'); });
+		 		if ($('.form-error').is(':hidden')) {
+				 	$('.form-error').slideDown(700, function() { $(this).removeClass('form-hide'); });
 				}
-				$('.cf-error').empty().html('<i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;' +
+				$('.form-error').empty().html('<i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;' +
 				'<strong>ERROR!</strong>&nbsp;Sorry, a technical error happened!<br>We can not validate your inputs for the moment.<br>' +
 				'Please, try again later.' +
                 '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
                 '<span aria-hidden="true"><i class="now-ui-icons ui-1_simple-remove"></i></span>' +
                 '</button>');
+                $('.form-error').append('<span class="form-check-notice">Form may be outdated due to inactivity.<br>Reload the page could solve this issue.<br>' +
+                'Otherwise, please <strong class="text-lower">contact us by phone</strong> if it\'s necessary.</span>');
 		 		checkAjaxReturn = false;
 		 	}
 		});
@@ -288,7 +298,7 @@ var ajaxCheckCount = 0,
 					var elementLabel = functionsArray[1](element.attr('aria-label'));
 					fieldErrorMessage.html('&nbsp;Please fill in ' + elementLabel +
 									  '.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
-					if (fieldErrorMessage.hasClass('cf-hide')) { fieldErrorMessage.removeClass('cf-hide').hide(); }
+					if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
 					fieldErrorMessage.fadeIn(700);
 					errorsOnFields[element.attr('id')] = true;
 				} else {
@@ -302,13 +312,13 @@ var ajaxCheckCount = 0,
 
 				if (element.val().replace(/^\s+|\s+$/gm,'') == '') {
 					fieldErrorMessage.html('&nbsp;Please fill in your email address.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
-					if(fieldErrorMessage.hasClass('cf-hide')) { fieldErrorMessage.removeClass('cf-hide').hide(); }
+					if(fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
 					fieldErrorMessage.fadeIn(700);
 					errorsOnFields[element.attr('id')] = true;
 				} else if (!is_email) {
 					fieldErrorMessage.html('&nbsp;Sorry, "<span class="text-muted">' + element.val() +
 					'</span>" is not a valid email address!<br>Please check its format.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
-					if(fieldErrorMessage.hasClass('cf-hide')) { fieldErrorMessage.removeClass('cf-hide').hide(); }
+					if(fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
 					fieldErrorMessage.fadeIn(700);
 					errorsOnFields[element.attr('id')] = true;
 				} else {
@@ -317,13 +327,13 @@ var ajaxCheckCount = 0,
 				}
 			break;
 			case 'cf_check':
-				if ($('.cf-error .cf-check-notice').length > 0) {
-					$('.cf-check-notice').remove();
+				if ($('.form-error .form-check-notice').length > 0) {
+					$('.form-check-notice').remove();
 				}
 				// Check control with AJAX success state concerning returned JSON
 				if (checkAjaxReturn !== undefined && checkAjaxReturn) {
 					if (element.attr('name') != check[0] || element.val() != check[1]) {
-						$('.cf-error').append('<span class="cf-check-notice">You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)</span>');
+						$('.form-error').append('<span class="form-token-notice">You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)</span>');
 						errorsOnFields[element.attr('id')] = true;
 					} else {
 						errorsOnFields[element.attr('id')] = false;
@@ -358,8 +368,8 @@ var	showNoticeMessage = function(isSubmitted) {
 		if (!isSubmitted) {
 			if (success && grcResponse) {
                 // Ready to send!
-				if ($('.cf-error').is(':visible')) {
-					$('.cf-error').slideUp(700, function() { $(this).addClass('cf-hide'); });
+				if ($('.form-error').is(':visible')) {
+					$('.form-error').slideUp(700, function() { $(this).addClass('form-hide'); });
 				}
 			} else {
                 // Else case here to show notice error box, each time there is an error on any field.
@@ -370,27 +380,27 @@ var	showNoticeMessage = function(isSubmitted) {
 		} else { // Contact form is submitted in AJAX mode
 			// All fields are completed correctly.
 			if (success && grcResponse) {
-				if ($('.cf-error').is(':visible')) {
-					$('.cf-error').slideUp(700, function() { $(this).addClass('cf-hide'); });
+				if ($('.form-error').is(':visible')) {
+					$('.form-error').slideUp(700, function() { $(this).addClass('form-hide'); });
 				}
 				// AJAX mode: show success notice box
-				if (parseInt($(this).data('ajax')) == 1 && $('.cf-success').is(':hidden')) {
-					$('.cf-success').slideDown(700, function() { $(this).removeClass('cf-hide'); });
+				if (parseInt($(this).data('ajax')) == 1 && $('.form-success').is(':hidden')) {
+					$('.form-success').slideDown(700, function() { $(this).removeClass('form-hide'); });
 				}
 			}
 			// Errors on fields which prevent form to send user inputs.
 			if ((!success && !grcResponse) || (!success && grcResponse) || (success && !grcResponse)) {
 				// Show error notice box
-				if ($('.cf-error').is(':hidden')) {
-					if ($('.cf-success').is(':visible')) {
+				if ($('.form-error').is(':hidden')) {
+					if ($('.form-success').is(':visible')) {
                         // Hide success notice box if it already exists (in case of previous success)
-					 	$('.cf-success').slideUp(350, function() {
-					 		$(this).addClass('cf-hide');
-					 		$('.cf-error').slideDown(700, function() { $(this).removeClass('cf-hide'); });
+					 	$('.form-success').slideUp(350, function() {
+					 		$(this).addClass('form-hide');
+					 		$('.form-error').slideDown(700, function() { $(this).removeClass('form-hide'); });
 					 	});
 					} else {
                         // Show error notice box
-						$('.cf-error').slideDown(700, function() { $(this).removeClass('cf-hide'); });
+						$('.form-error').slideDown(700, function() { $(this).removeClass('form-hide'); });
 					}
 				}
 			}
