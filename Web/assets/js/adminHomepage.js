@@ -5,6 +5,15 @@ jQuery(function($) {
     // -------------------------------------------------------------------------------------------------------
 
     // Better user experience with scroll
+    // Scroll to form notice messages boxes if it is visible (obviously, in case of no AJAX mode).
+    $('.form-error, .form-success').each(function() {
+        if ($(this).is(':visible')) {
+            $('html, body').animate({
+                scrollTop: ($(this).offset().top - 125) + 'px'
+            }, '700');
+        }
+    });
+
     $(window).on('load hashchange', function(e) {
         // Scroll to bloc-"name-of-bloc"
         var hash = window.location.hash;
@@ -13,17 +22,6 @@ jQuery(function($) {
                 scrollTop: ($('#bloc-' + hash.replace('#', '')).offset().top - 125) + 'px'
             }, '700');
         }
-
-        // Scroll to form notice messages boxes if it is visible (obviously, in case of no AJAX mode).
-        $('.form-error, .form-success').each(function() {
-            if ($(this).is(':visible')) {
-                $('html, body').animate({
-                    scrollTop: ($(this).offset().top - 125) + 'px'
-                }, '700');
-                return false;
-            }
-        });
-
         // Position paging sliders correctly after form action submission (after error or success redirection)
         $('.slider-paging').each(function() {
             if ($(this).length > 0 && $(this)[0].hasAttribute('data-slide-rank') && parseInt($(this).data('slide-rank')) > 1) {

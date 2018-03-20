@@ -385,9 +385,14 @@ form p.text-danger {
     border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
+.section-contact-us .contact-form .input-group {
+    padding: 0;
+}
+
 .section-contact-us .contact-form .textarea-container,
 .textarea-container  {
     margin: 0 0 10px;
+    padding: 0;
 }
 
 .section-contact-us .contact-form .textarea-container.input-group .input-group-addon,

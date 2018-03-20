@@ -11,16 +11,13 @@ jQuery(function($) {
     // -------------------------------------------------------------------------------------------------------
 
     // Better user experience with scroll
-    $(window).on('load', function(e) {
-        // Scroll to comment form notice message box if it is visible (obviously, in case of no AJAX mode).
-        $('.form-error, .form-success').each(function() {
-            if ($(this).is(':visible')) {
-                $('html, body').animate({
-                    scrollTop: ($(this).offset().top - 125) + 'px'
-                }, '700');
-                return false;
-            }
-        });
+    // Scroll to comment form notice message box if it is visible (obviously, in case of no AJAX mode).
+    $('.form-error, .form-success').each(function() {
+        if ($(this).is(':visible')) {
+            $('html, body').animate({
+                scrollTop: ($(this).offset().top - 125) + 'px'
+            }, '700');
+        }
     });
 
     // -------------------------------------------------------------------------------------------------------
@@ -49,12 +46,8 @@ jQuery(function($) {
             elements.each(function() {
                 // Here, $(this) corresponds to each element in loop
                 var elementInLoop = $(this);
-                delay(function() {
-                    // Check all fields but not current element
-                    checkForm(formIdentifier, elementInLoop, null);
-                    // Update show/hide notice message box
-                    showNoticeMessage(true, false);
-                }, 1000);
+                // Check all fields but not current element
+                checkForm(formIdentifier, elementInLoop, null);
             });
             // Check current field with event trigger but not for Google Recaptcha
             if ($(this)[0] != $(recaptchaType)[0]) {
@@ -73,11 +66,11 @@ jQuery(function($) {
      // Manage error notice box and error on current field, only if user already tried to validate the form
      $(document).on('otherFieldsChecked', fieldType, function(e) {
         delay(function() {
-                // Check current element
-                checkForm(formIdentifier, currentElement, null);
-                // Update show/hide notice message box
-                showNoticeMessage(true, false);
-            }, 1000);
+            // Check current element
+            checkForm(formIdentifier, currentElement, null);
+            // Update show/hide notice message box
+            showNoticeMessage(true, false);
+        }, 1000);
      });
 
     // Mask/unmask password to help user

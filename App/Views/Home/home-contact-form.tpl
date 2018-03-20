@@ -27,7 +27,7 @@
         <!-- Contact form -->
         <div class="row">
             <div class="col-lg-5 text-center col-md-8 col-sm-10 ml-auto mr-auto">
-                <div class="card py-4" data-background-color="black">
+                <div class="card p-4" data-background-color="black">
                     <div{{ ajaxModeForContactForm == 1 ? ' id="cf-ajax-wrapper"' }}>
                         {% block contactForm %}
                         <form novalidate class="contact-form" data-ajax="{{ ajaxModeForContactForm }}" data-not-sent="{{ sending }}" method="post" action="/">

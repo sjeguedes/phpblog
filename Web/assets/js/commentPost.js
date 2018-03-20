@@ -11,17 +11,15 @@ jQuery(function($) {
     // -------------------------------------------------------------------------------------------------------
 
     // Better user experience with scroll
+    // Scroll to comment form notice message box if it is visible (obviously, in case of no AJAX mode).
+    $('.form-error, .form-success').each(function() {
+        if($(this).is(':visible')) {
+            $('html, body').animate({
+                scrollTop: ($(this).offset().top - 125) + 'px'
+            }, '700');
+        }
+    });
     $(window).on('load hashchange', function(e) {
-        // Scroll to comment form notice message box if it is visible (obviously, in case of no AJAX mode).
-        $('.form-error, .form-success').each(function() {
-            if($(this).is(':visible')) {
-                $('html, body').animate({
-                    scrollTop: ($(this).offset().top - 125) + 'px'
-                }, '700');
-                return false;
-            }
-        });
-
         // Scroll to element with "hash" css id name
         var hash = window.location.hash;
         // Scroll to a single comment on single post page
@@ -61,19 +59,25 @@ jQuery(function($) {
         // Look at /assets/js/phpblog.js for declared functions
         currentElement = $(this);
         if (parseInt($(formSelector).data('try-validation')) == 1) {
-            $(fieldType).not(currentElement).each(function(e) {
+            $(fieldType).not(currentElement).each(function() {
                 checkForm(formIdentifier, $(this), [jsLcFirst]);
             });
             $(fieldType).trigger('otherFieldsChecked');
         } else {
-            checkForm(formIdentifier, currentElement, [jsLcFirst]);
+            delay(function() {
+                checkForm(formIdentifier, currentElement, [jsLcFirst]);
+            }, 1000);
+
         }
     });
 
      // Manage error notice box and error on current field, only if user already tried to validate the form
      $(document).on('otherFieldsChecked', fieldType, function(e) {
-        checkForm(formIdentifier, currentElement, [jsLcFirst]);
-        showNoticeMessage(false, false);
+        delay(function() {
+            checkForm(formIdentifier, currentElement, [jsLcFirst]);
+            // Update show/hide notice message box
+            showNoticeMessage(false, false);
+        }, 1000);
      });
 });
 

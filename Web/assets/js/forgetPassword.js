@@ -17,7 +17,6 @@ jQuery(function($) {
             $('html, body').animate({
                 scrollTop: ($(this).offset().top - 125) + 'px'
             }, '700');
-            return false;
         }
     });
 
@@ -50,8 +49,6 @@ jQuery(function($) {
         if (parseInt($(formSelector).data('try-validation')) == 1) {
             $(fieldType).not(currentElement).each(function() {
                 checkForm(formIdentifier, $(this), []);
-                // Update show/hide notice message box
-                showNoticeMessage(false, false);
             });
             $(fieldType).trigger('otherFieldsChecked');
         } else {

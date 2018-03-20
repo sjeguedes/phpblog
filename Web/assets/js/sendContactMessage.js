@@ -6,17 +6,16 @@ jQuery(function($) {
 
     // -------------------------------------------------------------------------------------------------------
 
+    // Better user experience with scroll
+    // Scroll to contact form notice message box if it is visible (obviously, in case of no AJAX mode).
+    $('.form-error, .form-success').each(function() {
+        if ($(this).is(':visible')) {
+            $('html, body').animate({
+                scrollTop: ($(this).offset().top - 125) + 'px'
+            }, '700');
+        }
+    });
     $(window).on('load hashchange', function(e) {
-        // Scroll to contact form notice message box if it is visible (obviously, in case of no AJAX mode).
-        $('.form-error, .form-success').each(function() {
-            if ($(this).is(':visible')) {
-                $('html, body').animate({
-                    scrollTop: ($(this).offset().top - 125) + 'px'
-                }, '700');
-                return false;
-            }
-        });
-
         // Scroll to bloc-"name-of-bloc"
         var hash = window.location.hash;
         if (hash) {
@@ -29,7 +28,9 @@ jQuery(function($) {
             $('.contact-form').find('.input-group input[type="text"], .input-group input[type="email"], .input-group textarea, input[id="cf_check"]').each(function() {
                 element = $(this);
                 if (element.val() != '') {
-                    checkForm(element, [getCurrentCheck, jsLcFirst]);
+                    delay(function() {
+                        checkForm(element, [getCurrentCheck, jsLcFirst]);
+                    }, 1000);
                     return false;
                 }
             });
@@ -51,8 +52,10 @@ jQuery(function($) {
 
 	$(document).on('change keyup input paste', fieldType, function(e) {
 		element = $(this);
-		checkForm(element, [getCurrentCheck, jsLcFirst]);
-	    showNoticeMessage(false);
+        delay(function() {
+            checkForm(element, [getCurrentCheck, jsLcFirst]);
+            showNoticeMessage(false);
+        }, 1000);
 	});
 
 	// -------------------------------------------------------------------------------------------------------
@@ -225,6 +228,15 @@ var jsUcFirst =	function(string) {
 var jsLcFirst =	function(string) {
     	return string.charAt(0).toLowerCase() + string.slice(1);
 	}
+
+// Start a delay with a callback
+var delay = (function() {
+        var timer = 0;
+        return function(callback, ms) {
+            clearTimeout(timer);
+            timer = setTimeout(callback, ms);
+        };
+    })();
 
 // callback for Google Recaptcha response
 var verifyCallback = function(response) {
