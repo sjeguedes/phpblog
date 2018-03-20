@@ -18,6 +18,10 @@ class AppMailer
      * @var AppRouter: an instance of AppRouter
      */
     private $router;
+    /**
+     * @var object: config to use
+     */
+    private $config;
 	/**
 	 * @var string: parameter to select a method
 	 */
@@ -39,9 +43,9 @@ class AppMailer
     {
         $this->mailer = $mailer;
         $this->router = $router;
+        $this->config = $router->getConfig();
         $this->sendingMethod = $sendingMethod;
         $this->use = $use;
-        $this->config = $router->getConfig();
     }
 
     /**

@@ -24,15 +24,15 @@ class AppContainer
 	 */
 	private static $_instance;
     /**
-     * @var AppRouter instance
+     * @var object: an instance of AppRouter
      */
     private static $_router;
 	/**
-	 * @var AppConfig instance
-	 */
+     * @var object: an instance of AppConfig
+     */
 	private static $_config;
     /**
-     * @var AppHTTPResponse instance
+     * @var object: an instance of AppHTTPResponse
      */
     private static $_httpResponse;
 	/**
@@ -132,10 +132,10 @@ class AppContainer
 		for ($i = 0; $i < count(self::$_params['service']['captcha']); $i++) {
 			switch (self::$_params['service']['captcha'][$i]['type']) {
 				case 'ReCaptcha':
-					$captchas[$i] = new AppCaptcha(new ReCaptcha(self::$_config::getParam('googleRecaptcha.secretKey')));
+					$captchas[$i] = new AppCaptcha(new ReCaptcha(self::$_config::getParam('googleRecaptcha.secretKey')), self::$_router);
 				break;
                 case 'AppNoSpamTools':
-                    $captchas[$i] = new AppCaptcha(new AppNoSpamTools(self::$_params['service']['captcha'][$i]));
+                    $captchas[$i] = new AppCaptcha(new AppNoSpamTools(self::$_router, self::$_params['service']['captcha'][$i]), self::$_router);
                 break;
 				// Other types: do stuff here!
 			}

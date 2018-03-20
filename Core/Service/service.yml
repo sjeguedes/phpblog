@@ -20,6 +20,10 @@ service:
       name: user.loginForm
       formIdentifier: lif_
       formDatasRequest: POST
+    -
+      name: user.forgetPasswordForm
+      formIdentifier: fpf_
+      formDatasRequest: POST
   mailer:
     -
       name: home.contactForm
@@ -43,10 +47,24 @@ service:
           arguments: [false]
         -
           callable: createHumanSwitchInput
-          arguments: [false]
+          arguments: [false, 'Are you a human?']
     -
       name: user.registerForm
       type: ReCaptcha
     -
       name: user.loginForm
       type: ReCaptcha
+    -
+      name: user.requestNewPasswordForm
+      type: AppNoSpamTools
+      formIdentifier: fpf_
+      tools:
+        -
+          callable: createHoneyPotInput
+          arguments: [false]
+        -
+          callable: createTimeLimitInput
+          arguments: [false]
+        -
+          callable: createHumanSwitchInput
+          arguments: [false, 'Do you confirm your request?']

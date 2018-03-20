@@ -59,7 +59,7 @@ class AdminController extends BaseController
      */
     private function allowAdminAccess() {
         // Check access to admin pages but not user login
-        $adminPageRequest = preg_match('#^/?admin((?!/login|/register)(?=.*[\d\w-/]).*)?$#', $_GET['url']);
+        $adminPageRequest = preg_match('#^/?admin((?!/login|/request-new-password|/register)(?=.*[\d\w-/]).*)?$#', $_GET['url']);
         $authenticatedUser = $this->session::isUserAuthenticated();
         $matchedTokenValues = true;
         $matchedCookieTokenIndex = true;
@@ -118,7 +118,7 @@ class AdminController extends BaseController
     }
 
     /**
-     * Generate activation code for new user (User entity) to validate his account
+     * Generate activation code (used in url GET parameter) for new user (User entity) to validate his account
      * @param string $UserEmail: user email address
      * @see http://php.net/manual/fr/function.hash.php
      * @return string: a part of long hash
@@ -128,6 +128,33 @@ class AdminController extends BaseController
         $salt = substr(md5(microtime()), rand(0, 5), rand(5, 10));
         $activationCode = substr(hash('sha256', $salt . $UserEmail), 0, 45);
         return $activationCode;
+    }
+
+    /**
+     * Generate password renewal authentication code (used in url GET parameter) for user (User entity)
+     * to be recognized on website and be able to change his forgotten password
+     * @param string $UserEmail: user email address
+     * @see http://php.net/manual/fr/function.hash.php
+     * @return string: a part of long hash
+     */
+    protected function generateUserPasswordUpdateCode($UserEmail)
+    {
+        $passwordAuthenticationCode = $this->generateUserActivationCode($UserEmail);
+        return $passwordAuthenticationCode;
+    }
+
+    /**
+     * Generate password renewal update token for user (User entity)
+     * to update (change) his forgotten password with form
+     * @param string $UserEmail: user email address
+     * @see http://php.net/manual/fr/function.hash.php
+     * @return string: a part of long hash
+     */
+    protected function generateUserPasswordUpdateToken($UserEmail)
+    {
+        $salt = substr(md5(microtime()), rand(0, 5), rand(5, 10));
+        $passwordUpdateToken = strtoupper(substr(hash('sha256', $salt . $UserEmail), 0, 15));
+        return $passwordUpdateToken;
     }
 
     /**

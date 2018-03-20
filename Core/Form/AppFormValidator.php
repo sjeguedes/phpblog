@@ -13,6 +13,14 @@ class AppFormValidator
      */
     private $router;
     /**
+     * @var AppConfig: an AppConfig instance for configuration to use
+     */
+    private $config;
+    /**
+     * @var AppStringModifier: an AppStringModifier helper instance to use
+     */
+    private $helper;
+    /**
      * @var array: $_POST/$_GET values before validation
      */
     private $datas = [];
@@ -28,14 +36,6 @@ class AppFormValidator
      * @var array: $_POST/$_GET values filtered with PHP filters
      */
     private $filteredDatas = [];
-    /**
-     * @var AppConfig: an AppConfig instance for configuration to use
-     */
-    private $config;
-    /**
-     * @var AppStringModifier: an AppStringModifier helper instance to use
-     */
-    private $helper;
     /**
      * @var array: datas stored after validation (values and errors)
      */

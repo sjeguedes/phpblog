@@ -62,6 +62,13 @@ routing:
         name: Admin\User\AdminUser|showAdminRegister
         method: GET
 
+    adminShowRequestNewPassword:
+        path: /admin/request-new-password
+        module: Admin\User\AdminUser
+        action: showAdminRequestNewPassword
+        name: Admin\User\AdminUser|showAdminRequestNewPassword
+        method: GET
+
     adminDisconnect:
         path: /admin/logout
         module: Admin\User\AdminUser
@@ -83,6 +90,13 @@ routing:
         name: Home\Home|isCalled
         method: POST
 
+    adminRegister:
+        path: /admin/register
+        module: Admin\User\AdminUser
+        action: registerUser
+        name: Admin\User\AdminUser|registerUser
+        method: POST
+
     adminConnect:
         path: /admin/login
         module: Admin\User\AdminUser
@@ -90,11 +104,11 @@ routing:
         name: Admin\User\AdminUser|loginUser
         method: POST
 
-    adminRegister:
-        path: /admin/register
+    adminRequestNewPassword:
+        path: /admin/request-new-password
         module: Admin\User\AdminUser
-        action: registerUser
-        name: Admin\User\AdminUser|registerUser
+        action: requestNewPassword
+        name: Admin\User\AdminUser|requestNewPassword
         method: POST
 
     adminHomeDeleteContact:
