@@ -5,79 +5,60 @@ jQuery(function($) {
 
     // -------------------------------------------------------------------------------------------------------
 
-    var formSelector = '.login-form',
-        formIdentifier = 'lif_';
-
-    // -------------------------------------------------------------------------------------------------------
-
-    // Better user experience with scroll
-    // Scroll to comment form notice message box if it is visible (obviously, in case of no AJAX mode).
-    $('.form-error, .form-success').each(function() {
-        if ($(this).is(':visible')) {
-            $('html, body').animate({
-                scrollTop: ($(this).offset().top - 125) + 'px'
-            }, '700');
-        }
+    $(window).on('load', function(e) {
+        // Better user experience with scroll
+        // Scroll to form notice message box if it is visible (obviously, in case of no AJAX mode).
+        $('.form-error, .form-success').each(function() {
+            if($(this).is(':visible')) {
+                $('html, body').animate({
+                    scrollTop: ($(this).offset().top - 125) + 'px'
+                }, '700');
+            }
+        });
+        // Initialize form loaded state
+        formJustLoaded = true;
+        // Update fields error state on "fieldType"
+        fieldsToUpdate($(fieldType));
     });
 
     // -------------------------------------------------------------------------------------------------------
 
-    // User inputs are modified.
-    // Field type 'check' (CSRF token) is not checked on client side (but can be if AJAX is implemented)
-    var currentElement,
-        elements,
-        recaptchaType = formSelector + ' #form-recaptcha',
-        fieldType = formSelector + ' .input-group input[type="email"],' +
-        formSelector + ' .input-group input[type="text"],' + // password field type changed with changeType() function when password is shown!
-        formSelector + ' .input-group input[type="password"]';
-
-    // Manage errors on fields but not for current field which is modified
-    $(document).on('change keyup input paste recaptchaResponse', fieldType + ',' + recaptchaType, function(e) {
+    // Manage errors on fields
+    $(document).on('change keyup input paste', fieldType, function(e) {
         // Look at /assets/js/phpblog.js for declared functions
-        // Particular case to exclude Google Recaptcha widget
-        if ($(this)[0] == $(recaptchaType)[0]) {
-            elements = $(fieldType);
-        } else { // Exclude $(this)
-            currentElement = $(this);
-            elements = $(fieldType).not(currentElement);
-        }
-        // Update show/hide notice message box only after submission failed
-        if (parseInt($(formSelector).data('try-validation')) == 1) {
-            elements.each(function() {
-                // Here, $(this) corresponds to each element in loop
-                var elementInLoop = $(this);
-                // Check all fields but not current element
-                checkForm(formIdentifier, elementInLoop, null);
-            });
-            // Check current field with event trigger but not for Google Recaptcha
-            if ($(this)[0] != $(recaptchaType)[0]) {
-                $(fieldType).trigger('otherFieldsChecked');
-            }
+        // Avoid multiple call to form check on the same element: one call is queued each time.
+        if (fieldsInQueue.indexOf($(this).attr('id')) != -1) {
+            return false;
+        // Store field to be queued once a time
         } else {
-            // Check current field but not for Google Recaptcha
-            if ($(this)[0] != $(recaptchaType)[0]) {
+            fieldsInQueue.push($(this).attr('id'));
+            $(document).queue(function() {
+                currentElement = $(e.target);
+                // Check current field but not for Google Recaptcha
+                // Apply a delay
                 delay(function() {
-                    checkForm(formIdentifier, currentElement, null);
+                    // Check current element
+                    checkForm(currentElement, null);
+                    // Delete field stored in queue
+                    var i = fieldsInQueue.indexOf(currentElement.attr('id'));
+                    if (i != -1) {
+                        fieldsInQueue.splice(i, 1);
+                    }
+                    // Show error notice message if user already tried to submit (no input in queue)
+                    if ($(formSelector).data('try-validation') == 1 && fieldsInQueue.length == 0) {
+                        showErrorNoticeMessage(true);
+                    }
+                    // Dequeue event
+                    $(document).dequeue();
                 }, 1000);
-            }
+            });
         }
     });
-
-     // Manage error notice box and error on current field, only if user already tried to validate the form
-     $(document).on('otherFieldsChecked', fieldType, function(e) {
-        delay(function() {
-            // Check current element
-            checkForm(formIdentifier, currentElement, null);
-            // Update show/hide notice message box
-            showNoticeMessage(true, false);
-        }, 1000);
-     });
 
     // Mask/unmask password to help user
-    var checked = false;
     $(document).on('click', '.unmask-pwd', function() {
         $('#lif_show_password').trigger('change');
-        if (checked) {
+        if (showPasswordChecked) {
             changeType($('input#lif_password'), 'text');
         } else {
             changeType($('input#lif_password'), 'password');
@@ -87,85 +68,134 @@ jQuery(function($) {
 
     // Manage custom checkbox "change" event to switch show/hide password
     $(document).on('change', '#lif_show_password', function() {
-        var attr = $(this).prop('checked');
         if ($(this).is(":checked")) {
             $(this).prop('checked', false);
-            checked = false;
+            showPasswordChecked = false;
         } else {
             $(this).prop('checked', true);
-            checked = true;
+            showPasswordChecked = true;
         }
     });
 });
 
 // -------------------------------------------------------------------------------------------------------
+
+// Form identifiers
+var formSelector = '.login-form',
+    formIdentifier = 'lif_';
+
+// -------------------------------------------------------------------------------------------------------
+
+// User inputs are modified.
+// Field type 'check' (CSRF token) is not checked on client side (but can be if AJAX is implemented)
+var formJustLoaded = false,
+    currentElement,
+    elements,
+    fieldsInQueue = [],
+    fieldsToCheck,
+    fieldType = formSelector + ' .input-group input[type="email"],' +
+    formSelector + ' .input-group input[type="text"],' + // password field type changed with changeType() function when password is shown!
+    formSelector + ' .input-group input[type="password"]';
+
+// -------------------------------------------------------------------------------------------------------
+
+// Variable used to show/hide passwords
+var showPasswordChecked = false;
+
+// -------------------------------------------------------------------------------------------------------
+
 // Main variables used in functions declaration
 var fieldErrorMessage,
+    onlyUpdateErrorsState = false,
     success = false,
     errorsOnFields = [];
 
 // Verify validity on fields
-var checkForm = function(formIdentifier, element, functionsArray) {
+var checkForm = function(element, functionsArray) {
         // Check element field
         fieldErrorMessage = element.parent('.input-group').prev('.text-danger');
         switch (element.attr('id')) {
             case formIdentifier + 'email':
-                var pattern = /^\s*\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+\s*$/g;
-                var is_email = pattern.test(element.val());
-                if (element.val().replace(/^\s+|\s+$/gm,'') == '') {
+                var emailPattern = /^\s*[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:(\.[a-zA-Z0-9-]+)+)\s*$/g,
+                    is_email = emailPattern.test(element.val());
+                if (element.val().replace(/^\s+|\s+$/gm, '') == '') {
                     fieldErrorMessage.html('&nbsp;Please fill in your email address.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
-                    if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
-                    fieldErrorMessage.fadeIn(700);
                     errorsOnFields[element.attr('id')] = true;
                 } else if (!is_email) {
                     fieldErrorMessage.html('&nbsp;Sorry, "<span class="text-muted">' + element.val() +
                     '</span>" is not a valid email address!<br>Please check its format.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
-                    if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
-                    fieldErrorMessage.fadeIn(700);
                     errorsOnFields[element.attr('id')] = true;
                 } else {
-                    fieldErrorMessage.fadeOut(700);
                     errorsOnFields[element.attr('id')] = false;
                 }
                 break;
             case formIdentifier + 'password':
                 // At least 1 number, 1 lowercase letter, 1 uppercase letter, 1 special character, a minimum of 8 characters
-                var pattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,}$/gm;
-                var is_password = pattern.test(element.val());
-
-                if (element.val().replace(/^\s+|\s+$/gm,'') == '') {
+                var pwdPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[\W]).{8,}$/gm;
+                var is_password = pwdPattern.test(element.val());
+                if (element.val().replace(/^\s+|\s+$/gm, '') == '') {
                     fieldErrorMessage.html('&nbsp;Please fill in your password.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
-                    if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
-                    fieldErrorMessage.fadeIn(700);
                     errorsOnFields[element.attr('id')] = true;
                 } else if (element.val().length < 8) {
                     fieldErrorMessage.html('&nbsp;Sorry, your password must contain<br>at least 8 characters!<br>Please check it before login try.' +
                     '&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
-                    if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
-                    fieldErrorMessage.fadeIn(700);
                     errorsOnFields[element.attr('id')] = true;
                 } else if (!is_password) {
                     fieldErrorMessage.html('&nbsp;Sorry, your password format is not valid!<br>Please check it or verify required characters<br>before login try.' +
                     '&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
-                    if (fieldErrorMessage.hasClass('form-hide')) { fieldErrorMessage.removeClass('form-hide').hide(); }
-                    fieldErrorMessage.fadeIn(700);
                     errorsOnFields[element.attr('id')] = true;
                 } else {
-                    fieldErrorMessage.fadeOut(700);
                     errorsOnFields[element.attr('id')] = false;
                 }
                 break;
         }
+        // Apply fade effect on error message during complete check
+        if (onlyUpdateErrorsState === false) {
+            if (errorsOnFields[element.attr('id')] === true) {
+                if (fieldErrorMessage.is(':hidden')) {
+                    fieldErrorMessage.removeClass('form-hide').hide();
+                    fieldErrorMessage.fadeIn(700);
+                }
+            } else {
+                if (fieldErrorMessage.is(':visible')) {
+                    fieldErrorMessage.fadeOut(700, function() {
+                        fieldErrorMessage.addClass('form-hide');
+                    });
+                }
+            }
+        }
         // Is it a success state?
         for (var i in errorsOnFields) {
-           if (errorsOnFields[i] == true) {
+            if (errorsOnFields[i] === true) {
                 success = false;
                 break;
-           } else {
+            } else {
                 success = true;
-           }
+            }
         }
+        return errorsOnFields;
     }
+
+// Update fields error state only
+var fieldsToUpdate = function(fieldsToCheck) {
+    elements = fieldsToCheck;
+    // Initialize condition
+    onlyUpdateErrorsState = true;
+    var count = elements.length;
+    elements.each(function(i) {
+        // Check all fields but not recaptcha
+        checkForm($(this), [jsLcFirst]);
+        if (i + 1 === count) {
+            // Reset condition
+            onlyUpdateErrorsState = false;
+            // Reset form loaded state just after page loaded: see window load event above
+            if (formJustLoaded) {
+                formJustLoaded = false;
+            }
+        }
+    });
+    return errorsOnFields;
+ }
 
 // Zurb foundation add on: show
 // https://foundation.zurb.com/building-blocks/blocks/show-password.html

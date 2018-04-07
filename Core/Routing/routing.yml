@@ -69,6 +69,13 @@ routing:
         name: Admin\User\AdminUser|showAdminRequestNewPassword
         method: GET
 
+    adminShowRenewPassword:
+        path: /admin/renew-password
+        module: Admin\User\AdminUser
+        action: showAdminRenewPassword
+        name: Admin\User\AdminUser|showAdminRenewPassword
+        method: GET
+
     adminDisconnect:
         path: /admin/logout
         module: Admin\User\AdminUser
@@ -109,6 +116,13 @@ routing:
         module: Admin\User\AdminUser
         action: requestNewPassword
         name: Admin\User\AdminUser|requestNewPassword
+        method: POST
+
+    adminRenewPassword:
+        path: /admin/renew-password
+        module: Admin\User\AdminUser
+        action: renewPassword
+        name: Admin\User\AdminUser|renewPassword
         method: POST
 
     adminHomeDeleteContact:

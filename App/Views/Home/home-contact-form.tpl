@@ -6,7 +6,7 @@
         <div class="row">
             <div class="col-lg-8 text-center col-md-10 ml-auto mr-auto">
                 <p class="alert alert-success form-success{{ success == 0 ? ' form-hide'}}" role="alert">
-                    <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>WELL DONE!</strong>&nbsp;Your message was sent successfully.
+                    <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>WELL DONE!</strong>&nbsp;Your message was sent successfully.<br>Your request will be treated as soon as possible!
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">
                             <i class="now-ui-icons ui-1_simple-remove"></i>
@@ -28,9 +28,9 @@
         <div class="row">
             <div class="col-lg-5 text-center col-md-8 col-sm-10 ml-auto mr-auto">
                 <div class="card p-4" data-background-color="black">
-                    <div{{ ajaxModeForContactForm == 1 ? ' id="cf-ajax-wrapper"' }}>
+                    <div{{ ajaxModeForContactForm == 1 ? ' id="ajax-wrapper"' }}>
                         {% block contactForm %}
-                        <form novalidate class="contact-form" data-ajax="{{ ajaxModeForContactForm }}" data-not-sent="{{ sending }}" method="post" action="/">
+                        <form novalidate class="contact-form" data-ajax="{{ ajaxModeForContactForm }}" data-not-sent="{{ sending }}" method="post" action="/" data-try-validation="{{ tryValidation }}">
                             <p class="text-danger{{ errors['cf_familyName'] is not defined ? ' form-hide'}}" role="alert">&nbsp;{{ errors['cf_familyName']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                             <div class="input-group phpblog-field-group form-group-no-border input-lg">
                                 <span class="input-group-addon">
@@ -61,7 +61,7 @@
                                 <textarea class="form-control" aria-label="Your message" id="cf_message" name="cf_message" rows="4" cols="80" placeholder="Type a message...">{{ message|raw }}</textarea>
                             </div>
                             <p class="text-danger{{ errors['g-recaptcha-response'] is not defined ? ' form-hide'}}" role="alert">&nbsp;{{ errors['g-recaptcha-response']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
-                            <div id="cf-recaptcha" class="g-recaptcha" data-sitekey="{{ siteKey }}"></div>
+                            <div id="form-recaptcha" class="g-recaptcha" data-sitekey="{{ siteKey }}"></div>
                             <input type="hidden" id="cf_check" name="{{ cfTokenIndex }}" value="{{ cfTokenValue }}">
                             {% if ajaxModeForContactForm == 0 %}
                             <input type="hidden" id="cf_contact" name="cf_call" value="contact">

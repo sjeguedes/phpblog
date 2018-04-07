@@ -7,9 +7,8 @@
         <!-- User notice message -->
         <div class="row">
             <div class="col-lg-8 text-center col-md-10 ml-auto mr-auto">
-                <!-- Success message box is used here when delayed redirection is processed! -->
-                <p class="alert alert-success form-success{{ success == 0 ? ' form-hide'}}" role="alert">
-                    <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>WELL DONE!</strong>&nbsp;You authenticated successfully.<br>You are going to be redirected to admin area in a few seconds!
+                <p class="alert alert-success form-success{{ passwordRenewalSuccess == 0 ? ' form-hide'}}" role="alert">
+                    <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>WELL DONE!</strong>&nbsp;You password was updated successfully.<br>Now, you are able to use it immediately to login!
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">
                             <i class="now-ui-icons ui-1_simple-remove"></i>
@@ -69,7 +68,7 @@
         <!-- End login form -->
         <p>
             <a class="btn btn-warning" href="/admin/request-new-password" title="Please ask for password renewal athentication code."><i class="fa fa-angle-right" aria-hidden="true"></i>&nbsp;You forgot your password, please click here!&nbsp;<i class="fa fa-life-ring fa-lg" aria-hidden="true"></i></a><br>
-            <a class="btn" href="/admin/register" title="Please register to create an account."><i class="fa fa-angle-right" aria-hidden="true"></i>&nbsp;You are not registered yet, please click here!&nbsp;<i class="fa fa-user-plus fa-lg" aria-hidden="true"></i></a>
+            <a class="btn" href="/admin/register" title="Please register to create an account."><i class="fa fa-angle-left" aria-hidden="true"></i>&nbsp;You are not registered yet, please click here!&nbsp;<i class="fa fa-user-plus fa-lg" aria-hidden="true"></i></a>
         </p>
     </div>
 </div>
@@ -98,7 +97,6 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn" data-dismiss="modal" title="Ok, that's more clear now!">OK, THAT'S MORE CLEAR NOW!</button>
-
             </div>
         </div>
     </div>

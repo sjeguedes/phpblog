@@ -39,10 +39,6 @@ class User
      */
     private $passwordUpdateToken;
     /**
-     * @var string|null
-     */
-    private $passwordUpdateCode;
-    /**
      * @var string
      */
     private $passwordUpdateDate;
@@ -51,7 +47,7 @@ class User
      */
     private $activationCode;
     /**
-     * @var boolean
+     * @var string
      */
     private $activationDate;
     /**
@@ -221,15 +217,6 @@ class User
     }
 
     /**
-     * Get property: passwordUpdateCode
-     * @return string|null
-     */
-    public function getPasswordUpdateCode()
-    {
-        return $this->passwordUpdateCode;
-    }
-
-    /**
      * Get property: passwordUpdateDate
      * @return string
      */
@@ -249,7 +236,7 @@ class User
 
     /**
      * Get property: activationDate
-     * @return boolean
+     * @return string
      */
     public function getActivationDate()
     {
@@ -374,18 +361,6 @@ class User
         }
     }
 
-    /**
-     * Set property: passwordUpdateCode
-     * @param string|null $passwordUpdateCode
-     * @return void
-     */
-    public function setPasswordUpdateCode($passwordUpdateCode)
-    {
-        if (is_string($passwordUpdateCode) || is_null($passwordUpdateCode)) {
-            $this->passwordUpdateCode = $passwordUpdateCode;
-        }
-    }
-
    /**
      * Set property: passwordUpdateDate
      * @param string $passwordUpdateDate
@@ -412,7 +387,7 @@ class User
 
     /**
      * Set property: activationDate
-     * @param boolean $activationDate
+     * @param string $activationDate
      * @return void
      */
     public function setActivationDate($activationDate)

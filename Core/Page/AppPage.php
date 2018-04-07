@@ -74,14 +74,10 @@ class AppPage
      * @param array $vars: template engine variables
      * @return array: entire array with added sesion parameters
      */
-    public static function addSessionTemplateParams($vars) {
+    private static function addSessionTemplateParams($vars)
+    {
         self::$_session::start(true);
         $sessionDatas = self::$_session::getDatas();
-        // Did session expire?
-        $expiredSession = isset($sessionDatas['expiredSession']) ? true : false;
-        if ($expiredSession) {
-            $vars['expiredSession'] = $expiredSession;
-        }
         // Is user authenticated? if this is true, then get needed User infos.
         $user = self::$_session::isUserAuthenticated();
         if ($user != false) {
@@ -91,6 +87,30 @@ class AppPage
                 'userKey' => $user['userKey']
             ];
         }
+        return $vars;
+    }
+
+    /**
+     * Add essential common parameters for a template
+     * @param array $vars: template engine variables
+     * @return array: entire array with added common parameters
+     */
+    private static function addCommonTemplateParams($vars)
+    {
+        // Add homepage profile
+        $vars['profileTitleDesc'] = self::$_config::getParam('home.profileTitleDesc');
+        $vars['profileIntro'] = self::$_config::getParam('home.profileIntro');
+        $vars['profileImage'] = self::$_config::getParam('home.profileImage');
+        $vars['profileImageDesc'] = self::$_config::getParam('home.profileImageDesc');
+        $vars['profileImageLabel'] = self::$_config::getParam('home.profileImageLabel');
+        $vars['onlineCVResume'] = self::$_config::getParam('home.onlineCVResume');
+        $vars['pdfCVResume'] = self::$_config::getParam('home.pdfCVResume');
+
+        // Add footer profile
+        $vars['linkedInProfile'] = self::$_config::getParam('footer.socialLinks.linkedInProfile');
+        $vars['githubProfile'] = self::$_config::getParam('footer.socialLinks.githubProfile');
+        $vars['stackoverflowProfile'] = self::$_config::getParam('footer.socialLinks.stackoverflowProfile');
+        $vars['viadeoProfile'] = self::$_config::getParam('footer.socialLinks.viadeoProfile');
         return $vars;
     }
 
@@ -106,6 +126,8 @@ class AppPage
         self::$_templateEngine = new AppTwig();
         // Pass session datas to template
         $vars = self::addSessionTemplateParams($vars);
+        // Pass common datas to template
+        $vars = self::addCommonTemplateParams($vars);
         // Render template
         return self::$_templateEngine->renderTwigTemplate($view, $vars);
 	}
@@ -123,6 +145,8 @@ class AppPage
         self::$_templateEngine = new AppTwig();
         // Pass session datas to template
         $vars = self::addSessionTemplateParams($vars);
+        // Pass common datas to template
+        $vars = self::addCommonTemplateParams($vars);
         // Render block
 		return self::$_templateEngine->renderTwigBlock($view, $blockName, $vars);
 	}

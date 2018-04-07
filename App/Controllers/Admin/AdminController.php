@@ -58,8 +58,8 @@ class AdminController extends BaseController
      * @return void
      */
     private function allowAdminAccess() {
-        // Check access to admin pages but not user login
-        $adminPageRequest = preg_match('#^/?admin((?!/login|/request-new-password|/register)(?=.*[\d\w-/]).*)?$#', $_GET['url']);
+        // Check access to admin pages but not for user login, user request new password, user renew password, user register pages
+        $adminPageRequest = preg_match('#^/?admin((?!/login|/request-new-password|/renew-password|/register)(?=.*[\d\w-/]).*)?$#', $_GET['url']);
         $authenticatedUser = $this->session::isUserAuthenticated();
         $matchedTokenValues = true;
         $matchedCookieTokenIndex = true;
@@ -126,21 +126,8 @@ class AdminController extends BaseController
     protected function generateUserActivationCode($UserEmail)
     {
         $salt = substr(md5(microtime()), rand(0, 5), rand(5, 10));
-        $activationCode = substr(hash('sha256', $salt . $UserEmail), 0, 45);
+        $activationCode = substr(hash('sha256', $salt . $UserEmail), 0, 40);
         return $activationCode;
-    }
-
-    /**
-     * Generate password renewal authentication code (used in url GET parameter) for user (User entity)
-     * to be recognized on website and be able to change his forgotten password
-     * @param string $UserEmail: user email address
-     * @see http://php.net/manual/fr/function.hash.php
-     * @return string: a part of long hash
-     */
-    protected function generateUserPasswordUpdateCode($UserEmail)
-    {
-        $passwordAuthenticationCode = $this->generateUserActivationCode($UserEmail);
-        return $passwordAuthenticationCode;
     }
 
     /**
@@ -203,7 +190,7 @@ class AdminController extends BaseController
     }
 
     /**
-     * Check if user generated session token matches with token in $_COOKIE value
+     * Check if user generated session token matches token in $_COOKIE value
      * @param string $cookieToken: token value stored in $_COOKIE
      * @param string $sessionToken: token value stored in $_SESSION
      * @return boolean
@@ -211,5 +198,16 @@ class AdminController extends BaseController
     protected function checkUserSessionTokenValue($cookieToken, $sessionToken)
     {
         return $cookieToken === $sessionToken;
+    }
+
+    /**
+     * Check if user generated password renewal authentication token matches token in $_POST/$_GET value
+     * @param string $inputToken: user input token value
+     * @param string $generatedToken: token value stored in database
+     * @return boolean
+     */
+    protected function checkPasswordUpdateTokenValue($inputToken, $generatedToken)
+    {
+        return $inputToken === $generatedToken;
     }
 }

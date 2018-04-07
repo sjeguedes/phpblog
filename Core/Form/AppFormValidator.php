@@ -169,7 +169,7 @@ class AppFormValidator
                 $this->result[$name] = $this->filteredDatas[$name];
             }
         } else {
-            $this->result[$this->errorIndex][$name] = 'Please fill in your email.';
+            $this->result[$this->errorIndex][$name] = 'Please fill in your email address.';
         }
     }
 
@@ -218,6 +218,20 @@ class AppFormValidator
     }
 
     /**
+     * Check if user password renewal authentication token in $_REQUEST value contains exactly 15 characters
+     * @param string $name: field name
+     * @param string $inputToken: user input token value
+     * @return void
+     */
+    public function validatePasswordUpdateTokenLength($name, $inputToken)
+    {
+        $name = $this->formIdentifier . $name;
+        if (strlen($inputToken) != 15) {
+            $this->result[$this->errorIndex][$name] = 'Sorry, your token must contain<br>exactly 15 characters!<br>Please check it.';
+        }
+    }
+
+    /**
      * Validate anti CSRF token
      * @param string $dynamicToken: dynamic token value in $_REQUEST with dynamic token index name
      * @param string $tokenPrefix: prefix used to override form identifier
@@ -226,20 +240,46 @@ class AppFormValidator
      */
     public function validateToken($dynamicToken, $tokenPrefix = null) {
         $prefix = !is_null($tokenPrefix) ? $tokenPrefix : $this->formIdentifier;
-        // Check if form value matches value stored in $_SESSION
         if (isset($dynamicToken) && isset($_SESSION[$prefix . 'token'])) {
-            if ($this->checkTokenValue($dynamicToken, $prefix . 'token')) {
-                $this->result[$this->formIdentifier . 'check'] = true;
+            // Get dynamic token index
+            foreach ($_REQUEST as $key => $value) {
+                if ($value === $dynamicToken) {
+                    $tokenIndex =  $key;
+                    break;
+                }
             }
-            else {
-                $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-token-notice">- Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)</span>';
+            // Check if form token value matches value stored in $_SESSION
+            if ($this->checkTokenValue($dynamicToken, $prefix . 'token')) {
+                // Check if form token index matches value stored in $_SESSION
+                if (isset($tokenIndex) && isset($_SESSION[$prefix . 'check']) && $tokenIndex === $_SESSION[$prefix . 'check']) {
+                    $this->result[$this->formIdentifier . 'check'] = true;
+                }
+            } else {
+                // This error message is not used! 401 error page is activated to simplify response, look at condition below.
+                $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-token-notice">- Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)If you want to continue, you have to <a href="#" class="text-muted" onclick="window.location.reload(); return false;" title="Reload this page">reload this page</a> and start a new form.</span>';
                 $this->result[$this->formIdentifier . 'check'] = false;
             }
-        // Wrong token index or anything else happened.
+        // Anything else happened.
         } else {
-            $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-token-notice"> - Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)</span>';
+            // This error message is not used! 401 error page is activated to simplify response, look at condition below.
+            $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-token-notice"> - Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)<br>If you want to continue, you have to <a href="#" class="text-muted" onclick="window.location.reload(); return false;" title="Reload this page">reload this page</a> and start a new form.</span>';
             $this->result[$this->formIdentifier . 'check'] = false;
         }
+        // Wrong token (expired or invalid (hacked) token)
+        if (!$this->result[$this->formIdentifier . 'check']) {
+            // Set 401 error page
+            $this->setUnauthorizedFormSubmissionResponse();
+        }
+    }
+
+    /**
+     * Render a 401 ("Unauthorized") form submission response
+     * @return string: page HTML content
+     */
+    public function setUnauthorizedFormSubmissionResponse() {
+        $_SESSION['unauthorizedFormSubmission'] = true;
+        $this->router->getHTTPResponse()->set401ErrorResponse('<strong>Form submission is unauthorized.</strong><br>this is due to inactivity or security reason.<br>Please go back to <a href="/' . $this->router->getUrl() . '" class="normal-link" title="Previous visited page">previous page</a> and try again.', $this->router);
+            exit();
     }
 
     /**
@@ -270,7 +310,7 @@ class AppFormValidator
     }
 
     /**
-     * Check if created token matches with token in $_POST/$_GET value
+     * Check if created CSRF token matches token in $_POST/$_GET value
      * @param string $token: $_POST/$_GET value
      * @param string $varName: name which corresponds to token index in $_SESSION
      * @return boolean

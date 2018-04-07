@@ -4,17 +4,16 @@ jQuery(function($) {
 
     // -------------------------------------------------------------------------------------------------------
 
-    // Better user experience with scroll
-    // Scroll to form notice messages boxes if it is visible (obviously, in case of no AJAX mode).
-    $('.form-error, .form-success').each(function() {
-        if ($(this).is(':visible')) {
-            $('html, body').animate({
-                scrollTop: ($(this).offset().top - 125) + 'px'
-            }, '700');
-        }
-    });
-
     $(window).on('load hashchange', function(e) {
+        // Better user experience with scroll
+        // Scroll to form notice messages boxes if it is visible (obviously, in case of no AJAX mode).
+        $('.form-error, .form-success').each(function() {
+            if ($(this).is(':visible')) {
+                $('html, body').animate({
+                    scrollTop: ($(this).offset().top - 125) + 'px'
+                }, '700');
+            }
+        });
         // Scroll to bloc-"name-of-bloc"
         var hash = window.location.hash;
         if (hash) {
@@ -86,5 +85,4 @@ jQuery(function($) {
             $(this).hide();
         }
     });
-
 });

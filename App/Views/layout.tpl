@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
+    <link rel="icon" href="/assets/images/favicon.ico">
     <link rel="apple-touch-icon" sizes="76x76" href="/assets/images/apple-icon.png">
     <link rel="icon" type="image/png" href="/assets/images/favicon.png">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
@@ -39,7 +40,7 @@
 
 </head>
 
-<body class="landing-page sidebar-collapse{% if (expiredSession is defined) and (expiredSession == 1) %} new-session{% endif %}">
+<body class="landing-page sidebar-collapse">
     <!-- Javascript disabled -->
     <noscript>
         <div class="no-js-box">

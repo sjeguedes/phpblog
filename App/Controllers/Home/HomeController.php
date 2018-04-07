@@ -67,19 +67,23 @@ class HomeController extends BaseController
     public function isCalled()
     {
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-            // Detect AJAX request to return token as JSON string for JS validation
             if (isset($_GET['cf_call']) && $_GET['cf_call'] == 'check-ajax') {
+                // Detect AJAX request to return token as JSON string for JS validation
                 $this->getCurrentToken();
-            // Detect AJAX contact form submission
+            } elseif (isset($_GET['cf_call']) && $_GET['cf_call'] == 'unauthorized') {
+                // Call 401 "Unauthorized" response
+                $this->contactFormValidator->setUnauthorizedFormSubmissionResponse();
             } elseif (isset($_POST['cf_call']) && $_POST['cf_call'] == 'contact-ajax') {
+                 // Detect AJAX contact form submission
                 $this->showContact();
             }
+
         } else {
-            // Detect only server side contact form submission
             if (isset($_POST['cf_call']) && $_POST['cf_call'] == 'contact') {
+                 // Detect only server side contact form submission
                 $this->showContact();
-            // Execute showHome entirely
             } elseif (isset($_GET['url']) && count($_GET) == 1) {
+                // Execute showHome entirely
                 $this->showHome();
             }
         }
@@ -173,6 +177,8 @@ class HomeController extends BaseController
                     'siteKey' => $this->config::getParam('googleRecaptcha.siteKey'),
                     'cfTokenIndex' => $this->cfTokenIndex,
                     'cfTokenValue' => $this->cfTokenValue,
+                    // Does validation submit already exist with error?
+                    'tryValidation' => isset($_POST['cf_submit']) ? 1 : 0,
                     'submit' => isset($_SESSION['cf_success']) && $_SESSION['cf_success'] ? 1 : 0,
                     'errors' => isset($checkedForm['cf_errors']) ? $checkedForm['cf_errors'] : false,
                     'success' => isset($_SESSION['cf_success']) && $_SESSION['cf_success'] ? true : false,
@@ -213,7 +219,7 @@ class HomeController extends BaseController
     }
 
     /**
-     * echo a current token JSON string for contact form
+     * Echo a current token JSON string for contact form
      * @return void
      */
     private function getCurrentToken() {
@@ -249,7 +255,7 @@ class HomeController extends BaseController
         // Get validation result without captcha
         $result = $this->contactFormValidator->getResult();
         // Update validation result with Google recaptcha antispam validation
-        $result = $this->contactFormCaptcha->call([$_POST['g-recaptcha-response'], $result, 'cf_errors']);
+        $result = $this->contactFormCaptcha->call([isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : false, $result, 'cf_errors']);
         // Submit: contact form is correctly filled.
         if (isset($result) && empty($result['cf_errors']) && isset($result['g-recaptcha-response']) && $result['g-recaptcha-response'] && isset($result['cf_check']) && $result['cf_check']) {
             // Insert Contact entity in database to keep it

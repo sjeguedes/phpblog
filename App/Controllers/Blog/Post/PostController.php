@@ -129,20 +129,20 @@ class PostController extends BaseController
             ]
         ];
         $jsArray = [
-            1 => [
+            0 => [
                 'pluginName' => 'Slick Slider 1.8.1',
                 'placement' => 'bottom',
                 'src' => 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js'
             ],
-            2 => [
+            1 => [
                 'placement' => 'bottom',
                 'src' => '/assets/js/phpblog.js'
             ],
-            3 => [
+            2 => [
                 'placement' => 'bottom',
                 'src' => '/assets/js/commentPost.js'
             ],
-            4 => [
+            3 => [
                 'placement' => 'bottom',
                 'src' => '/assets/js/postSingle.js'
             ]

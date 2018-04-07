@@ -1,60 +1,16 @@
 "use strict";
 
 jQuery(function($) {
-    // --- Forms validation ---
 
     // -------------------------------------------------------------------------------------------------------
 
-    // All forms (except contact form: look at /assets/js/sendContactMessage.js) are declared here:
-    var formsInfos = {
-        // Single post comment form
-        0 : {
-            cssClass : '.comment-form',
-            identifier : 'pcf'
-        },
-        1 : {
-            cssClass : '.login-form',
-            identifier : 'lif'
-        },
-        2 : {
-            cssClass : '.register-form',
-            identifier : 'rf'
-        },
-        3 : {
-            cssClass : '.insert-post-form',
-            identifier : 'ipf'
-        },
-        4 : {
-            cssClass : '.update-post-form',
-            identifier : 'upf'
-        },
-    }, forms = '';
-
-    // Initialize forms selectors in one string (if needed)
-    for (var item in formsInfos) {
-        if (item == 0) {
-            forms =  forms + formsInfos[item].cssClass;
-        } else {
-            forms =  forms + ', ' + formsInfos[item].cssClass;
-        }
-    }
+    // Don't remove (Bootstrap normal behaviour) but hide notice message boxes when closed
+    $(document).on('close.bs.alert', '.alert', function() {
+        $(this).slideUp(700, function() { $(this).addClass('form-hide'); });
+        return false;
+    });
 
     // -------------------------------------------------------------------------------------------------------
-
-    // Don't remove (Bootstrap normal behaviour) but hide notice message boxes
-    $(document).on('click', '.alert .close', function(e) {
-        e.stopPropagation();
-        $(this).parent('.alert').slideUp(700, function() { $(this).addClass('form-hide'); });
-    })
-
-    // -------------------------------------------------------------------------------------------------------
-
-    // Fix little issue for identical rendering (background-color/border properties, ...) during events on .input-group-addon elements and .form-control fields
-    var previousObjectClicked,
-        isSameElement = false,
-        isInside = false,
-        clicked = 0,
-        formHTMLElement = '.input-group.phpblog-field-group';
 
     $(document).on('click', 'body', function(e) {
         clicked ++;
@@ -106,6 +62,13 @@ jQuery(function($) {
 
 // -------------------------------------------------------------------------------------------------------
 
+// Fix little issue for identical rendering (background-color/border properties, ...) during events on .input-group-addon elements and .form-control fields
+var previousObjectClicked,
+    isSameElement = false,
+    isInside = false,
+    clicked = 0,
+    formHTMLElement = '.input-group.phpblog-field-group';
+
 // Helper: first letter to uppercase
 var jsUcFirst = function(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
@@ -117,22 +80,24 @@ var jsLcFirst = function(string) {
     }
 
 // Start a delay with a callback
-var delay = (function() {
-        var timer = 0;
+var delayed = null,
+    delay = (function() {
         return function(callback, ms) {
-            clearTimeout(timer);
-            timer = setTimeout(callback, ms);
+            if (delayed != null) clearTimeout(delayed);
+            delayed = setTimeout(callback, ms);
         };
     })();
 
-/// callback for Google Recaptcha response
+// callback for Google Recaptcha response
 var grcJSONResponse, grcResponse = false,
     verifyCallback = function(response) {
         $('#form-recaptcha').prev('.text-danger').fadeOut(700);
-        $('#form-recaptcha').trigger('recaptchaResponse');
         grcResponse = true;
         grcJSONResponse = response;
-        //showNoticeMessage(true, false);
+        // "formSelector" is declared in each form validation JS file.
+        if (parseInt($(formSelector).data('try-validation')) == 1) {
+            showErrorNoticeMessage(true);
+        }
     }
 
 // Call Google Recaptcha callback
@@ -173,53 +138,27 @@ var noGoogleRecaptchaResponse = function() {
         }
     }
 
-// Manage notice boxes display
-var showNoticeMessage = function(isGRC, isSubmitted) {
-        // !WARNING: Google Recaptcha is not used: so behaves like its response "grcResponse" is "true".
-        if (!isGRC) {
-            grcResponse = true; // Cancel Google Recaptcha necessary validation
-        }
-        // Form is not submitted: simple JS validation
-        if (!isSubmitted) { // In case of no AJAX MODE: notice box behaviour chosen
-            if (success && grcResponse) {
-                 // Ready!
-                if ($('.form-error').is(':visible')) {
-                    $('.form-error').slideUp(700, function() { $(this).addClass('form-hide'); });
-                }
-            } else {
-                // Else case here to show notice error box, each time there is an error on any field.
-                if ($('.form-error').is(':hidden')) {
-                    $('.form-error').slideDown(700, function() { $(this).removeClass('form-hide'); });
-                }
-            }
-        } else { // In case of AJAX MODE: notice box behaviour chosen
-            // Form is submitted in AJAX mode
-            if (success && grcResponse) {
-                // All fields are completed correctly.
-                if ($('.form-error').is(':visible')) {
-                    $('.form-error').slideUp(700, function() { $(this).addClass('form-hide'); });
-                }
-                // AJAX mode: show success notice box
-                // $(this) corresponds to form css selector
-                if (parseInt($(this).data('ajax')) == 1 && $('.form-success').is(':hidden')) {
-                    $('.form-success').slideDown(700, function() { $(this).removeClass('form-hide'); });
-                }
-            }
-            // Errors on fields which prevent form to send user inputs.
-            if ((!success && !grcResponse) || (!success && grcResponse) || (success && !grcResponse)) {
-                // show error notice box
-                if ($('.form-error').is(':hidden')) {
-                    if ($('.form-success').is(':visible')) {
-                        // Hide success notice box if it already exists (in case of previous success)
-                        $('.form-success').slideUp(350, function() {
-                            $(this).addClass('form-hide');
-                            $('.form-error').slideDown(700, function() { $(this).removeClass('form-hide'); });
+// Manage error notice message box display
+var showErrorNoticeMessage = function(useGoogleRecaptcha) {
+        // Ready to send!
+        if (success && grcResponse || success && !useGoogleRecaptcha) {
+             // Hide error notice message
+            if ($('.form-error').is(':visible')) {
+                $('.form-error').slideUp(700, function() {
+                    $(this).addClass('form-hide');
+                    // Delete secondary message not to reshow it, if another error call error box slide down.
+                    if ($('.form-token-notice, .form-check-notice').length > 0) {
+                        $('.form-token-notice, .form-check-notice').each(function() {
+                            $(this).remove();
                         });
-                    } else {
-                        // Show error notice box
-                        $('.form-error').slideDown(700, function() { $(this).removeClass('form-hide'); });
                     }
-                } // Else: don't do anything
+                });
+            }
+        // Else case here to show notice error box, each time there is an error on any field.
+        } else {
+            // Show error notice message
+            if ($('.form-error').is(':hidden')) {
+                $('.form-error').slideDown(700, function() { $(this).removeClass('form-hide'); });
             }
         }
     }

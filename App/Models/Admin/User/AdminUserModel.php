@@ -88,15 +88,14 @@ class AdminUserModel extends AdminModel
     {
         // Secure query
         $query = $this->dbConnector->prepare('INSERT INTO users
-                                              (user_creationDate, user_familyName, user_firstName, user_nickName, user_email, user_password, user_passwordUpdateToken, user_passwordUpdateCode, user_passwordUpdateDate, user_activationCode, user_activationDate, user_isActivated, user_userTypeId)
-                                              VALUES (NOW(), :familyName, :firstName, :nickName, :email, :password, :passwordUpdateToken, :passwordUpdateCode, :passwordUpdateDate, :activationCode, :activationDate, :isActivated, :userTypeId)');
+                                              (user_creationDate, user_familyName, user_firstName, user_nickName, user_email, user_password, user_passwordUpdateToken, user_passwordUpdateDate, user_activationCode, user_activationDate, user_isActivated, user_userTypeId)
+                                              VALUES (NOW(), :familyName, :firstName, :nickName, :email, :password, :passwordUpdateToken, :passwordUpdateDate, :activationCode, :activationDate, :isActivated, :userTypeId)');
         $query->bindParam(':familyName', $familyName, \PDO::PARAM_STR);
         $query->bindParam(':firstName', $firstName, \PDO::PARAM_STR);
         $query->bindParam(':nickName', $nickName, \PDO::PARAM_STR);
         $query->bindParam(':email', $email, \PDO::PARAM_STR);
         $query->bindParam(':password', $password, \PDO::PARAM_STR);
         $query->bindParam(':passwordUpdateToken', $passwordUpdateToken, \PDO::PARAM_NULL);
-        $query->bindParam(':passwordUpdateCode', $passwordUpdateCode, \PDO::PARAM_NULL);
         $query->bindParam(':passwordUpdateDate', $passwordUpdateDate, \PDO::PARAM_STR);
         $query->bindParam(':activationCode', $activationCode, \PDO::PARAM_STR);
         $query->bindParam(':activationDate', $activationDate, \PDO::PARAM_STR);
@@ -109,7 +108,6 @@ class AdminUserModel extends AdminModel
         $email = $userDatas['ref_email'];
         $password = $userDatas['ref_password'];
         $passwordUpdateToken = 'NULL';
-        $passwordUpdateCode = 'NULL';
         $passwordUpdateDate = ''; // get default format '0000-00-00 00:00:00'
         $activationCode = $userDatas['ref_activationCode'];
         $activationDate = ''; // no activation at this level: get default format '0000-00-00 00:00:00'

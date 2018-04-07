@@ -19,19 +19,16 @@ jQuery(function($) {
         formJustLoaded = true;
         // Update fields error state on "fieldType"
         fieldsToUpdate($(fieldType));
-    });
+     });
 
     // -------------------------------------------------------------------------------------------------------
 
     // Manage errors on fields
     $(document).on('change keyup input paste', fieldType, function(e) {
-        // Particular cases:
-        // Render in uppercase immediately when typing for "family name" input
-        if ($(this).attr('id') == formIdentifier + 'familyName') {
+        // Particular case:
+        // Render in uppercase immediately when typing for "password update token" input
+        if ($(this).attr('id') == formIdentifier + 'passwordUpdateToken') {
             $(this).val($(this).val().toUpperCase());
-        // Render first letter in uppercase immediately when typing for "first name" and "nickname" inputs
-        } else if ($(this).attr('id') == formIdentifier + 'firstName' || $(this).attr('id') == formIdentifier + 'nickName') {
-            $(this).val(jsUcFirst($(this).val()));
         }
         // Look at /assets/js/phpblog.js for declared functions
         // Avoid multiple call to form check on the same element: one call is queued each time.
@@ -71,19 +68,19 @@ jQuery(function($) {
 
     // Mask/unmask password to help user
     $(document).on('click', '.unmask-pwd', function() {
-        $('#ref_show_password').trigger('change');
+        $('#rpf_show_password').trigger('change');
         if (showPasswordChecked) {
-            changeType($('input#ref_password'), 'text');
-            changeType($('input#ref_passwordConfirmation'), 'text');
+            changeType($('input#rpf_password'), 'text');
+            changeType($('input#rpf_passwordConfirmation'), 'text');
         } else {
-            changeType($('input#ref_password'), 'password');
-            changeType($('input#ref_passwordConfirmation'), 'password');
+            changeType($('input#rpf_password'), 'password');
+            changeType($('input#rpf_passwordConfirmation'), 'password');
             return false;
         }
     });
 
     // Manage custom checkbox "change" event to switch show/hide password
-    $(document).on('change', '#ref_show_password', function() {
+    $(document).on('change', '#rpf_show_password', function() {
         if ($(this).is(":checked")) {
             $(this).prop('checked', false);
             showPasswordChecked = false;
@@ -97,8 +94,8 @@ jQuery(function($) {
 // -------------------------------------------------------------------------------------------------------
 
 // Form identifiers
-var formSelector = '.register-form',
-    formIdentifier = 'ref_';
+var formSelector = '.renew-password-form',
+    formIdentifier = 'rpf_';
 
 // -------------------------------------------------------------------------------------------------------
 
@@ -132,19 +129,6 @@ var checkForm = function(element, functionsArray) {
         // Check element field
         fieldErrorMessage = element.parent('.input-group').prev('.text-danger');
         switch (element.attr('id')) {
-            case formIdentifier + 'familyName':
-            case formIdentifier + 'firstName':
-            case formIdentifier + 'nickName':
-                if (element.val().replace(/^\s+|\s+$/gm, '') == '') {
-                    // Use jsLcFirst()
-                    var elementLabel = functionsArray[0](element.attr('aria-label'));
-                    fieldErrorMessage.html('&nbsp;Please fill in ' + elementLabel +
-                                      '.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
-                    errorsOnFields[element.attr('id')] = true;
-                } else {
-                    errorsOnFields[element.attr('id')] = false;
-                }
-                break;
             case formIdentifier + 'email':
                 var emailPattern = /^\s*[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:(\.[a-zA-Z0-9-]+)+)\s*$/g,
                     is_email = emailPattern.test(element.val());
@@ -154,6 +138,20 @@ var checkForm = function(element, functionsArray) {
                 } else if (!is_email) {
                     fieldErrorMessage.html('&nbsp;Sorry, "<span class="text-muted">' + element.val() +
                     '</span>" is not a valid email address!<br>Please check its format.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
+                    errorsOnFields[element.attr('id')] = true;
+                } else {
+                    errorsOnFields[element.attr('id')] = false;
+                }
+                break;
+            case formIdentifier + 'passwordUpdateToken':
+                if (element.val().replace(/^\s+|\s+$/gm, '') == '') {
+                    var elementLabel = functionsArray[0](element.attr('aria-label'));
+                    fieldErrorMessage.html('&nbsp;Please fill in ' + elementLabel +
+                                      '.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
+                    errorsOnFields[element.attr('id')] = true;
+                } else if (element.val().length != 15) {
+                    fieldErrorMessage.html('&nbsp;Sorry, your token must contain<br>exactly 15 characters!<br>Please check it.' +
+                    '&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
                     errorsOnFields[element.attr('id')] = true;
                 } else {
                     errorsOnFields[element.attr('id')] = false;

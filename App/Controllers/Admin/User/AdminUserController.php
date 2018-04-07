@@ -46,6 +46,14 @@ class AdminUserController extends AdminController
      */
     private $fpfTokenValue;
     /**
+     * @var string: dynamic index name for renew password form token
+     */
+    private $rpfTokenIndex;
+    /**
+     * @var string: dynamic value for renew password form token
+     */
+    private $rpfTokenValue;
+    /**
      * @var object: an instance of captcha object
      */
     private $registerFormCaptcha;
@@ -61,6 +69,10 @@ class AdminUserController extends AdminController
      * @var array: an array of parameters to generate captcha user interface
      */
     private $captchaUIParams;
+    /**
+     * @var object: an instance of captcha object
+     */
+    private $renewPasswordFormCaptcha;
 
     /**
      * Constructor
@@ -77,6 +89,8 @@ class AdminUserController extends AdminController
         $this->loginFormValidator = $this->container::getFormValidator()[4];
         // Initialize request new password (forgotten) validator
         $this->forgetPasswordFormValidator = $this->container::getFormValidator()[5];
+        // Initialize renew password validator
+        $this->renewPasswordFormValidator = $this->container::getFormValidator()[6];
         // Define used parameters to avoid CSRF on register form
         $this->refTokenIndex = $this->registerFormValidator->generateTokenIndex('ref_check');
         $this->refTokenValue = $this->registerFormValidator->generateTokenValue('ref_token');
@@ -86,12 +100,17 @@ class AdminUserController extends AdminController
         // Define used parameters to avoid CSRF on request new password (forgotten) form
         $this->fpfTokenIndex = $this->forgetPasswordFormValidator->generateTokenIndex('fpf_check');
         $this->fpfTokenValue = $this->forgetPasswordFormValidator->generateTokenValue('fpf_token');
+        // Define used parameters to avoid CSRF on renew password form
+        $this->rpfTokenIndex = $this->renewPasswordFormValidator->generateTokenIndex('rpf_check');
+        $this->rpfTokenValue = $this->renewPasswordFormValidator->generateTokenValue('rpf_token');
         // Initialize register form captcha
         $this->registerFormCaptcha = $this->container::getCaptcha()[2];
         // Initialize login form captcha
         $this->loginFormCaptcha = $this->container::getCaptcha()[3];
         // Initialize request new password (forgotten) form captcha
         $this->forgetPasswordFormCaptcha = $this->container::getCaptcha()[4];
+        // Initialize renew password form captcha
+        $this->renewPasswordFormCaptcha = $this->container::getCaptcha()[5];
     }
 
     /**
@@ -265,7 +284,7 @@ class AdminUserController extends AdminController
         // Get validation result without captcha
         $result = $this->registerFormValidator->getResult();
         // Update validation result with Google Recaptcha antispam validation
-        $result = $this->registerFormCaptcha->call([$_POST['g-recaptcha-response'], $result, 'ref_errors']);
+        $result = $this->registerFormCaptcha->call([isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : false, $result, 'ref_errors']);
         // Submit: register form is correctly filled.
         if (isset($result) && empty($result['ref_errors']) && isset($result['g-recaptcha-response']) && $result['g-recaptcha-response'] && isset($result['ref_check']) && $result['ref_check']) {
              try {
@@ -340,7 +359,7 @@ class AdminUserController extends AdminController
         $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
         $headers .= 'From: "' . $this->config->getParam('websiteName') . '" <' . $this->config->getParam('contactForm.contactEmail') . '>'. "\r\n";
         $emailMessage = '<html><head></head><body>' . PHP_EOL .
-        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'dotprogs-logo-2016.jpg" alt="phpBlog - Registration activation" with="150" height="150"></p>' . PHP_EOL .
+        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg" alt="phpBlog - Registration activation" with="150" height="150"></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center;"><strong>ACCOUNT REGISTRATION ACTIVATION</strong><br><br></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center; border-top: 2px solid #ffb236; border-bottom: 2px solid #2ca8ff;"><br>Dear ' . htmlentities($result['ref_firstName']) . ' ' . htmlentities($result['ref_familyName']) . ',<br>Thank you to be registered on <a href="' . $this->config->getParam('domain'). '" title="phpBlog"><font color="#888"><u><strong>' . $this->config->getParam('domain') . '</u></strong></font></a>.<br>Now, you have to activate your account to be able to use it on our website.<br>Please click on <a href="' . $this->config->getParam('domain') .'/admin/register/?userAccount=' . $result['ref_email'] . '&amp;activationKey=' . $result['ref_activationCode'] . '" title="Activate your user account"><font color="#f96332"><u>your personal link</u></font></a> to perform this action.<br>Important: please consider your account will be deleted automatically in 48 hours<br>if no activation happens before time limit: <strong>' . $date->format('d-m-Y H:i:s') . '</strong>.<br>Best regards.<br><br>&copy; ' . date('Y') . ' phpBlog<br><br></p>' . PHP_EOL .
         '</body></html>';
@@ -356,7 +375,7 @@ class AdminUserController extends AdminController
     {
         try {
             // Check email format
-            $checkedEmail = filter_var(trim($_GET['userAccount']), FILTER_VALIDATE_EMAIL);
+            $checkedEmail = isset($_GET['userAccount']) ? filter_var(trim($_GET['userAccount']), FILTER_VALIDATE_EMAIL) : false;
             if ($checkedEmail) {
                 // Check email account in database
                 $user = $this->currentModel->getUserByEmail($checkedEmail);
@@ -364,11 +383,12 @@ class AdminUserController extends AdminController
                 if ($user != false) {
                     // Account is already activated!
                     if ($user->isActivated) {
-                        $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account activation failed!<br>This account is already activated: <strong>' . htmlentities($_GET['userAccount']) . '</strong>!<br>Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br></span>');
+                        $info = isset($_GET['userAccount']) ? 'This account is already activated: <strong>' . htmlentities($_GET['userAccount']) . '</strong>!<br>' : '';
+                        $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account activation failed!<br>' . $info . 'Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br></span>');
                         $activation = false;
                     } else {
                         // Activation code matches activation key parameter
-                        if ($_GET['activationKey'] === $user->activationCode) {
+                        if (isset($_GET['activationKey']) && $_GET['activationKey'] === $user->activationCode) {
                             $datas = [
                                 'entity' => 'user',
                                 'values' => [
@@ -394,18 +414,21 @@ class AdminUserController extends AdminController
                             $activation = true;
                         } else {
                             // Wrong activation code
-                            $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account activation was refused!<br>Your activation key is not valid: <strong>' . htmlentities($_GET['activationKey']) . '</strong>!<br>Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br></span>');
+                            $info = isset($_GET['activationKey']) ? 'Your activation key is not valid: <strong>' . htmlentities($_GET['activationKey']) . '</strong>!<br>' : '';
+                            $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account activation was refused!<br>' . $info . 'Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br></span>');
                             $activation = false;
                         }
                     }
                 } else {
                     // Unknown user email account
-                    $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account activation was refused!<br>This email address is unknown: <strong>' . htmlentities($_GET['userAccount']) . '</strong>!<br>Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br></span>');
+                    $info = isset($_GET['userAccount']) ? 'This email address is unknown: <strong>' . htmlentities($_GET['userAccount']) . '</strong>!<br>' : '';
+                    $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account activation was refused!<br>' . $info . 'Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br></span>');
                     $activation = false;
                 }
             } else {
                 // Invalid email
-                $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account activation was refused!<br>This email address is not valid: <strong>' . htmlentities($_GET['userAccount']) . '</strong>!<br>Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br></span>');
+                $info = isset($_GET['userAccount']) ? 'This email address is not valid: <strong>' . htmlentities($_GET['userAccount']) . '</strong>!<br>' : '';
+                $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry account activation was refused!<br>' . $info . 'Please <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br></span>');
                 $activation = false;
             }
         } catch (\PDOException $e) {
@@ -464,6 +487,8 @@ class AdminUserController extends AdminController
             'errors' => isset($checkedForm['lif_errors']) ? $checkedForm['lif_errors'] : false,
             // Update success state if the same template is loaded (no redirection to admin homepage)
             'success' => isset($_SESSION['lif_success']) ? $_SESSION['lif_success'] : false,
+            // Update success state for password renewal success message box
+            'passwordRenewalSuccess' => isset($_SESSION['rpf_success']) ? $_SESSION['rpf_success'] : false,
         ];
     }
 
@@ -500,6 +525,12 @@ class AdminUserController extends AdminController
         // (No need here to update user form inputs! "$checkedForm" argument is null)
         $varsArray = $this->initAdminAccess();
         $this->renderAdminAccess($varsArray);
+        // Is it already a succcess state for user when renewing password?
+        // Enable password renewal success message box once a time
+        if ($this->isRenewPasswordSuccess()) {
+            // Do not store a success state anymore!
+            unset($_SESSION['rpf_success']);
+        }
     }
 
     /**
@@ -528,6 +559,12 @@ class AdminUserController extends AdminController
      */
     private function validateLoginForm()
     {
+        // User is already authenticated.
+        $user = $this->session::isUserAuthenticated();
+        if ($user != false) {
+            $result['lif_errors']['lif_login'] = '<span class="form-check-notice">Sorry, You are already authenticated!<br>So you don\'t need to login again...</span>';
+            return $result;
+        }
         // Prepare filters for form email data
         $datas = [
             0 => ['name' => 'email', 'filter' => 'email', 'modifiers' => ['trimStr']]
@@ -544,7 +581,7 @@ class AdminUserController extends AdminController
         // Get validation result without captcha
         $result = $this->loginFormValidator->getResult();
         // Update validation result with Google Recaptcha antispam validation
-        $result = $this->loginFormCaptcha->call([$_POST['g-recaptcha-response'], $result, 'lif_errors']);
+        $result = $this->loginFormCaptcha->call([isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : false, $result, 'lif_errors']);
         // Submit: login form is correctly filled.
         if (isset($result) && empty($result['lif_errors']) && isset($result['g-recaptcha-response']) && $result['g-recaptcha-response'] && isset($result['lif_check']) && $result['lif_check']) {
             try {
@@ -584,7 +621,7 @@ class AdminUserController extends AdminController
                             ];
                         } else {
                             // No existing password (no existing password or no match with email account)
-                            $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry, authentication failed! Please check your email and password!<br>[Debug trace: hashed password string "<strong>' . htmlentities($result['lif_password']) . '</strong>" doesn\'t exist in database<br>or doesn\'t match with email account "<strong>' . htmlentities($result['lif_email']) . '</strong>"!]</span>');
+                            $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry, authentication failed! Please check your email and password!<br>[Debug trace: hashed password string "<strong>' . htmlentities($result['lif_password']) . '</strong>" doesn\'t exist in database<br>or doesn\'t match email account "<strong>' . htmlentities($result['lif_email']) . '</strong>"!]</span>');
                         }
                     }
                 } else {
@@ -617,7 +654,7 @@ class AdminUserController extends AdminController
             exit();
         } else {
             // Wrong user key is applied to logout!
-            $this->httpResponse->set401ErrorResponse('Logout refused: user was not recognized! [Debug trace: wrong user key is applied!]', $this->router);
+            $this->httpResponse->set401ErrorResponse($this->config::isDebug('Logout refused: user was not recognized! [Debug trace: wrong user key is applied!]'), $this->router);
             exit();
         }
     }
@@ -716,7 +753,7 @@ class AdminUserController extends AdminController
         // Set captcha user interface
         $this->captchaUIParams = $this->forgetPasswordFormCaptcha->call(['customized' => [0 => 'setNoSpamFormElements']]);
         // Store result from request new password (forgotten) form validation
-        $checkedForm = $this->validateForgetPasswordForm();
+        $checkedForm = $this->validateRequestNewPasswordForm();
         // Is it already a succcess state?
         if ($this->isRequestNewPasswordSuccess()) {
             // Success state is returned: avoid previous $_POST with a redirection to the same page
@@ -727,14 +764,13 @@ class AdminUserController extends AdminController
             $vars = $this->initAdminRequestNewPassword($checkedForm);
             $this->renderAdminRequestNewPassword($vars);
         }
-
     }
 
     /**
      * Validate (or not) request new password (forgotten) form
      * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
      */
-    public function validateForgetPasswordForm()
+    public function validateRequestNewPasswordForm()
     {
         // Prepare filters for form email data
         $datas = [
@@ -762,9 +798,6 @@ class AdminUserController extends AdminController
                     $result['fpf_familyName'] = $user->familyName;
                     // Create password renewal authentication token to send to user (thanks to his email address!): he will use it in password renewal form
                     $result['fpf_passwordUpdateToken'] = $this->generateUserPasswordUpdateToken($result['fpf_email']);
-                    // Create password renewal authentication code to authenticate user with url
-                    // used to access password renewal dedicated form
-                    $result['fpf_passwordUpdateCode'] = $this->generateUserPasswordUpdateCode($result['fpf_email']);
                     $datas = [
                         'entity' => 'user',
                         'values' => [
@@ -772,11 +805,6 @@ class AdminUserController extends AdminController
                                 'type' => 2, // string
                                 'column' => 'passwordUpdateToken',
                                 'value' =>  $result['fpf_passwordUpdateToken'] // update token value
-                            ],
-                            1 => [
-                                'type' => 2, // string
-                                'column' => 'passwordUpdateCode',
-                                'value' =>  $result['fpf_passwordUpdateCode'] // update code value to use in personal link
                             ]
                         ]
                     ];
@@ -826,11 +854,212 @@ class AdminUserController extends AdminController
         $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
         $headers .= 'From: "' . $this->config->getParam('websiteName') . '" <' . $this->config->getParam('contactForm.contactEmail') . '>'. "\r\n";
         $emailMessage = '<html><head></head><body>' . PHP_EOL .
-        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'dotprogs-logo-2016.jpg" alt="phpBlog - Registration activation" with="150" height="150"></p>' . PHP_EOL .
+        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg" alt="phpBlog - Registration activation" with="150" height="150"></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center;"><strong>PASSWORD RENEWAL AUTHENTICATION CODE</strong><br><br></p>' . PHP_EOL .
-        '<p style="width: 600px; margin: 0 auto; text-align:center; border-top: 2px solid #ffb236; border-bottom: 2px solid #2ca8ff;"><br>Dear ' . htmlentities($result['fpf_firstName']) . ' ' . htmlentities($result['fpf_familyName']) . ',<br>Here is your authentication code <strong>' . $result['fpf_passwordUpdateToken'] . '</strong> which is only valid on <a href="' . $this->config->getParam('domain'). '" title="phpBlog"><font color="#888"><u><strong>' . $this->config->getParam('domain') . '</u></strong></font></a>.<br>Now, you have to use it on our website, to renew your password.<br>Please click on <a href="' . $this->config->getParam('domain') .'/admin/renew-password/?userAccount=' . $result['fpf_email'] . '&amp;accountKey=' . $result['fpf_passwordUpdateCode'] . '" title="Renew your password"><font color="#f96332"><u>your personal link</u></font></a> to perform this action.<br>Important: please consider your authentication code will be deleted automatically in 48 hours<br>if no update happens before time limit: <strong>' . $date->format('d-m-Y H:i:s') . '</strong>.<br>Best regards.<br><br>&copy; ' . date('Y') . ' phpBlog<br><br></p>' . PHP_EOL .
+        '<p style="width: 600px; margin: 0 auto; text-align:center; border-top: 2px solid #ffb236; border-bottom: 2px solid #2ca8ff;"><br>Dear ' . htmlentities($result['fpf_firstName']) . ' ' . htmlentities($result['fpf_familyName']) . ',<br>Here is your authentication code <strong>' . $result['fpf_passwordUpdateToken'] . '</strong> which is only valid on <a href="' . $this->config->getParam('domain'). '" title="phpBlog"><font color="#888"><u><strong>' . $this->config->getParam('domain') . '</u></strong></font></a>.<br>Now, you have to use it on our website, to renew your password.<br>Please click on <a href="' . $this->config->getParam('domain') .'/admin/renew-password" title="Renew your password"><font color="#f96332"><u>this link</u></font></a> to access a dedicated form.<br>Important: please consider your authentication code (token) will be deleted automatically in 48 hours<br>if no update happens before time limit: <strong>' . $date->format('d-m-Y H:i:s') . '</strong>.<br>Best regards.<br><br>&copy; ' . date('Y') . ' phpBlog<br><br></p>' . PHP_EOL .
         '</body></html>';
         // Send email
         mail( $result['fpf_email'], 'Password renewal authentication code to use on ' . $this->config->getParam('websiteName'), $emailMessage, $headers);
+    }
+
+    /**
+     * Initialize admin renew password template parameters
+     * @param array|null $checkedForm: an array which contains result of form validation (error on fields, filtered form values, ...), or null
+     * @return array: an array of template parameters
+     */
+    public function initAdminRenewPassword($checkedForm = null)
+    {
+        $jsArray = [
+            0 => [
+                'placement' => 'bottom',
+                'attributes' => 'async defer',
+                'src' => 'https://www.google.com/recaptcha/api.js?hl=en&onload=onloadCallback&render=explicit'
+            ],
+            1 => [
+                'placement' => 'bottom',
+                'src' => '/assets/js/phpblog.js'
+            ],
+            2 => [
+                'placement' => 'bottom',
+                'src' => '/assets/js/renewPassword.js'
+            ]
+        ];
+        return [
+            'JS' => $jsArray,
+            'metaTitle' => 'Admin access - Password renewal',
+            'metaDescription' => 'Please use your email account and authentication token (code) to renew your password.',
+            'metaRobots' => 'noindex, nofollow',
+            'imgBannerCSSClass' => 'admin-login',
+            'email' => isset($checkedForm['rpf_email']) ? $checkedForm['rpf_email'] : '',
+            'passwordUpdateToken' => isset($checkedForm['rpf_passwordUpdateToken']) ? $checkedForm['rpf_passwordUpdateToken'] : '',
+            'password' => isset($checkedForm['rpf_password']) ? $checkedForm['rpf_password'] : '',
+            'passwordConfirmation' => isset($checkedForm['rpf_passwordConfirmation']) ? $checkedForm['rpf_passwordConfirmation'] : '',
+            'siteKey' => $this->config::getParam('googleRecaptcha.siteKey'),
+            // Token for renew new password form
+            'rpfTokenIndex' => $this->rpfTokenIndex,
+            'rpfTokenValue' => $this->rpfTokenValue,
+            // Does validation submit already exist with error?
+            'tryValidation' => isset($_POST['rpf_submit']) ? 1 : 0,
+            'submit' => isset($_SESSION['rpf_success']) && $_SESSION['rpf_success'] ? 1 : 0,
+            // Error messages
+            'errors' => isset($checkedForm['rpf_errors']) ? $checkedForm['rpf_errors'] : false,
+            // Update success state on the same template
+            'success' => isset($_SESSION['rpf_success']) ? $_SESSION['rpf_success'] : false
+        ];
+    }
+
+    /**
+     * Render admin renew password template (template based on Twig template engine)
+     * @param array $vars: an array of template engine parameters
+     * @return void
+     */
+    public function renderAdminRenewPassword($vars)
+    {
+        // Render minimalist template
+        echo $this->page->renderTemplate('Admin/admin-renew-password-form.tpl', $vars);
+    }
+
+    /**
+     * Check if there is already a success state for user password renewal
+     * @return boolean
+     */
+    private function isRenewPasswordSuccess() {
+        if (isset($_SESSION['rpf_success'])) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Show default admin renew password template
+     * @return void
+     */
+    public function showAdminRenewPassword()
+    {
+        // Render default template
+        $vars = $this->initAdminRenewPassword();
+        $this->renderAdminRenewPassword($vars);
+    }
+
+    /**
+     * Renew user password (on submission) template
+     * @return void
+     */
+    public function renewPassword()
+    {
+        // Store result from renew password form validation
+        $checkedForm = $this->validateRenewPasswordForm();
+        // Is it already a succcess state?
+        if ($this->isRenewPasswordSuccess()) {
+            // Success state is returned: avoid previous $_POST with a redirection to login page
+            $this->httpResponse->addHeader('Location: /admin/login');
+            exit();
+        } else {
+            // Render template when submitting form
+            $vars = $this->initAdminRenewPassword($checkedForm);
+            $this->renderAdminRenewPassword($vars);
+        }
+    }
+
+    /**
+     * Validate user password renewal form
+     * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
+     */
+    public function validateRenewPasswordForm()
+    {
+        // Prepare filters for form datas
+        $datas = [
+            0 => ['name' => 'email', 'filter' => 'email', 'modifiers' => ['trimStr']],
+            1 => ['name' => 'passwordUpdateToken', 'filter' => 'alphanum', 'modifiers' => ['trimStr']]
+            // Password must not be filtered (no sanitization), it will only be hashed to check matching in database.
+        ];
+        // Filter user inputs in $_POST datas
+        $this->renewPasswordFormValidator->filterDatas($datas);
+        // Authentication token
+        $this->renewPasswordFormValidator->validateRequired('passwordUpdateToken', 'token');
+        // Email
+        $this->renewPasswordFormValidator->validateEmail('email', 'email', $_POST['rpf_email']);
+        // Password update token (check length)
+        $this->renewPasswordFormValidator->validatePasswordUpdateTokenLength('passwordUpdateToken', $_POST['rpf_passwordUpdateToken']);
+        // Password
+        $this->renewPasswordFormValidator->validatePassword('password', 'password', $_POST['rpf_password']);
+        // Password confirmation
+        $this->renewPasswordFormValidator->validatePassword('passwordConfirmation', 'password', isset($_POST['rpf_passwordConfirmation']) ? $_POST['rpf_passwordConfirmation'] : '');
+        // Check if password confirmation and password are identical
+        $this->renewPasswordFormValidator->validatePasswordConfirmation('passwordConfirmation', $_POST['rpf_password'], isset($_POST['rpf_passwordConfirmation']) ? $_POST['rpf_passwordConfirmation'] : '');
+        // Check token to avoid CSRF
+        $this->renewPasswordFormValidator->validateToken(isset($_POST[$this->rpfTokenIndex]) ? $_POST[$this->rpfTokenIndex] : false);
+        // Get validation result without captcha
+        $result = $this->renewPasswordFormValidator->getResult();
+        // Update validation result with Google Recaptcha antispam validation
+        $result = $this->renewPasswordFormCaptcha->call([isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : false, $result, 'rpf_errors']);
+        // Submit: renew password form is correctly filled.
+        if (isset($result) && empty($result['rpf_errors']) && isset($result['g-recaptcha-response']) && $result['g-recaptcha-response'] && isset($result['rpf_check']) && $result['rpf_check']) {
+            try {
+                // Check email account in database
+                $user = $this->currentModel->getUserByEmail($result['rpf_email']);
+                // Existing user email account
+                if ($user != false) {
+                    // Check user input authentication token value which must match password token value in database
+                    $validPasswordUpdateToken = $this->checkPasswordUpdateTokenValue($result['rpf_passwordUpdateToken'], $user->passwordUpdateToken);
+                    if ($validPasswordUpdateToken) {
+                        // Hash user password before update
+                        $result['rpf_password'] = $this->generateUserPasswordEncryption($result['rpf_password']);
+                        $datas = [
+                            'entity' => 'user',
+                            'values' => [
+                                0 => [
+                                    'type' => 2, // string
+                                    'column' => 'password',
+                                    'value' =>  $result['rpf_password'] // set password value
+                                ],
+                                1 => [
+                                    'type' => 2, // string
+                                    'column' => 'passwordUpdateToken',
+                                    'value' =>  'NULL' // set update token value
+                                ],
+                                2 => [
+                                    'type' => 2, // string
+                                    'column' => 'passwordUpdateDate',
+                                    'value' =>  date('Y-m-d H:i:s') // set update date value
+                                ]
+                            ]
+                        ];
+                        // Update user password renewal authentication token and code datas
+                        $this->currentModel->updateEntity($user->id, $datas);
+                        $update = true;
+                    } else {
+                        // Show detailed error message in error box
+                        $result['rpf_errors']['rpf_renewal'] = $this->config::isDebug('<span class="form-check-notice">Sorry, your token is not valid.<br>Please check your token value or corresponding email account.<br>[Debug trace: <strong>' . htmlentities($result['rpf_passwordUpdateToken']) . '</strong> does not match email account, or does not exist in database.]</span>');
+                        // Show captcha error already checked before.
+                        $result['rpf_errors']['g-recaptcha-response'] = 'Please confirm you are a human.';
+                        $update = false;
+                    }
+                } else {
+                    $result['rpf_errors']['rpf_renewal'] = $this->config::isDebug('<span class="form-check-notice">Sorry, your email account is not valid.<br>[Debug trace: <strong>' . htmlentities($result['rpf_email']) . '</strong> does not exist in database.]</span>');
+                    $update = false;
+                }
+            } catch (\PDOException $e) {
+                $result['rpf_errors']['rpf_renewal'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to renew your password at this time: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $update = false;
+            }
+            // User password was updated successfully!
+            if ($update) {
+                // Reset renew password form
+                $result = [];
+                // Delete renew password form token
+                unset($_SESSION['rpf_check']);
+                unset($_SESSION['rpf_token']);
+                // Regenerate token to be updated in renew password form
+                $this->rpfTokenIndex = $this->renewPasswordFormValidator->generateTokenIndex('rpf_check');
+                $this->rpfTokenValue = $this->renewPasswordFormValidator->generateTokenValue('rpf_token');
+                // Show success message
+                $_SESSION['rpf_success'] = true;
+            }
+        }
+        // Update datas in form, error messages near fields, and notice error/success message
+        return $result;
     }
 }

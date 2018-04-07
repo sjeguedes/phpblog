@@ -19,7 +19,7 @@
                 </p>
                 {% else %}
                 <p class="alert alert-success form-success" role="alert">
-                    <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>ACCOUNT REGISTRATION ACTIVATION IS DONE!</strong><br>You activated your account successfully.<br>We are proud to have you among our new members!<br>Until now, <a href="/admin/login" class="text-muted text-lower" title="Member access"><strong>you are able to login</strong></a>.
+                    <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>ACCOUNT REGISTRATION ACTIVATION IS DONE!</strong><br>You activated your account successfully.<br>We are proud to have you among our new members!<br>Until now, you are able to login <a href="/admin/login" class="text-muted text-lower" title="Member access"><strong>here</strong></a>.
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">
                             <i class="now-ui-icons ui-1_simple-remove"></i>
@@ -49,7 +49,7 @@
             </div>
         </div>
         <!-- End user notice message -->
-        <!-- register form -->
+        <!-- Register form -->
         <div class="row">
             <div class="col-lg-5 text-center col-md-8 col-sm-10 ml-auto mr-auto">
                 <div class="row card p-4" data-background-color="black">
@@ -118,6 +118,9 @@
             </div>
         </div>
         <!-- End register form -->
+        <p>
+            <a class="btn" href="/admin/login" title="Login with your activated account"><i class="fa fa-angle-left" aria-hidden="true"></i>&nbsp;You need to login with an activated account, please click here!&nbsp;<i class="fa fa-sign-in fa-lg" aria-hidden="true"></i></a>
+        </p>
     </div>
 </div>
 <!-- Password info modal -->
@@ -145,7 +148,6 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn" data-dismiss="modal" title="Ok, that's more clear now!">OK, THAT'S MORE CLEAR NOW!</button>
-
             </div>
         </div>
     </div>

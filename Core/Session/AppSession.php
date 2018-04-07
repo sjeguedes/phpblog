@@ -30,7 +30,7 @@ class AppSession
     /**
      * @var integer: inactivity duration (in seconds) before a session expires.
      */
-    private const SESSION_TIME_LIMIT = 1800;
+    private const SESSION_TIME_LIMIT = 900;
     /**
      * @var integer: duration (in seconds) before a session id is regenerated.
      */
@@ -109,20 +109,18 @@ class AppSession
                     'httponly' => 1 // true
                 ];
                 session_set_cookie_params($params['lifetime'], $params['path'], $params['domain'], $params['secure'], $params['httponly']);
-
                 // Start an effective session
                 session_start();
             }
             // Check if session must expire in case of no page loaded during expiration time limit.
             $isSessionExpired = self::expire();
-            if ($isSessionExpired) {
-                if (isset($_SESSION['userAuthenticated'])) {
-                    $link = 'href="' . self::$_router->useUrl('Admin\User\AdminUser|showAdminAccess', null) . '"';
-                    unset($_SESSION['userAuthenticated']);
+            // Set an 401 error (without AJAX and for $_GET request and no expired form) to inform user!
+            if ($isSessionExpired && (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) && $_SERVER['REQUEST_METHOD'] == 'GET') {
+                if (!isset($_SESSION['unauthorizedFormSubmission'])) {
+                    throw new \Exception('<strong>Session expired and this is due to inactivity.</strong><br> Then, your request was unauthorized!<br>Please go back to <a href="/' . self::$_router->getUrl() . '" class="normal-link" title="Previous visited page">previous page</a> to restart a normal navigation.');
                 } else {
-                    $link = 'href="#" onclick="window.location.reload(window.history.go(-1)); return false;"';
+                    unset($_SESSION['unauthorizedFormSubmission']);
                 }
-                throw new \Exception('Your request expired due to inactivity, then it was unauthorized! Please go back to <a ' . $link . ' title="Previous visited page">previous page</a> and try again.');
             }
             // Help prevent session hijacking by resetting the session id each time a particular delay is reached.
             if ($regenerateSessionId) {
@@ -133,8 +131,13 @@ class AppSession
                 // Page is loaded for the first time, or session id time limit is reached: session id must be regenerated!
                 if (($_SESSION['newSID']['timeBase'] == $now) || ($now > $_SESSION['newSID']['timeBase'] + self::SESSION_ID_TIME_LIMIT)) {
                     // If a previous custom user session token cookie exists, reset it
-                    if (isset($_SESSION['newSID']['indexSalt'])) {
-                        self::resetCookie('UPDATEDUST' . $_SESSION['newSID']['indexSalt']);
+                    // Reset custom cookie which stores user session token
+                    // No break to be sure to reset multiple unexpected cookies
+                    foreach ($_COOKIE as $key => $value) {
+                        if (preg_match('#^UPDATEDUST((?=.\w+)(?=.\d*).+)$#', $key)) {
+                            unset($_COOKIE[$key]);
+                            self::resetCookie($key);
+                        }
                     }
                     // Regenerate session id
                     session_regenerate_id(true);
@@ -253,8 +256,6 @@ class AppSession
         $user = self::isUserAuthenticated();
         if (!is_null($last) && ($now > $last + self::SESSION_TIME_LIMIT)) {
             self::destroy();
-            session_start();
-            $_SESSION['expiredSession'] = true;
             if ($user != false) $_SESSION['userAuthenticated'] = true;
             $isExpired =  true;
         } else {
@@ -266,7 +267,7 @@ class AppSession
 
     /**
      * Remove session data and destroy the current session.
-     * @return void
+     * @return array|false: saved expired form tokens to manage CSRF error in outdated forms
      */
     public static function destroy()
     {
@@ -280,12 +281,13 @@ class AppSession
             // Reset custom cookie which stores user session token
             // No break to be sure to reset multiple unexpected cookies
             foreach ($_COOKIE as $key => $value) {
-                if (preg_match('#^UPDATEDUST((?=.\w)(?=.\d).*)$#', $key)) {
+                if (preg_match('#^UPDATEDUST((?=.\w+)(?=.\d*).+)$#', $key)) {
                     unset($_COOKIE[$key]);
                     self::resetCookie($key);
                 }
             }
             session_destroy();
+            session_start();
         }
     }
 

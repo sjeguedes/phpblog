@@ -57,28 +57,7 @@ abstract class BaseController
         $this->config = $this->router->getConfig();
         $this->session = $this->router->getSession();
         $this->session::start(true);
-        // If session expired, then reset its dedicated session value
-        $this->ManageExpiredCSRFtokens();
 	}
-
-    /**
-     * Manage Expired CSRF tokens
-     * This code is used to manage form tokens issue (not show expired token error box message anymore)
-     * when they are regenerated with new session
-     * and user is trying to submit a form with existing $_POST/$_GET old token values
-     * @see AppSession::expire() and AppPage::addSessionTemplateParams()
-     * @return void
-     */
-    private function ManageExpiredCSRFtokens() {
-        if (isset($_SESSION['expiredSession'])) {
-            if (isset($_SESSION['newSession'])) {
-                unset($_SESSION['expiredSession']);
-                unset($_SESSION['newSession']);
-            }
-            // Used to unset expiration/new session values after next page load
-            $_SESSION['newSession'] = true;
-        }
-    }
 
 	/**
 	 * Check if called method exists

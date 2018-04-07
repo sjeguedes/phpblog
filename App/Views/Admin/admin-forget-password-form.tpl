@@ -1,15 +1,15 @@
 {% extends "layout.tpl" %}
 {% block content %}
-<div class="section section-admin-login-form text-center">
+<div class="section section-admin-forget-password-form text-center">
     <div class="container">
         <h2 class="title">You forgot your password?<br>Use your email account to renew it.</h2>
-        <p class="description">You will receive an authentication code to use in another dedicated form.<br>Then , you will be able to perform this action!</p>
+        <p class="description">You will receive an authentication code (token)<br>to use in another dedicated form accessible below.<br>Then, you will be able to perform this action!</p>
         <!-- User notice message -->
         <div class="row">
             <div class="col-lg-8 text-center col-md-10 ml-auto mr-auto">
                 <!-- Success message box is on the same page here. -->
                 <p class="alert alert-success form-success{{ success == 0 ? ' form-hide'}}" role="alert">
-                    <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>WELL DONE!</strong>&nbsp;You request was treated successfully.<br>You are going to receive a password renewal email in a few minutes!<br>You will be able to change your password<br>by clicking on your personal link.
+                    <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>WELL DONE!</strong>&nbsp;You request was treated successfully.<br>You are going to receive a password renewal email in a few minutes!<br>You will be able to change your password<br>on a dedicated form accessible <a href="/admin/renew-password" class="text-muted" href title="Password renewal form"><strong class="text-lower">here</strong></a>.
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">
                             <i class="now-ui-icons ui-1_simple-remove"></i>
@@ -67,6 +67,9 @@
             </div>
         </div>
         <!-- End forget password form -->
+        <p>
+            <a class="btn btn-info" href="/admin/renew-password" title="Renew your password"><i class="fa fa-angle-right" aria-hidden="true"></i>&nbsp;You need to renew your password, please click here!&nbsp;<i class="fa fa-life-ring fa-lg" aria-hidden="true"></i></a>
+        </p>
     </div>
 </div>
 {% endblock %}

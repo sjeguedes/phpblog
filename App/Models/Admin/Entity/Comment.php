@@ -291,6 +291,7 @@ class Comment
      */
     public function setIsValidated($isValidated)
     {
+        $isValidated = (bool) $isValidated;
         if (is_bool($isValidated)) {
             $this->isValidated = $isValidated;
         }
@@ -303,6 +304,7 @@ class Comment
      */
     public function setIsPublished($isPublished)
     {
+        $isPublished = (bool) $isPublished;
         if (is_bool($isPublished)) {
             $this->isPublished = $isPublished;
         }

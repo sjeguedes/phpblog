@@ -254,6 +254,7 @@ class AppHTTPResponse
      */
     public function set401ErrorResponse($message, AppRouter $router = null)
     {
+        $this->addHeader('Cache-Control: no-cache, must-revalidate');
         // Send "Unauthorized" HTTP headers
         $this->addHeader('Status: 401 Unauthorized');
         $this->addHeader('HTTP/1.1 401 Unauthorized');

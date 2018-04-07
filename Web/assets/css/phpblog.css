@@ -22,15 +22,13 @@ span.btn {
     cursor: default !important;
 }
 
-span.btn:hover, span.btn:focus {
-    background-color: #888;
-    box-shadow: none;
-}
-
 a:not(.btn):hover {
     text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.4);
 }
 
+.form-success a:hover {
+    text-shadow: 0px 2px 2px rgba(255, 255, 255, 0.4);
+}
 /* End override BootStrap */
 
 /* Override Now ui */
@@ -55,14 +53,19 @@ a:not(.btn):hover {
     font-size: 0.75em;
 }
 /* End override Now ui */
-
+/* Override Recaptcha */
 .g-recaptcha {
     display: inline-block;
     margin-bottom: 5px;
 }
+/* End override Recaptcha */
 
-body, html {
+html {
     height: 100%;
+}
+
+body {
+    height: inherit;
 }
 
 ul.phpblog-list {
@@ -82,12 +85,25 @@ ul.phpblog-list {
     margin: 0;
 }
 
+.navbar-brand {
+    margin: 0;
+    transform-origin: 50% 50% 50%;
+    backface-visibility: hidden;
+    transform: scale(0.95) translate3d(0, 0, 0);
+    transition: all 0.3s;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.1) translate3d(0, 0, 0);
+    transition: all 0.3s ease-out;
+}
+
 .navbar-brand .btn {
     cursor: pointer !important;
 }
 
-.navbar-brand:hover {
-    color: #888 !important;
+.navbar-brand .btn:hover {
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
 }
 
 .navbar-brand .custom-logo {
@@ -95,7 +111,8 @@ ul.phpblog-list {
     height: auto;
     position: relative;
     top: 0;
-    left: 0.2em;
+    left: 0;
+    padding: 0.5em;
 }
 
 .navbar-brand .navbar-brand-title {
@@ -346,7 +363,7 @@ ul.phpblog-list {
 
 /* Single post */
 .post-comment-list-paging .slick-slide { /*comments paging*/
-    padding: 10px 20px 40px;
+    padding: 10px 20px 0;
 }
 
 /* Forms */
@@ -437,7 +454,6 @@ form p.text-danger {
     display: none;
 }
 
-.section-contact-us .cf-screen-reader,
 .form-screen-reader {
     position: absolute !important;
     clip: rect(1px 1px 1px 1px);
