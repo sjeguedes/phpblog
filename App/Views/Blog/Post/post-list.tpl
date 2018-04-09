@@ -1,4 +1,4 @@
-{% extends "layout.tpl" %}
+{% extends 'layout.tpl' %}
 {% block content %}
 
 {% if postListOnPage['postsOnPage'] is not empty %}

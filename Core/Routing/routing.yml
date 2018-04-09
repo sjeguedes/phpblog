@@ -1,100 +1,163 @@
 routing:
-    homeGETParams:
+    showHome:
         path: /
         module: Home\Home
         action: isCalled
         name: Home\Home|isCalled
         method: GET
 
-    postsList:
+    showPostsList:
         path: /posts
         module: Blog\Post\Post
         action: showList
         name: Blog\Post\Post|showList
         method: GET
 
-    postWithId:
+    showPostWithId:
         path: /post/:id
         module: Blog\Post\Post
         action: showSingle
         name: Blog\Post\Post|showSingle
         method: GET
 
-    postWithSlugAndId:
+    showPostWithSlugAndId:
         path: /post/:slug-:id
         module: Blog\Post\Post
         action: showSingle
         name: Blog\Post\Post|showSingle
         method: GET
 
-    postsWithPaging:
+    showPostsWithPaging:
         path: /posts/page/:pageId
         module: Blog\Post\Post
         action: showListWithPaging
         name: Blog\Post\Post|showListWithPaging
         method: GET
 
-    postCommentGETParams:
+    showPostComment:
         path: /comment-post/:id
         module: Blog\Post\Post
         action: showSingle
         name: Blog\Post\Post|showSingle
         method: GET
 
-    adminHome:
+    showAdminHome:
         path: /admin
         module: Admin\Home\AdminHome
         action: showAdminHome
         name: Admin\Home\AdminHome|showAdminHome
         method: GET
 
-    adminShowAccess:
+    showAdminAccess:
         path: /admin/login
         module: Admin\User\AdminUser
         action: showAdminAccess
         name: Admin\User\AdminUser|showAdminAccess
         method: GET
 
-    adminShowRegister:
+    showAdminRegister:
         path: /admin/register
         module: Admin\User\AdminUser
         action: showAdminRegister
         name: Admin\User\AdminUser|showAdminRegister
         method: GET
 
-    adminShowRequestNewPassword:
+    showAdminRequestNewPassword:
         path: /admin/request-new-password
         module: Admin\User\AdminUser
         action: showAdminRequestNewPassword
         name: Admin\User\AdminUser|showAdminRequestNewPassword
         method: GET
 
-    adminShowRenewPassword:
+    showAdminRenewPassword:
         path: /admin/renew-password
         module: Admin\User\AdminUser
         action: showAdminRenewPassword
         name: Admin\User\AdminUser|showAdminRenewPassword
         method: GET
 
-    adminDisconnect:
+    showAdminDisconnect:
         path: /admin/logout
         module: Admin\User\AdminUser
         action: logoutUser
         name: Admin\User\AdminUser|logoutUser
         method: GET
 
-    postCommentPOSTParams:
-        path: /comment-post/:id
-        module: Blog\Post\Post
-        action: commentPost
-        name: Blog\Post\Post|commentPost
-        method: POST
+    showAdminPosts:
+        path: /admin/posts
+        module: Admin\Post\AdminPost
+        action: showAdminPosts
+        name: Admin\Post\AdminPost|showAdminPosts
+        method: GET
 
-    homePOSTParams:
+    showAdminHomeDeleteContact:
+        path: /admin/delete-contact/:id
+        module: Admin\Home\AdminHome
+        action: showAdminHome
+        name: Admin\Home\AdminHome|showAdminHome
+        method: GET
+
+    showAdminPostsDeleteComment:
+        path: /admin/delete-comment/:id
+        module: Admin\Post\AdminPost
+        action: showAdminPosts
+        name: Admin\Post\AdminPost|showAdminPosts
+        method: GET
+
+    showAdminPostsValidateComment:
+        path: /admin/validate-comment/:id
+        module: Admin\Post\AdminPost
+        action: showAdminPosts
+        name: Admin\Post\AdminPost|showAdminPosts
+        method: GET
+
+    showAdminPostsPublishComment:
+        path: /admin/publish-comment/:id
+        module: Admin\Post\AdminPost
+        action: showAdminPosts
+        name: Admin\Post\AdminPost|showAdminPosts
+        method: GET
+
+    showAdminPostsUnpublishComment:
+        path: /admin/unpublish-comment/:id
+        module: Admin\Post\AdminPost
+        action: showAdminPosts
+        name: Admin\Post\AdminPost|showAdminPosts
+        method: GET
+
+    showAdminCreatePost:
+        path: /admin/add-post
+        module: Admin\Post\AdminPost
+        action: addPost
+        name: Admin\Post\AdminPost|addPost
+        method: GET
+
+    showAdminUpdatePost:
+        path: /admin/update-post/:id
+        module: Admin\Post\AdminPost
+        action: showAdminPosts
+        name: Admin\Post\AdminPost|showAdminPosts
+        method: GET
+
+    showAdminDeletePost:
+        path: /admin/delete-post/:id
+        module: Admin\Post\AdminPost
+        action: showAdminPosts
+        name: Admin\Post\AdminPost|showAdminPosts
+        method: GET
+
+    home:
         path: /
         module: Home\Home
         action: isCalled
         name: Home\Home|isCalled
+        method: POST
+
+    postComment:
+        path: /comment-post/:id
+        module: Blog\Post\Post
+        action: commentPost
+        name: Blog\Post\Post|commentPost
         method: POST
 
     adminRegister:
@@ -132,32 +195,32 @@ routing:
         name: Admin\Home\AdminHome|deleteContact
         method: POST
 
-    adminHomeDeleteComment:
+    adminPostsDeleteComment:
         path: /admin/delete-comment/:id
-        module: Admin\Home\AdminHome
+        module: Admin\Post\AdminPost
         action: deleteComment
-        name: Admin\Home\AdminHome|deleteComment
+        name: Admin\Post\AdminPost|deleteComment
         method: POST
 
-    adminHomeValidateComment:
+    adminPostsValidateComment:
         path: /admin/validate-comment/:id
-        module: Admin\Home\AdminHome
+        module: Admin\Post\AdminPost
         action: validateComment
-        name: Admin\Home\AdminHome|validateComment
+        name: Admin\Post\AdminPost|validateComment
         method: POST
 
-    adminHomePublishComment:
+    adminPostsPublishComment:
         path: /admin/publish-comment/:id
-        module: Admin\Home\AdminHome
+        module: Admin\Post\AdminPost
         action: publishComment
-        name: Admin\Home\AdminHome|publishComment
+        name: Admin\Post\AdminPost|publishComment
         method: POST
 
-    adminHomeUnpublishComment:
+    adminPostsUnpublishComment:
         path: /admin/unpublish-comment/:id
-        module: Admin\Home\AdminHome
+        module: Admin\Post\AdminPost
         action: unpublishComment
-        name: Admin\Home\AdminHome|unpublishComment
+        name: Admin\Post\AdminPost|unpublishComment
         method: POST
 
     adminCreatePost:

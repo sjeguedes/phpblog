@@ -155,6 +155,8 @@ class PostController extends BaseController
             'imgBannerCSSClass' => 'post-single',
             'post' => $post,
             'postComments' => $postComments,
+            // Get number of Comment entities to show per slide for post comments slider (paging slider)
+            'commentPerSlide' => $this->config::getParam('singlePost.commentPerSlide'),
             'nickName' => isset($checkedForm['pcf_nickName']) ? $checkedForm['pcf_nickName'] : '',
             'title' => isset($checkedForm['pcf_title']) ? $checkedForm['pcf_title'] : '',
             'email' => isset($checkedForm['pcf_email']) ? $checkedForm['pcf_email'] : '',

@@ -6,6 +6,11 @@ jQuery(function($) {
     // -------------------------------------------------------------------------------------------------------
 
     $(window).on('load', function(e) {
+        // Redirect to /admin/login if a previous hash exists from admin pages lists (comments, contacts, posts...)
+        var hash = window.location.hash;
+        if (hash && /^#[\w\d-]+-list$/g.test(hash)) {
+            window.location.href = window.location.href.substr(0, window.location.href.indexOf('#'));
+        }
         // Better user experience with scroll
         // Scroll to form notice message box if it is visible (obviously, in case of no AJAX mode).
         $('.form-error, .form-success').each(function() {

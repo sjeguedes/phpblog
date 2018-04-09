@@ -1,4 +1,4 @@
-{% extends "layout.tpl" %}
+{% extends 'layout.tpl' %}
 {% block content %}
 <div class="section section-admin-renew-password-form text-center">
     <div class="container">

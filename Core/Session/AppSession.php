@@ -114,8 +114,9 @@ class AppSession
             }
             // Check if session must expire in case of no page loaded during expiration time limit.
             $isSessionExpired = self::expire();
-            // Set an 401 error (without AJAX and for $_GET request and no expired form) to inform user!
-            if ($isSessionExpired && (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) && $_SERVER['REQUEST_METHOD'] == 'GET') {
+            // Set an 401 error (without AJAX and for $_GET request) to inform user!
+            // This is not used if user was disconnected from back office automatically (use of test on $_SESSION['expiredSession']) !
+            if ($isSessionExpired && !isset($_SESSION['expiredSession']) && (!isset($_SERVER['HTTP_X_REQUESTED_WITH'])) && $_SERVER['REQUEST_METHOD'] == 'GET') {
                 if (!isset($_SESSION['unauthorizedFormSubmission'])) {
                     throw new \Exception('<strong>Session expired and this is due to inactivity.</strong><br> Then, your request was unauthorized!<br>Please go back to <a href="/' . self::$_router->getUrl() . '" class="normal-link" title="Previous visited page">previous page</a> to restart a normal navigation.');
                 } else {
@@ -256,7 +257,12 @@ class AppSession
         $user = self::isUserAuthenticated();
         if (!is_null($last) && ($now > $last + self::SESSION_TIME_LIMIT)) {
             self::destroy();
-            if ($user != false) $_SESSION['userAuthenticated'] = true;
+            // User was authenticated before expiration: create a session var to inform user to login again
+            // Look at AdminUserController->showAdminAccess()
+            if ($user != false) {
+                $_SESSION['expiredSession']['state'] = true;
+                $_SESSION['expiredSession']['inactivity'] = true;
+            }
             $isExpired =  true;
         } else {
             $isExpired =  false;

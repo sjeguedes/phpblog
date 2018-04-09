@@ -18,10 +18,10 @@
                 <div class="slider-navigation mt-2 mb-2">&nbsp;</div>
                 <div class="post-comment-list-paging slider-paging">
 {% endif %}
-                    {# Begin slider item "div" if (i == 0) or (i % 5 == 0) #}
-                    {% if (i == 0) or (i % 5 == 0) %}
+                    {# Begin slider item "div" if (i == 0) or (i % commentPerSlide == 0) #}
+                    {% if (i == 0) or (i % commentPerSlide == 0) %}
                     {% set rank = rank + 1 %}
-                    <!-- Begin Slick slider post comment list slide item if (i == 0) or (i % 5 == 0) -->
+                    <!-- Begin Slick slider post comment list slide item if (i == 0) or (i % commentPerSlide == 0) -->
                     <div class="slide-item" id="slide-item-{{ rank }}">
                     {# // #}
                     <!-- // -->
@@ -49,10 +49,10 @@
                             </div>
                             <hr>
                         </article>
-                    {#  End slider item "div" if (i + 1) % 5 == 0 or last i -#}
-                    {% if ((i + 1) % 5 == 0) or (i == postComments|length - 1) -%}
+                    {#  End slider item "div" if (i + 1) % commentPerSlide == 0 or last i -#}
+                    {% if ((i + 1) % commentPerSlide == 0) or (i == postComments|length - 1) -%}
                     <!-- End Slick slider post comment list slide item -->
-                    {# Interval of 5 items -#}
+                    {# Interval of commentPerSlide items -#}
                     </div>
                     {# // -#}
                     <!-- // -->

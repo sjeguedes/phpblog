@@ -59,6 +59,15 @@ class AppFormValidator
     }
 
     /**
+     * Get form identifier
+     * @return string: identifier name
+     */
+    public function getFormIdentifier()
+    {
+        return $this->formIdentifier;
+    }
+
+    /**
      * Get result datas
      * @return array: an array which contains filtered datas and error messages
      */
@@ -255,14 +264,11 @@ class AppFormValidator
                     $this->result[$this->formIdentifier . 'check'] = true;
                 }
             } else {
-                // This error message is not used! 401 error page is activated to simplify response, look at condition below.
-                $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-token-notice">- Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)If you want to continue, you have to <a href="#" class="text-muted" onclick="window.location.reload(); return false;" title="Reload this page">reload this page</a> and start a new form.</span>';
+                // Wrong token value or wrong token dynamic index!
                 $this->result[$this->formIdentifier . 'check'] = false;
             }
         // Anything else happened.
         } else {
-            // This error message is not used! 401 error page is activated to simplify response, look at condition below.
-            $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-token-notice"> - Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)<br>If you want to continue, you have to <a href="#" class="text-muted" onclick="window.location.reload(); return false;" title="Reload this page">reload this page</a> and start a new form.</span>';
             $this->result[$this->formIdentifier . 'check'] = false;
         }
         // Wrong token (expired or invalid (hacked) token)
@@ -270,16 +276,30 @@ class AppFormValidator
             // Set 401 error page
             $this->setUnauthorizedFormSubmissionResponse();
         }
+
     }
 
     /**
      * Render a 401 ("Unauthorized") form submission response
      * @return string: page HTML content
      */
-    public function setUnauthorizedFormSubmissionResponse() {
-        $_SESSION['unauthorizedFormSubmission'] = true;
-        $this->router->getHTTPResponse()->set401ErrorResponse('<strong>Form submission is unauthorized.</strong><br>this is due to inactivity or security reason.<br>Please go back to <a href="/' . $this->router->getUrl() . '" class="normal-link" title="Previous visited page">previous page</a> and try again.', $this->router);
+    public function setUnauthorizedFormSubmissionResponse()
+    {
+        // Call session expiration when user is authenticated and use back office
+        // Redirect to login page for security reason thanks to this session var
+        // Look at AdminUserController->showAdminAccess()
+        if ($this->router->getSession()::isUserAuthenticated()) {
+            // Run disconnection
+            $this->router->getSession()::destroy();
+            // Initialize state
+            $_SESSION['expiredSession']['state'] = true;
+            $_SESSION['expiredSession']['unauthorizedFromAdmin'] = true;
+        // Call a 401 error response for forms which are not part of back office.
+        } else {
+            $_SESSION['unauthorizedFormSubmission'] = true;
+            $this->router->getHTTPResponse()->set401ErrorResponse('<strong>Form submission is unauthorized.</strong><br>this message is mainly due to security reason.<br>This issue could also be due to inactivity (session expiration) on our website.<br>Please go back to <a href="/' . $this->router->getUrl() . '" class="normal-link" title="Previous visited page">previous page</a> and try again.', $this->router);
             exit();
+        }
     }
 
     /**

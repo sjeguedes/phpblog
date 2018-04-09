@@ -306,6 +306,10 @@ ul.phpblog-list {
     padding: 30px 0;
 }
 
+.section.section-comment-post {
+    padding: 0 0 30px;
+}
+
 .footer.footer-default {
     background-color: rgb(153, 153, 153);
 }

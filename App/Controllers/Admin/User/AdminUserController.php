@@ -84,13 +84,13 @@ class AdminUserController extends AdminController
         parent::__construct($router);
         $this->currentModel = $this->getCurrentModel(__CLASS__);
         // Initialize register form validator
-        $this->registerFormValidator = $this->container::getFormValidator()[3];
+        $this->registerFormValidator = $this->container::getFormValidator()[4];
         // Initialize login form validator
-        $this->loginFormValidator = $this->container::getFormValidator()[4];
+        $this->loginFormValidator = $this->container::getFormValidator()[5];
         // Initialize request new password (forgotten) validator
-        $this->forgetPasswordFormValidator = $this->container::getFormValidator()[5];
+        $this->forgetPasswordFormValidator = $this->container::getFormValidator()[6];
         // Initialize renew password validator
-        $this->renewPasswordFormValidator = $this->container::getFormValidator()[6];
+        $this->renewPasswordFormValidator = $this->container::getFormValidator()[7];
         // Define used parameters to avoid CSRF on register form
         $this->refTokenIndex = $this->registerFormValidator->generateTokenIndex('ref_check');
         $this->refTokenValue = $this->registerFormValidator->generateTokenValue('ref_token');
@@ -524,6 +524,14 @@ class AdminUserController extends AdminController
         // Call template with methods for more flexibility
         // (No need here to update user form inputs! "$checkedForm" argument is null)
         $varsArray = $this->initAdminAccess();
+        // Session just expired and user was authenticated (inactivity or unauthorized form submission from admin forms).
+        // Then, show message to inform user is not authenticated anymore!
+        if (isset($_SESSION['expiredSession'])) {
+            // Create particular template var
+            // Look at AppSession::expire() or AppFormValidator->setUnauthorizedFormSubmissionResponse()
+            $varsArray['errors']['expiredSession'] = $_SESSION['expiredSession'];
+            unset($_SESSION['expiredSession']);
+        }
         $this->renderAdminAccess($varsArray);
         // Is it already a succcess state for user when renewing password?
         // Enable password renewal success message box once a time

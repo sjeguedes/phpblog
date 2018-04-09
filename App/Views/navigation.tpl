@@ -33,11 +33,13 @@
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="/admin/#contact-list" title="Look at contact message list">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-right fa-lg" aria-hidden="true"></i>&nbsp;Look at contact message list</a>
                         <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="/admin/#comment-list" title="Look at comment list">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-right fa-lg" aria-hidden="true"></i>&nbsp;Look at comment list</a>
+                        <a class="dropdown-item" href="/admin/posts" title="Admin posts"><i class="fa fa-chevron-right" aria-hidden="true"></i>&nbsp;Admin posts</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="/admin/posts/#post-list" title="Look at post list">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-right fa-lg" aria-hidden="true"></i>&nbsp;Look at post list</a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="/admin/posts/#comment-list" title="Look at comment list">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-right fa-lg" aria-hidden="true"></i>&nbsp;Look at comment list</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="/admin/add-post" title="Add a new post"><i class="fa fa-chevron-right" aria-hidden="true"></i>&nbsp;Add a new post</a>
-                        <div class="dropdown-divider"></div>
-                        <a class="dropdown-item" href="/admin/#post-list" title="Edit/Delete a post"><i class="fa fa-chevron-right" aria-hidden="true"></i>&nbsp;Edit/Delete a post</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="/admin/logout/?userKey={{ authenticatedUser['userKey']|e('html_attr') }}" title="Logout"><i class="fa fa-chevron-right" aria-hidden="true"></i>&nbsp;<strong>Session logout</strong>&nbsp;<i class="fa fa-user-times fa-lg" aria-hidden="true"></i></a>
                     </div>
