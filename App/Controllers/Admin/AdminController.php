@@ -60,7 +60,7 @@ class AdminController extends BaseController
      */
     protected function controlAdminAccess() {
         // Check access to admin pages but not for user login, user request new password, user renew password, user register pages
-        $adminPageRequest = preg_match('#^/?admin((?!/login|/request-new-password|/renew-password|/register|/register)(?=.*[\d\w-/]).*)?$#', $_GET['url']);
+        $adminPageRequest = preg_match('#^/?admin((?!/login|/request-new-password|/renew-password|/register)(?=.*[\d\w-/]).*)?$#', $_GET['url']);
         $authenticatedUser = $this->session::isUserAuthenticated();
         $matchedTokenValues = true;
         $matchedCookieTokenIndex = true;
