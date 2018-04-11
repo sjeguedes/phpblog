@@ -75,7 +75,7 @@
                                             <span class="flex-label">Sender</span>
                                         </div>
                                         <p class="flex-content">
-                                            <i class="fa fa-user-circle" aria-hidden="true"></i>&nbsp;<strong>{{ contactList[i].firstName|raw }}&nbsp;{{ contactList[i].familyName|raw }}</strong>
+                                            <i class="fa fa-user-circle" aria-hidden="true"></i>&nbsp;<strong>{{ contactList[i].firstName }} {{ contactList[i].familyName }}</strong>
                                         </p>
                                     </div>
                                     <div class="flex-col">
@@ -136,8 +136,8 @@
                 <h4 class="title title-up">Contact #{{ contactList[i].id }}<br>Message content</h4>
             </div>
             <div class="modal-body">
-                <p><strong>Sender first name:</strong> {{ contactList[i].firstName|raw }}<br>
-                <strong>Sender family name:</strong> {{ contactList[i].familyName|raw }}<br>
+                <p><strong>Sender first name:</strong> {{ contactList[i].firstName }}<br>
+                <strong>Sender family name:</strong> {{ contactList[i].familyName }}<br>
                 <strong>Sender email:</strong> {{ contactList[i].email }}</p>
                 <p class="text-left">{{ contactList[i].message|raw|nl2br }}</p>
             </div>

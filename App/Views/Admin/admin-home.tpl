@@ -16,6 +16,7 @@
         <!-- End login success message box -->
         <div class="col-lg-10 col-md-12 ml-auto mr-auto text-center">
         	{{ include('Admin/admin-contact-list.tpl') }}
+            {{ include('Admin/admin-user-list.tpl') }}
 		</div>
 	</div>
 </div>

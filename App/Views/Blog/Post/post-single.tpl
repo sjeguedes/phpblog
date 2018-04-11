@@ -16,11 +16,12 @@
                         <ul class="post-header-infos">
                             <li>
                                 {% if post[0].temporaryParams['author'] %} <i class="fa fa-user">&nbsp;</i>by {{ post[0].temporaryParams['author'].nickName|raw }}<br>{% endif %}
-                                <i class="fa fa-calendar">&nbsp;</i>Published on {{ post[0].creationDate }}&nbsp;-&nbsp;Updated on {{ post[0].updateDate }}
+                                <i class="fa fa-calendar">&nbsp;</i>Published on {{ post[0].creationDate }}
+                                {% if date(post[0].creationDate) != date(post[0].updateDate) %}&nbsp;-&nbsp;Updated on {{ post[0].updateDate }}{% endif %}
                             </li>
                             <li>
                                 {% set countedComments = 0 %}
-                                {% for comment in postComments if comment.isPublished == 1 %}
+                                {% for comment in postComments %}
                                     {% set countedComments = loop.index %}
                                 {% endfor %}
                                 {% if countedComments != 0 %}

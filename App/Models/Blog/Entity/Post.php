@@ -35,6 +35,14 @@ class Post
      */
     private $slug;
     /**
+     * @var boolean
+     */
+    private $isValidated;
+    /**
+     * @var boolean
+     */
+    private $isPublished;
+    /**
      * @var integer
      */
     private $userId; // Author id
@@ -187,6 +195,24 @@ class Post
     }
 
     /**
+     * Get property: isValidated
+     * @return boolean
+     */
+    public function getIsValidated()
+    {
+        return $this->isValidated;
+    }
+
+    /**
+     * Get property: isPublished
+     * @return boolean
+     */
+    public function getIsPublished()
+    {
+        return $this->isPublished;
+    }
+
+    /**
      * Get property: userId
      * @return integer
      */
@@ -281,6 +307,32 @@ class Post
     {
         if (is_string($slug)) {
             $this->slug = $slug;
+        }
+    }
+
+    /**
+     * Set property: isValidated
+     * @param boolean $isValidated
+     * @return void
+     */
+    public function setIsValidated($isValidated)
+    {
+        $isValidated = (bool) $isValidated;
+        if (is_bool($isValidated)) {
+            $this->isValidated = $isValidated;
+        }
+    }
+
+    /**
+     * Set property: isPublished
+     * @param boolean $isPublished
+     * @return void
+     */
+    public function setIsPublished($isPublished)
+    {
+        $isPublished = (bool) $isPublished;
+        if (is_bool($isPublished)) {
+            $this->isPublished = $isPublished;
         }
     }
 

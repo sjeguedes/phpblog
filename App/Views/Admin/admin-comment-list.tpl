@@ -4,7 +4,7 @@
         <div class="row">
             <div id="bloc-comment-list" class="col-md-12 ml-auto mr-auto text-center">
                 <h2 class="title">Admin comment list</h2>
-                <p class="description">All the comments created by users in front-end are saved in database!<br>They need to be moderated before publication.</p>
+                <p class="description">All the comments created by users in front-end have to be checked!<br>They need to be moderated before publication.</p>
                 <!-- User notice message -->
                 <div class="row">
                     <div class="col-lg-8 text-center col-md-10 ml-auto mr-auto">
@@ -137,12 +137,12 @@
                 <h4 class="title title-up">Comment #{{ commentList[i].id }}<br>{{ commentList[i].title|raw|nl2br }}</h4>
             </div>
             <div class="modal-body">
-                <p><strong>Author nickname:</strong> {{ commentList[i].nickName|raw }}<br>
+                <p><strong>Author nickname:</strong> {{ commentList[i].nickName }}<br>
                 <strong>Author email:</strong> {{ commentList[i].email }}</p>
                 <p class="text-left">{{ commentList[i].content|raw|nl2br }}</p>
             </div>
             <div class="modal-footer">
-                <a href="/post/{{ commentList[i].postId }}" class="btn btn-default btn-xs" title="Look at post page {{ commentList[i].postId }}" target="_blank">VIEW COMMENTED POST #{{ commentList[i].postId }}</a>
+                <a href="/post/{{ commentList[i].postId }}" class="btn btn-default btn-xs" title="Look at single post #{{ commentList[i].postId }}" target="_blank">VIEW COMMENTED POST #{{ commentList[i].postId }}</a>
                 <button type="button" class="btn btn-danger" data-dismiss="modal" title="Close viewer">CLOSE</button>
             </div>
         </div>

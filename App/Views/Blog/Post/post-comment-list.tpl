@@ -1,11 +1,8 @@
 {% set rank = 0 %}
 {% set i = 0 %}
-{% set isPublishedComment = 0 %}
-{% for item in postComments if (postComments is not empty) and (item.isPublished == 1) %}
-{# set isPublishedComment = 1 if conditions are true for loop #}
-{% set isPublishedComment = 1 %}
+{% for item in postComments if postComments is not empty %}
 {# set firstFoundPublishedComment = 1 for the first found published comment and generate HTML opened tags for global section #}
-{% if (item.isPublished == 1) and (firstFoundPublishedComment is not defined) %}
+{% if firstFoundPublishedComment is not defined %}
 {% set firstFoundPublishedComment = 1 %}
 <div class="section section-post-comment-list text-center">
     <div class="container">
@@ -59,11 +56,10 @@
                     {% endif -%}
                     {% set i = i + 1 %}
 {% endfor %}
+{% if firstFoundPublishedComment is not defined %}
                 <!-- End Slick slider post comment list paging -->
                 </div>
                 <!-- // -->
-{# Close generated HTML opened tags for global section if there is at least one found published comment #}
-{% if isPublishedComment == 1 %}
             </div>
         </div>
     </div>

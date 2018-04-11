@@ -56,6 +56,16 @@ class PostController extends BaseController
 	{
 		// Get posts datas
 		$postList = $this->currentModel->getListWithAuthor();
+        // Loop to find any existing comments attached to each post
+        for ($i = 0; $i < count($postList); $i ++) {
+            // Retrieve (or not) single post comments
+            $postComments = $this->currentModel->getCommentListForSingle($postList[$i]->id);
+            // Comments are found for a post.
+            if ($postComments != false) {
+                // Add temporary param "postComments" to object
+                $postList[$i]->postComments = $postComments;
+            }
+        }
 		$varsArray = [
 			'metaTitle' => 'Posts list',
 			'metaDescription' => 'Here, you can follow our news and technical topics.',
@@ -87,7 +97,7 @@ class PostController extends BaseController
                 $postComments = $this->currentModel->getCommentListForSingle($postListOnPage['postsOnPage'][$i]->id);
                 // Comments are found for a post.
                 if ($postComments != false) {
-                    // Add temporary param to object
+                    // Add temporary param "postComments" to object
                     $postListOnPage['postsOnPage'][$i]->postComments = $postComments;
                 }
             }
@@ -115,62 +125,69 @@ class PostController extends BaseController
      * @return void
      */
     private function renderSingle($post, $checkedForm = []) {
-        // Retrieve single post comments
-        $postComments = $this->currentModel->getCommentListForSingle($post[0]->id);
-        // Prepare template vars
-        $cssArray = [
-            0 => [
-                'pluginName' => 'Slick Slider 1.8.1',
-                'src' => 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css'
-            ],
-            1 => [
-                'pluginName' => 'Slick Slider 1.8.1',
-                'src' => 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css'
-            ]
-        ];
-        $jsArray = [
-            0 => [
-                'pluginName' => 'Slick Slider 1.8.1',
-                'placement' => 'bottom',
-                'src' => 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js'
-            ],
-            1 => [
-                'placement' => 'bottom',
-                'src' => '/assets/js/phpblog.js'
-            ],
-            2 => [
-                'placement' => 'bottom',
-                'src' => '/assets/js/commentPost.js'
-            ],
-            3 => [
-                'placement' => 'bottom',
-                'src' => '/assets/js/postSingle.js'
-            ]
-        ];
-        $varsArray = [
-            'CSS' => $cssArray,
-            'JS' => $jsArray,
-            'metaTitle' => 'Post - ' . $post[0]->title,
-            'metaDescription' => $post[0]->intro,
-            'imgBannerCSSClass' => 'post-single',
-            'post' => $post,
-            'postComments' => $postComments,
-            // Get number of Comment entities to show per slide for post comments slider (paging slider)
-            'commentPerSlide' => $this->config::getParam('singlePost.commentPerSlide'),
-            'nickName' => isset($checkedForm['pcf_nickName']) ? $checkedForm['pcf_nickName'] : '',
-            'title' => isset($checkedForm['pcf_title']) ? $checkedForm['pcf_title'] : '',
-            'email' => isset($checkedForm['pcf_email']) ? $checkedForm['pcf_email'] : '',
-            'content' => isset($checkedForm['pcf_content']) ? $checkedForm['pcf_content'] : '',
-            'pcfTokenIndex' => $this->pcfTokenIndex,
-            'pcfTokenValue' => $this->pcfTokenValue,
-            'pcfNoSpam' => $this->captchaUIParams,
-            'submit' => isset($_SESSION['pcf_success']) && $_SESSION['pcf_success'] ? 1 : 0,
-            'tryValidation' => isset($_POST['pcf_submit']) ? 1 : 0,
-            'errors' => isset($checkedForm['pcf_errors']) ? $checkedForm['pcf_errors'] : false,
-            'success' => isset($_SESSION['pcf_success']) && $_SESSION['pcf_success'] ? true : false,
-        ];
-        // Render template
-        echo $this->page->renderTemplate('Blog/Post/post-single.tpl', $varsArray);
+        // Post is not published
+        if ((bool) $post[0]->isPublished === false) {
+            $this->httpResponse->set404ErrorResponse($this->config::isDebug('The content you try to access doesn\'t exist! [Debug trace: reason is $post is not published]'), $this->router);
+            exit();
+        // Post is ready to be displayed in front-end
+        } else {
+            // Retrieve single post comments
+            $postComments = $this->currentModel->getCommentListForSingle($post[0]->id);
+            // Prepare template vars
+            $cssArray = [
+                0 => [
+                    'pluginName' => 'Slick Slider 1.8.1',
+                    'src' => 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css'
+                ],
+                1 => [
+                    'pluginName' => 'Slick Slider 1.8.1',
+                    'src' => 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css'
+                ]
+            ];
+            $jsArray = [
+                0 => [
+                    'pluginName' => 'Slick Slider 1.8.1',
+                    'placement' => 'bottom',
+                    'src' => 'https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js'
+                ],
+                1 => [
+                    'placement' => 'bottom',
+                    'src' => '/assets/js/phpblog.js'
+                ],
+                2 => [
+                    'placement' => 'bottom',
+                    'src' => '/assets/js/commentPost.js'
+                ],
+                3 => [
+                    'placement' => 'bottom',
+                    'src' => '/assets/js/postSingle.js'
+                ]
+            ];
+            $varsArray = [
+                'CSS' => $cssArray,
+                'JS' => $jsArray,
+                'metaTitle' => 'Post - ' . $post[0]->title,
+                'metaDescription' => $post[0]->intro,
+                'imgBannerCSSClass' => 'post-single',
+                'post' => $post,
+                'postComments' => $postComments,
+                // Get number of Comment entities to show per slide for post comments slider (paging slider)
+                'commentPerSlide' => $this->config::getParam('singlePost.commentPerSlide'),
+                'nickName' => isset($checkedForm['pcf_nickName']) ? $checkedForm['pcf_nickName'] : '',
+                'title' => isset($checkedForm['pcf_title']) ? $checkedForm['pcf_title'] : '',
+                'email' => isset($checkedForm['pcf_email']) ? $checkedForm['pcf_email'] : '',
+                'content' => isset($checkedForm['pcf_content']) ? $checkedForm['pcf_content'] : '',
+                'pcfTokenIndex' => $this->pcfTokenIndex,
+                'pcfTokenValue' => $this->pcfTokenValue,
+                'pcfNoSpam' => $this->captchaUIParams,
+                'submit' => isset($_SESSION['pcf_success']) && $_SESSION['pcf_success'] ? 1 : 0,
+                'tryValidation' => isset($_POST['pcf_submit']) ? 1 : 0,
+                'errors' => isset($checkedForm['pcf_errors']) ? $checkedForm['pcf_errors'] : false,
+                'success' => isset($_SESSION['pcf_success']) && $_SESSION['pcf_success'] ? true : false,
+            ];
+            // Render template
+            echo $this->page->renderTemplate('Blog/Post/post-single.tpl', $varsArray);
+        }
     }
 
     /**

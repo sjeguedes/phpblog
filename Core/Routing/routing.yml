@@ -97,6 +97,13 @@ routing:
         name: Admin\Home\AdminHome|showAdminHome
         method: GET
 
+    showAdminHomeDeleteUser:
+        path: /admin/delete-user/:id
+        module: Admin\Home\AdminHome
+        action: showAdminHome
+        name: Admin\Home\AdminHome|showAdminHome
+        method: GET
+
     showAdminPostsDeleteComment:
         path: /admin/delete-comment/:id
         module: Admin\Post\AdminPost
@@ -128,19 +135,40 @@ routing:
     showAdminCreatePost:
         path: /admin/add-post
         module: Admin\Post\AdminPost
-        action: addPost
-        name: Admin\Post\AdminPost|addPost
+        action: showAdminAddPosts
+        name: Admin\Post\AdminPost|showAdminAddPost
         method: GET
 
     showAdminUpdatePost:
         path: /admin/update-post/:id
         module: Admin\Post\AdminPost
-        action: showAdminPosts
-        name: Admin\Post\AdminPost|showAdminPosts
+        action: showAdminUpdatePosts
+        name: Admin\Post\AdminPost|showAdminUpdatePosts
         method: GET
 
     showAdminDeletePost:
         path: /admin/delete-post/:id
+        module: Admin\Post\AdminPost
+        action: showAdminPosts
+        name: Admin\Post\AdminPost|showAdminPosts
+        method: GET
+
+    showAdminPostsValidatePost:
+        path: /admin/validate-post/:id
+        module: Admin\Post\AdminPost
+        action: showAdminPosts
+        name: Admin\Post\AdminPost|showAdminPosts
+        method: GET
+
+    showAdminPostsPublishPost:
+        path: /admin/publish-post/:id
+        module: Admin\Post\AdminPost
+        action: showAdminPosts
+        name: Admin\Post\AdminPost|showAdminPosts
+        method: GET
+
+    showAdminPostsUnpublishPost:
+        path: /admin/unpublish-post/:id
         module: Admin\Post\AdminPost
         action: showAdminPosts
         name: Admin\Post\AdminPost|showAdminPosts
@@ -195,6 +223,13 @@ routing:
         name: Admin\Home\AdminHome|deleteContact
         method: POST
 
+    adminHomeDeleteUser:
+        path: /admin/delete-user/:id
+        module: Admin\Home\AdminHome
+        action: deleteUser
+        name: Admin\Home\AdminHome|deleteUser
+        method: POST
+
     adminPostsDeleteComment:
         path: /admin/delete-comment/:id
         module: Admin\Post\AdminPost
@@ -223,23 +258,44 @@ routing:
         name: Admin\Post\AdminPost|unpublishComment
         method: POST
 
-    adminCreatePost:
+    adminPostsCreatePost:
         path: /admin/add-post
         module: Admin\Post\AdminPost
         action: addPost
         name: Admin\Post\AdminPost|addPost
         method: POST
 
-    adminUpdatePost:
+    adminPostsUpdatePost:
         path: /admin/update-post/:id
         module: Admin\Post\AdminPost
         action: updatePost
         name: Admin\Post\AdminPost|updatePost
         method: POST
 
-    adminDeletePost:
+    adminPostsDeletePost:
         path: /admin/delete-post/:id
         module: Admin\Post\AdminPost
         action: deletePost
         name: Admin\Post\AdminPost|deletePost
+        method: POST
+
+    adminPostsValidatePost:
+        path: /admin/validate-post/:id
+        module: Admin\Post\AdminPost
+        action: validatePost
+        name: Admin\Post\AdminPost|validatePost
+        method: POST
+
+    adminPostsPublishPost:
+        path: /admin/publish-post/:id
+        module: Admin\Post\AdminPost
+        action: publishPost
+        name: Admin\Post\AdminPost|publishPost
+        method: POST
+
+    adminPostsUnpublishPost:
+        path: /admin/unpublish-post/:id
+        module: Admin\Post\AdminPost
+        action: unpublishPost
+        name: Admin\Post\AdminPost|unpublishPost
         method: POST

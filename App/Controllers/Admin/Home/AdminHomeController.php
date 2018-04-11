@@ -21,6 +21,14 @@ class AdminHomeController extends AdminController
      * @var string: dynamic value for deleting contact form token
      */
     private $cdTokenValue;
+    /**
+     * @var string: dynamic index name for deleting user form token
+     */
+    private $udTokenIndex;
+    /**
+     * @var string: dynamic value for deleting user form token
+     */
+    private $udTokenValue;
 
     /**
 	 * Constructor
@@ -37,6 +45,9 @@ class AdminHomeController extends AdminController
         // Contact deleting token
         $this->cdTokenIndex = $this->adminHomeValidator->generateTokenIndex('cd_check');
         $this->cdTokenValue = $this->adminHomeValidator->generateTokenValue('cd_token');
+        // User deleting token
+        $this->udTokenIndex = $this->adminHomeValidator->generateTokenIndex('ud_check');
+        $this->udTokenValue = $this->adminHomeValidator->generateTokenValue('ud_token');
 	}
 
     /**
@@ -45,8 +56,16 @@ class AdminHomeController extends AdminController
      */
     private function initAdminHome()
     {
-        // Get all contact entities
+        // Get all Contact entities
         $contactList = $this->currentModel->getContactList();
+        // Get all User entities
+        $userList = $this->currentModel->getUserList();
+        // Add user type label to User entity from corresponding UserType entity
+        for ($i = 0; $i < count($userList); $i ++) {
+            // This generates temporary param "userTypeLabel".
+            $data = $this->currentModel->getUserTypeLabelById($userList[$i]->userTypeId);
+            $userList[$i]->userTypeLabel = $data['userType_label'];
+        }
         $cssArray = [
             0 => [
                 'pluginName' => 'Slick Slider 1.8.1',
@@ -66,7 +85,7 @@ class AdminHomeController extends AdminController
             1 => [
                 'placement' => 'bottom',
                 'src' => '/assets/js/adminHome.js'
-            ],
+            ]
         ];
         return [
             'CSS' => $cssArray,
@@ -77,11 +96,16 @@ class AdminHomeController extends AdminController
             'imgBannerCSSClass' => 'admin-home',
             // Get complete list of each entity type
             'contactList' => $contactList,
+            'userList' => $userList,
             // Get number of entities to show per slide for each slider (paging sliders)
             'contactPerSlide' => $this->config::getParam('admin.home.contactPerSlide'),
+            'userPerSlide' => $this->config::getParam('admin.home.userPerSlide'),
             // Deleting token for Contact entity
             'cdTokenIndex' => $this->cdTokenIndex,
             'cdTokenValue' => $this->cdTokenValue,
+            // Deleting token for User entity
+            'udTokenIndex' => $this->udTokenIndex,
+            'udTokenValue' => $this->udTokenValue,
             // Error messages notice (only updated in actions)
             'errors' => false,
             // Update success state for each type of form after success redirection
@@ -105,7 +129,7 @@ class AdminHomeController extends AdminController
      * @return boolean
      */
     private function isActionSuccess() {
-        if(isset($_SESSION['haf_success'])) {
+        if (isset($_SESSION['haf_success'])) {
             return true;
         }
         else {
@@ -163,9 +187,44 @@ class AdminHomeController extends AdminController
             $this->cdTokenIndex = $this->adminHomeValidator->generateTokenIndex('cd_check');
             $this->cdTokenValue = $this->adminHomeValidator->generateTokenValue('cd_token');
         }
-
         // Remind current paging slide item
         $varsArray['slideRankAfterSubmit'] = isset($_POST['cd_slide_rank']) && (int) $_POST['cd_slide_rank'] !== 0 ? $_POST['cd_slide_rank'] : 1;
+        // Need to update errors template var, while there is no redirection to admin home (success state)
+        $varsArray['errors'] = isset($checkedForm['haf_errors']) ? $checkedForm['haf_errors'] : false;
+        // Render template with updated vars
+        $this->renderAdminHome($varsArray);
+    }
+
+    /**
+     * Delete a User entity in database
+     * @param array $matches: an array of parameters matched in route
+     * @return void
+     */
+    public function deleteUser($matches)
+    {
+        $varsArray = $this->initAdminHome();
+        $paramsArray = [
+            'tokenIdentifier' => 'ud',
+            'tokenIndex' => $this->udTokenIndex,
+            'action' => 'delete',
+            'errorMessage' => 'Deleting action was not performed correctly<br>as concerns user #',
+            'successMessage' => 'Deleting action was performed successfully<br>as concerns user #',
+            'datas' => ['entity' => 'user'],
+        ];
+        // Validate or not form datas
+        $checkedForm = $this->validateEntityForms($paramsArray, $this->adminHomeValidator, '/admin');
+        // Reset form token immediately after success state
+        // This can not be made directly in "validateEntityForms()" because of private properties
+        if ($this->isActionSuccess()) {
+            // Delete current token
+            unset($_SESSION['ud_check']);
+            unset($_SESSION['ud_token']);
+            // Regenerate token to be updated in forms
+            $this->udTokenIndex = $this->adminHomeValidator->generateTokenIndex('ud_check');
+            $this->udTokenValue = $this->adminHomeValidator->generateTokenValue('ud_token');
+        }
+        // Remind current paging slide item
+        $varsArray['slideRankAfterSubmit'] = isset($_POST['ud_slide_rank']) && (int) $_POST['ud_slide_rank'] !== 0 ? $_POST['ud_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin home (success state)
         $varsArray['errors'] = isset($checkedForm['haf_errors']) ? $checkedForm['haf_errors'] : false;
         // Render template with updated vars

@@ -23,13 +23,14 @@
                     <div class="post-header">
                         <ul class="post-header-infos">
                             <li>
-                                {% if item.author is defined %} <i class="fa fa-user">&nbsp;</i>by {{ item.author.nickName|raw }} {% endif %}
-                                <i class="fa fa-calendar">&nbsp;</i>Published on {{ item.creationDate }}&nbsp;-&nbsp;Updated on {{ item.updateDate }}
+                                {% if item.author is defined %} <i class="fa fa-user">&nbsp;</i>by {{ item.author.nickName|raw }}{% endif %}
+                                <i class="fa fa-calendar">&nbsp;</i>Published on {{ item.creationDate }}
+                                {% if date(item.creationDate) != date(item.updateDate) %}&nbsp;-&nbsp;Updated on {{ item.updateDate }}{% endif %}
                             </li>
                             {% if item.temporaryParams['postComments'] is defined %}
                             <li>
                                 {% set countedComments = 0 %}
-                                {% for comment in item.temporaryParams['postComments'] if comment.isPublished == 1 %}
+                                {% for comment in item.temporaryParams['postComments'] %}
                                     {% set countedComments = loop.index %}
                                 {% endfor %}
                                 {% if countedComments != 0 %}

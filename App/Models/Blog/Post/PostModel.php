@@ -119,14 +119,16 @@ class PostModel extends BaseModel
 
     /**
      * Get all Post entities
+     * @param boolean $published: true (only published posts) or false (all status)
      * @return array: an array which contains all Post entities instances
      */
-	public function getList()
+	public function getList($published = true)
 	{
 		$posts = [];
-    	$query = $this->dbConnector->query('SELECT *
-    										FROM posts
-    										ORDER BY post_creationDate DESC');
+        $published = $published ? 'WHERE post_isPublished = 1' : '';
+    	$query = $this->dbConnector->query("SELECT *
+    										FROM posts $published
+                                            ORDER BY post_creationDate DESC");
 	    while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$posts[] = new Post($datas);
 	    }
@@ -148,6 +150,7 @@ class PostModel extends BaseModel
 		// SQL_CALC_FOUND_ROWS (MySQL 4+) also stores total number of rows (ignores LIMIT) with one query (to avoid secondary query with COUNT()!). OFFSET is more readable.
 		$query = $this->dbConnector->prepare('SELECT SQL_CALC_FOUND_ROWS *
 											  FROM posts
+                                              WHERE post_isPublished = 1
 											  ORDER BY post_creationDate DESC
 											  LIMIT /*:start, :postPerPage*/:postPerPage OFFSET :start');
 		$query->bindParam(':start', $start, \PDO::PARAM_INT);
@@ -217,6 +220,7 @@ class PostModel extends BaseModel
 		$i = 0;
     	$query = $this->dbConnector->query('SELECT SQL_CALC_FOUND_ROWS p.post_id, (@curRank := @curRank + 1) AS rank
     										FROM posts p, (SELECT @curRank := -1) r
+                                            WHERE post_isPublished = 1
     										ORDER BY p.post_creationDate DESC');
 	    while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$postsRank[$i]['post_id'] = $datas['post_id'];
@@ -255,13 +259,14 @@ class PostModel extends BaseModel
 
     /**
      * Get all post with their author infos
+     * @param boolean $published: true (only published posts) or false (all status)
      * @return array: an array which contains all Post entities with their author infos
      */
-	public function getListWithAuthor()
+	public function getListWithAuthor($published = true)
 	{
 		// Will associate author datas for each post
 		$postsWithAuthor = [];
-		$posts = $this->getList();
+		$posts = $this->getList($published);
 		foreach ($posts as $post) {
 			$author = $this->getAuthorByPostUserId($post->userId);
 			// Temporary parameter: get and store user who is also an author for each post
@@ -329,7 +334,7 @@ class PostModel extends BaseModel
         $comments = [];
         $query = $this->dbConnector->prepare('SELECT *
                                               FROM comments
-                                              WHERE comment_postId = ?
+                                              WHERE comment_postId = ? AND comment_isPublished = 1
                                               ORDER BY comment_creationDate DESC');
         $query->bindParam(1, $postId, \PDO::PARAM_INT);
         $query->execute();
