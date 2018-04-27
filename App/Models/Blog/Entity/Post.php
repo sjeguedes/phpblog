@@ -37,6 +37,10 @@ class Post
     /**
      * @var boolean
      */
+    private $isSlugCustomized;
+    /**
+     * @var boolean
+     */
     private $isValidated;
     /**
      * @var boolean
@@ -195,6 +199,15 @@ class Post
     }
 
     /**
+     * Get property: isSlugCustomized
+     * @return boolean
+     */
+    public function getIsSlugCustomized()
+    {
+        return $this->isSlugCustomized;
+    }
+
+    /**
      * Get property: isValidated
      * @return boolean
      */
@@ -307,6 +320,19 @@ class Post
     {
         if (is_string($slug)) {
             $this->slug = $slug;
+        }
+    }
+
+    /**
+     * Set property: isSlugCustomized
+     * @param boolean $isSlugCustomized
+     * @return void
+     */
+    public function setIsSlugCustomized($isSlugCustomized)
+    {
+        $isSlugCustomized = (bool) $isSlugCustomized;
+        if (is_bool($isSlugCustomized)) {
+            $this->isSlugCustomized = $isSlugCustomized;
         }
     }
 

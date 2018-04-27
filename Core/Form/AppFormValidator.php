@@ -68,6 +68,15 @@ class AppFormValidator
     }
 
     /**
+     * Get form helper
+     * @return object: AppStringModifier instance
+     */
+    public function getFormHelper()
+    {
+        return $this->helper;
+    }
+
+    /**
      * Get result datas
      * @return array: an array which contains filtered datas and error messages
      */
@@ -94,25 +103,31 @@ class AppFormValidator
             switch ($filterType) {
                 case 'alphanum':
                     $this->filteredDatas[$name] = filter_input($inputType, $name, FILTER_CALLBACK, [
-                        'options' => function($data) use($validator, $modifiers) {
+                        'options' => function($data) use($validator, $modifiers, $name) {
                             $data = $validator->modifyData($data, $modifiers);
-                            return $data = filter_var($data, FILTER_SANITIZE_STRING);
+                            $data = filter_var($data, FILTER_SANITIZE_STRING);
+                            $this->result[$name] = $data;
+                            return $data;
                         }
                     ]);
                 break;
                 case 'email':
                     $this->filteredDatas[$name] = filter_input($inputType, $name, FILTER_CALLBACK, [
-                        'options' => function($data) use($validator, $modifiers) {
+                        'options' => function($data) use($validator, $modifiers, $name) {
                             $data = $validator->modifyData($data, $modifiers);
-                            return $data = filter_var($data, FILTER_SANITIZE_EMAIL);
+                            $data = filter_var($data, FILTER_SANITIZE_EMAIL);
+                            $this->result[$name] = $data;
+                            return $data;
                         }
                     ]);
                 break;
                 default:
                     $this->filteredDatas[$name] = filter_input($inputType, $name, FILTER_CALLBACK, [
-                        'options' => function($data) use($validator, $modifiers) {
+                        'options' => function($data) use($validator, $modifiers, $name) {
                             $data = $validator->modifyData($data, $modifiers);
-                            return $data = filter_var($data, FILTER_SANITIZE_STRING);
+                            $data = filter_var($data, FILTER_UNSAFE_RAW);
+                            $this->result[$name] = $data;
+                            return $data;
                         }
                     ]);
                 break;
@@ -146,7 +161,6 @@ class AppFormValidator
     public function validateRequired($name, $label, $errorMessage = true)
     {
         $name = $this->formIdentifier . $name;
-
         if (!$errorMessage) {
             return array_key_exists($name, $this->datas) && trim($this->datas[$name]) != '';
         } else {

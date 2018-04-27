@@ -33,6 +33,8 @@
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="/admin/#contact-list" title="Look at contact message list">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-right fa-lg" aria-hidden="true"></i>&nbsp;Look at contact message list</a>
                         <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="/admin/#user-list" title="Look at user list">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-right fa-lg" aria-hidden="true"></i>&nbsp;Look at user list</a>
+                        <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="/admin/posts" title="Admin posts"><i class="fa fa-chevron-right" aria-hidden="true"></i>&nbsp;Admin posts</a>
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item" href="/admin/posts/#post-list" title="Look at post list">&nbsp;&nbsp;&nbsp;<i class="fa fa-angle-right fa-lg" aria-hidden="true"></i>&nbsp;Look at post list</a>

@@ -102,7 +102,7 @@ class AppCaptcha
 
     /**
      * Validate customized no spam tools "captcha"
-     * Important: don't forget to add "form-nospam" CSS class on form tag, to use custom style
+     * Important: don't forget to add "form-switch-input" CSS class on form tag, to use custom style
      * @param array $result: an array which contains form inputs values, errors with messages
      * @param string $errorIndex: name of errors index related to submitted form
      * @return array: $result is updated with captcha form validation

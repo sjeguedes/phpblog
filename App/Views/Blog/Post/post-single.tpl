@@ -9,7 +9,7 @@
                     <span class="badge badge-primary">-&nbsp;POST&nbsp;-</span>
                     <h1 class="post-title">{{ post[0].title|raw|nl2br }}</h1>
                     <div class="post-img">
-                        <img class="rounded img-raised" src="http://placehold.it/480x360" alt="{{ post[0].title|e('html_attr') }}">
+                        <img class="rounded img-raised" src="http://placehold.it/480x360" alt="{{ post[0].title|striptags|e('html_attr') }}">
                     </div>
                     <div class="separator separator-primary"></div>
                     <div class="post-header">
@@ -34,7 +34,7 @@
                     <div class="post-intro text-left">
                         <p><strong>{{ post[0].intro|raw|nl2br }}</strong></p>
                         <p>{{ post[0].content|raw|nl2br }}</p>
-                        <div class="text-right"><a class="normal-link" href="/admin/update-post/{{ post[0].id }}" title="Update post: {{ post[0].title|e('html_attr') }}"><i class="now-ui-icons arrows-1_minimal-right">&nbsp;</i>Update this post</a></div>
+                        <div class="text-right"><a class="normal-link" href="/admin/update-post/{{ post[0].id }}" title="Update post: {{ post[0].title|striptags|e('html_attr') }}"><i class="now-ui-icons arrows-1_minimal-right">&nbsp;</i>Update this post</a></div>
                     </div>
                     <hr>
                 </article>

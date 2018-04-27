@@ -43,11 +43,11 @@
                     <div class="separator separator-neutral"></div>
                     <div class="row">
                         <div class="post-thumbnail col-md-12 col-lg-3 mb-4">
-                            <img class="rounded img-raised" src="http://placehold.it/320x240" alt="{{ item.title|e('html_attr') }}">
+                            <img class="rounded img-raised" src="http://placehold.it/320x240" alt="{{ item.title|striptags|e('html_attr') }}">
                         </div>
                         <div class="post-intro text-left col-md-12 col-lg-9">
                             <p class="px-3">{{ item.intro|raw }}</p>
-                            <div class="text-right px-3"><a href="/post/{{ item.slug|e('url') }}-{{ item.id }}" title="{{ item.title|e('html_attr') }}">Read more +</a></div>
+                            <div class="text-right px-3"><a href="/post/{{ item.slug|e('url') }}-{{ item.id }}" title="Read more about post: {{ item.title|striptags|e('html_attr') }}">Read more +</a></div>
                         </div>
                     </div>
                     <hr>

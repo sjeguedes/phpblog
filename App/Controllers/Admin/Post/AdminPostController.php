@@ -14,6 +14,10 @@ class AdminPostController extends AdminController
      */
     private $adminPostValidator;
     /**
+     * @var object: an instance of validator object
+     */
+    private $adminPostUpdateValidator;
+    /**
      * @var string: dynamic index name for deleting post form token
      */
     private $ppdTokenIndex;
@@ -87,8 +91,10 @@ class AdminPostController extends AdminController
     {
         parent::__construct($router);
 		$this->currentModel = $this->getCurrentModel(__CLASS__);
-        // Initialize home admin forms validator
+        // Initialize posts admin forms validator
         $this->adminPostValidator = $this->container::getFormValidator()[3];
+        // Initialize post update admin form validator
+        $this->adminPostUpdateValidator = $this->container::getFormValidator()[4];
         // Define used parameters to avoid CSRF:
         // Post deleting token
         $this->ppdTokenIndex = $this->adminPostValidator->generateTokenIndex('ppd_check');
@@ -102,6 +108,9 @@ class AdminPostController extends AdminController
         // Post publication cancelation token
         $this->ppuTokenIndex = $this->adminPostValidator->generateTokenIndex('ppu_check');
         $this->ppuTokenValue = $this->adminPostValidator->generateTokenValue('ppu_token');
+        // Post update token
+        $this->pufTokenIndex = $this->adminPostValidator->generateTokenIndex('puf_check');
+        $this->pufTokenValue = $this->adminPostValidator->generateTokenValue('puf_token');
         // Comment deleting token
         $this->pcdTokenIndex = $this->adminPostValidator->generateTokenIndex('pcd_check');
         $this->pcdTokenValue = $this->adminPostValidator->generateTokenValue('pcd_token');
@@ -404,6 +413,281 @@ class AdminPostController extends AdminController
         $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
+    }
+
+    /**
+     * Check if there is already a success state for update post form
+     * @return boolean
+     */
+    private function isUpdatePostSuccess() {
+        if(isset($_SESSION['puf_success'])) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Render update post form with or without form validation
+     * @param array $matches: route parameters to match
+     * @return void
+     */
+    public function updatePost($matches)
+    {
+        // Get post id param from route
+        $postId = (int) $matches[0];
+        // Post id is valid!
+        if ($postId > 0) {
+            // Get post to update with external model (PostModel)
+            $post = $this->currentModel->getPostById($postId);
+            // Post exists in database!
+            if ($post != false) {
+                if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                    // Store result from post update form validation
+                    $checkedForm = $this->validatePostUpdateForm();
+                    // Is it already a succcess state?
+                    if ($this->isUpdatePostSuccess()) {
+                        $this->httpResponse->addHeader('Location: /admin/update-post/' . $post->id);
+                    }
+                } elseif ($_SERVER['REQUEST_METHOD'] == 'GET') {
+                    // Is it already a succcess state?
+                    if ($this->isUpdatePostSuccess()) {
+                        // Delete current token
+                        unset($_SESSION['puf_check']);
+                        unset($_SESSION['puf_token']);
+                        // Regenerate token to be updated in form
+                        $this->pufTokenIndex = $this->adminPostUpdateValidator->generateTokenIndex('puf_check');
+                        $this->pufTokenValue = $this->adminPostUpdateValidator->generateTokenValue('puf_token');
+                    }
+                }
+                // Get all User entities
+                $userList = $this->currentModel->getUserList();
+                // Get user author for post to update
+                for ($i = 0; $i < count($userList); $i ++) {
+                    if ($userList[$i]->id == $post->userId) {
+                        $postAuthor = $userList[$i];
+                        break;
+                    }
+                }
+                // Prepare template vars
+                $jsArray = [
+                    0 => [
+                        'placement' => 'bottom',
+                        'src' => '/assets/js/phpblog.js'
+                    ],
+                    1 => [
+                        'placement' => 'bottom',
+                        'src' => 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.7.11/jquery.tinymce.min.js'
+                    ],
+                    2 => [
+                        'placement' => 'bottom',
+                        'src' => 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.7.11/tinymce.min.js'
+                    ],
+                    3 => [
+                        'placement' => 'bottom',
+                        'src' => 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.7.11/themes/modern/theme.min.js'
+                    ],
+                    4 => [
+                        'placement' => 'bottom',
+                        'src' => 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.7.11/plugins/lists/plugin.min.js'
+                    ],
+                    5 => [
+                        'placement' => 'bottom',
+                        'src' => 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.7.11/plugins/link/plugin.min.js'
+                    ],
+                    6 => [
+                        'placement' => 'bottom',
+                        'src' => 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.7.11/plugins/autolink/plugin.min.js'
+                    ],
+                    7 => [
+                        'placement' => 'bottom',
+                        'src' => '/assets/js/updatePost.js'
+                    ]
+                ];
+                $varsArray = [
+                    'JS' => $jsArray,
+                    'metaTitle' => 'Update post - ' . $post->title,
+                    'metaDescription' => 'Here, you can update particular post #' . $post->id . '.',
+                    'metaRobots' => 'noindex, nofollow',
+                    'post' => $post,
+                    'imgBannerCSSClass' => 'admin-post',
+                    'userAuthor' => isset($checkedForm['puf_userAuthor']) ? $checkedForm['puf_userAuthor'] : $postAuthor,
+                    'userList' => $userList,
+                    'domain' => $this->config::getParam('domain'),
+                    'title' => isset($checkedForm['puf_title']) ? $checkedForm['puf_title'] : $post->title,
+                    'customSlug' => isset($checkedForm['puf_customSlug']) ? $checkedForm['puf_customSlug'] : $post->isSlugCustomized,
+                    'slug' => isset($checkedForm['puf_slug']) ? $checkedForm['puf_slug'] : $post->slug,
+                    'intro' => isset($checkedForm['puf_intro']) ? $checkedForm['puf_intro'] : $post->intro,
+                    'content' => isset($checkedForm['puf_content']) ? $checkedForm['puf_content'] : $post->content,
+                    'pufTokenIndex' => $this->pufTokenIndex,
+                    'pufTokenValue' => $this->pufTokenValue,
+                    'submit' => isset($_SESSION['puf_success']) && $_SESSION['puf_success'] ? 1 : 0,
+                    'tryValidation' => isset($_POST['puf_submit']) ? 1 : 0,
+                    'errors' => isset($checkedForm['puf_errors']) ? $checkedForm['puf_errors'] : false,
+                    'success' => isset($_SESSION['puf_success']) && $_SESSION['puf_success'] ? true : false,
+                ];
+                // Is it already a succcess state?
+                if ($_SERVER['REQUEST_METHOD'] == 'GET' && $this->isUpdatePostSuccess()) {
+                    // Reset success state
+                    unset($_SESSION['puf_success']);
+                }
+                // Render template
+                $this->renderAdminUpdatePost($varsArray);
+            // No existing post from request
+            } else {
+                // Post id doesn't exist.
+                $this->httpResponse->set404ErrorResponse($this->config::isDebug('Post you try to update doesn\'t exist! [Debug trace: reason is post id "<strong>' . htmlentities($postId) . '</strong>" doesn\'t exist in database.]'), $this->router);
+                exit();
+            }
+        } else {
+            // Post id is not valid (it is not an integer).
+            $this->httpResponse->set404ErrorResponse($this->config::isDebug('Post to update can\'t be retrieved due to your wrong request! [Debug trace: reason is post id  "<strong>' . htmlentities($postId) . '</strong>" is not an integer.]'), $this->router);
+            exit();
+        }
+    }
+
+    /**
+     * Render admin update post template (template based on Twig template engine)
+     * @param array $vars: an array of template engine parameters
+     * @return void
+     */
+    private function renderAdminUpdatePost($vars)
+    {
+        echo $this->page->renderTemplate('Admin/admin-update-post-form.tpl', $vars);
+    }
+
+    /**
+     * Validate (or not) post update form
+     * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
+     */
+    private function validatePostUpdateForm()
+    {
+        // Prepare datas to filter
+        $datas = [
+            0 => ['name' => 'title', 'filter' => null, 'modifiers' => ['trimStr', 'ucfirstStr']],
+            1 => ['name' => 'slug', 'filter' => null, 'modifiers' => ['trimStr', 'slugStr']],
+            2 => ['name' => 'intro', 'filter' => null, 'modifiers' => ['trimStr', 'ucfirstStr']],
+            3 => ['name' => 'content', 'filter' => null, 'modifiers' => ['trimStr', 'ucfirstStr']]
+        ];
+        // Filter user inputs in $_POST datas
+        $this->adminPostUpdateValidator->filterDatas($datas);
+        // Check token to avoid CSRF
+        $this->adminPostUpdateValidator->validateToken(isset($_POST[$this->pufTokenIndex]) ? $_POST[$this->pufTokenIndex] : false);
+        // Title
+        $this->adminPostUpdateValidator->validateRequired('title', 'title');
+        // Slug (based on filtered title or customized)
+        $this->adminPostUpdateValidator->validateRequired('slug', 'slug');
+        // Intro
+        $this->adminPostUpdateValidator->validateRequired('intro', 'intro');
+        // Content
+        $this->adminPostUpdateValidator->validateRequired('content', 'content');
+        // Get validation result to use it after data filtering and pass values to strip_tags function
+        $result = $this->adminPostUpdateValidator->getResult();
+        // tinyMCE editor allowed tags
+        $allowedTags = '<a><li><ol><ul><br><strong><em><span>';
+        $title = strip_tags(stripslashes($result['puf_title']), $allowedTags);
+        $slug = strip_tags(stripslashes($result['puf_slug']));
+        $intro = strip_tags(stripslashes($result['puf_intro']), $allowedTags);
+        $content = strip_tags(stripslashes($result['puf_content']), $allowedTags);
+        // Get validation result after strip_tags
+        $result = $this->adminPostUpdateValidator->getResult();
+        // Particular case: add "customSlug" option to $result
+        if (isset($_POST['puf_customSlug'])) {
+            // Option is set to "yes" and is considered as checked, then verify boolean type.
+            $result['puf_customSlug'] = $_POST['puf_customSlug'];
+            $isSlugCustomized = is_bool((bool) $result['puf_customSlug']) ? (bool) $result['puf_customSlug'] : null;
+        } else {
+            // Option is set to "no".
+            $result['puf_customSlug'] = false;
+            $isSlugCustomized = false;
+        }
+        // Submit: post update form is correctly filled.
+        if (isset($result) && empty($result['puf_errors']) && isset($result['puf_check']) && $result['puf_check'] && $isSlugCustomized !== null) {
+            // Update Post entity in database
+            try {
+                // Check post id used in form
+                // Is there an existing post with this id? User can change hidden input value!
+                $post = $this->currentModel->getPostById($_POST['puf_postId']);
+                $postId = $_POST['puf_postId'];
+                if ($post != false) {
+                    $authorUserId = $_POST['puf_userAuthor'];
+                    // User author id is valid!
+                    if ((int) $authorUserId > 0) {
+                        // Is there an existing user author with this id? User can change hidden input value!
+                        $author = $this->currentModel->getUserAuthorById($_POST['puf_userAuthor']);
+                        if ($author != false) {
+                            // Prepare datas to update
+                            $updatedDatas = [
+                                'entity' => 'post',
+                                'values' => [
+                                    0 => [
+                                        'type' => 0, // int
+                                        'column' => 'userId',
+                                        'value' => $authorUserId
+                                    ],
+                                    1 => [
+                                        'type' => 1, // string
+                                        'column' => 'title',
+                                        'value' => $title
+                                    ],
+                                    2 => [
+                                        'type' => 1, // string
+                                        'column' => 'slug',
+                                        'value' => $slug
+                                    ],
+                                    3 => [
+                                        'type' => 2, // bool
+                                        'column' => 'isSlugCustomized',
+                                        'value' => $isSlugCustomized
+                                    ],
+                                    4 => [
+                                        'type' => 1, // string
+                                        'column' => 'intro',
+                                        'value' => $intro
+                                    ],
+                                    5 => [
+                                        'type' => 1, // string
+                                        'column' => 'content',
+                                        'value' => $content
+                                    ],
+                                    6 => [
+                                        'type' => 1, // string
+                                        'column' => 'updateDate',
+                                        'value' => date('Y-m-d H:i:s')
+                                    ]
+                                ]
+                            ];
+                            // Update post
+                            $this->currentModel->updateEntity($post->id, $updatedDatas);
+                            $update = true;
+                        } else {
+                            $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: user author id "<strong>' . htmlentities($authorUserId) . '</strong>" doesn\'t exist in database!]</span>');
+                            $update = false;
+                        }
+                    } else {
+                        // Selected user author id is not valid (it is not an integer).
+                        $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: reason is user author id "<strong>' . htmlentities($authorUserId) . '</strong>" is not an integer.]</span>');
+                        $update = false;
+                    }
+                } else {
+                    $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: post id "<strong>' . htmlentities($postId) . '</strong>" doesn\'t exist in database!]</span>');
+                    $update = false;
+                }
+            } catch (\PDOException $e) {
+                $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $update = false;
+            }
+            // Post entity was updated successfuly!
+            if ($update) {
+                // Reset the form
+                $result = [];
+                // Show success message
+                $_SESSION['puf_success'] = true;
+            }
+        }
+        // Update datas in form, error messages near fields, and notice error/success message
+        return $result;
     }
 
     /**

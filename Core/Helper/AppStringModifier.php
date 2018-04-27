@@ -1,6 +1,7 @@
 <?php
 namespace Core\Helper;
 use Core\Routing\AppRouter;
+use voku\helper\URLify;
 
 /**
  * Format a string with helpers
@@ -99,7 +100,12 @@ class AppStringModifier
      */
     public static function ucfirstStr($string)
     {
-    	return ucfirst($string);
+    	// HTML tags
+        if (preg_match('#^<[\w\d]+>(\w){1}#', $string)) {
+            return preg_replace('#<[\w\d]+>(\w){1}#', ucfirst('$1'), $string);
+        } else {
+            return ucfirst($string);
+        }
     }
 
     /**
@@ -110,5 +116,16 @@ class AppStringModifier
     public static function ucwordsStr($string)
     {
     	return ucwords($string);
+    }
+
+    /**
+     * Use URLify::filter() function
+     * Create a slug for pretty url
+     * @param string $string
+     * @return string: formated slug
+     */
+    public static function slugStr($string)
+    {
+        return URLify::filter($string);
     }
 }

@@ -1,1 +1,0 @@
-admin-create-post.tpl

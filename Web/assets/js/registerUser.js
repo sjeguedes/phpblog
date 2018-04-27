@@ -5,11 +5,29 @@ jQuery(function($) {
 
     // -------------------------------------------------------------------------------------------------------
 
+    // Fix call to scroll when page loaded for Safari: look at next script!
+    if (navigator.userAgent.search('Safari') >= 0) {
+        var interval = setInterval(function() {
+            if (document.readyState === 'complete') {
+                clearInterval(interval);
+                // Better user experience with scroll
+                // Scroll to form notice message box if it is visible (obviously, in case of no AJAX mode).
+                $('.form-error, .form-success').each(function() {
+                    if ($(this).is(':visible')) {
+                        $('html, body').animate({
+                            scrollTop: ($(this).offset().top - 125) + 'px'
+                        }, '700');
+                    }
+                });
+            }
+        }, 100);
+    }
+
     $(window).on('load', function(e) {
         // Better user experience with scroll
         // Scroll to form notice message box if it is visible (obviously, in case of no AJAX mode).
         $('.form-error, .form-success').each(function() {
-            if($(this).is(':visible')) {
+            if ($(this).is(':visible')) {
                 $('html, body').animate({
                     scrollTop: ($(this).offset().top - 125) + 'px'
                 }, '700');

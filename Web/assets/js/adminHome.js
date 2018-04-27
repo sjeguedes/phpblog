@@ -4,6 +4,53 @@ jQuery(function($) {
 
     // -------------------------------------------------------------------------------------------------------
 
+    // Fix calls to scripts when page loaded for Safari: look at next script!
+    if (navigator.userAgent.search('Safari') >= 0) {
+        var interval = setInterval(function() {
+            if (document.readyState === 'complete') {
+                clearInterval(interval);
+                // Better user experience with scroll
+                // Scroll to form notice messages boxes if it is visible (obviously, in case of no AJAX mode).
+                $('.form-error, .form-success').each(function() {
+                    if ($(this).is(':visible')) {
+                        $('html, body').animate({
+                            scrollTop: ($(this).offset().top - 125) + 'px'
+                        }, '700');
+                    }
+                });
+                // Scroll to bloc-"name-of-bloc"
+                var hash = window.location.hash;
+                if (hash) {
+                    $('html, body').animate({
+                        scrollTop: ($('#bloc-' + hash.replace('#', '')).offset().top - 125) + 'px'
+                    }, '700');
+                }
+                // Position paging sliders correctly after form action submission (after error or success redirection)
+                $('.slider-paging').each(function() {
+                    if ($(this).length > 0 && $(this)[0].hasAttribute('data-slide-rank') && parseInt($(this).data('slide-rank')) > 1) {
+                        // Slick slider starts at 0 and var slide-rank starts at 1
+                        var slideRank = parseInt($(this).data('slide-rank'));
+                        var slideQuantity = parseInt($(this).find('.slide-item:last-child').data('slide-item'));
+                        // Check validity of slideRank value
+                        if (slideRank > 1 && slideRank <= slideQuantity) {
+                            // Position on slide with rank "slideRank - 1": slick slider starts at 0
+                            $(this).slick('slickGoTo', slideRank - 1, true);
+                        // This case happens if slideRank corresponds to the last slide and does not exist anymore after deleting action
+                        // "slideRank" is not updated on client side contrary to "slideQuantity".
+                        // (no more slide with "slideRank" rank exists because no more items are inside)
+                        } else if (slideRank > slideQuantity) {
+                            // Position on last slide
+                            $(this).slick('slickGoTo', slideQuantity, false);
+                        } else {
+                            // Position on slide with rank 0: number 0 corresponds to slide 1
+                            $(this).slick('slickGoTo', 0, false);
+                        }
+                    }
+                });
+            }
+        }, 100);
+    }
+
     $(window).on('load hashchange', function(e) {
         // Better user experience with scroll
         // Scroll to form notice messages boxes if it is visible (obviously, in case of no AJAX mode).

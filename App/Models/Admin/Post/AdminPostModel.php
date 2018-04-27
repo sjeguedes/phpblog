@@ -2,6 +2,7 @@
 namespace App\Models\Admin\Post;
 use App\Models\Admin\AdminModel;
 use Core\Routing\AppRouter;
+use App\Models\Admin\Home\AdminHomeModel;
 use App\Models\Admin\Entity\User;
 use App\Models\Admin\Entity\Comment;
 
@@ -18,24 +19,58 @@ class AdminPostModel extends AdminModel
     public function __construct(AppRouter $router)
     {
         parent::__construct($router);
+        // Store an instance of AdminHomeModel
+        $this->externalModels['adminHomeModel'] = new AdminHomeModel($router);
     }
 
     /**
      * Get a Post entity by id
      * Use an external model: PostModel
-     * @return array: an array of Post entity datas
+     * @param int $postId
+     * @return object|boolean: a Post entity instance, or false
      */
     public function getPostById($postId) {
         return $this->externalModels['postModel']->getSingleById($postId);
     }
 
     /**
+     * Get a User (Author) entity by id
+     * Use an external model: PostModel
+     * @param int $userId
+     * @return object|boolean: a User entity instance, or false
+     */
+    public function getUserAuthorById($userId) {
+        return $this->externalModels['postModel']->getAuthorById($userId);
+    }
+
+    /**
      * Get a Comment entity by id
      * Use an external model: PostModel
-     * @return array: an array of Comment entity datas
+     * @param int $commentId
+     * @return object|boolean: a Comment entity instance, or false
      */
     public function getCommentById($commentId) {
         return $this->externalModels['postModel']->getCommentById($commentId);
+    }
+
+    /**
+     * Get Post entities ordered by creation date
+     * Use an external model: PostModel
+     * @param boolean $published: true (only published post) or false
+     * @return array: an array of Post entities instances
+     */
+    public function getPostList($published = false) {
+        return $this->externalModels['postModel']->getList($published); // param "false" means all posts (with all states)
+    }
+
+    /**
+     * Get Post entities ordered by creation date with their author data
+     * Use an external model: PostModel
+     * @param boolean $published: true (only published post) or false
+     * @return array: an array of Post entities instances with author data
+     */
+    public function getPostListWithAuthor($published = false) {
+        return $this->externalModels['postModel']->getListWithAuthor($published); // param "false" means all posts (with all states)
     }
 
     /**
@@ -58,22 +93,10 @@ class AdminPostModel extends AdminModel
     }
 
     /**
-     * Get Post entities ordered by creation date
-     * Use an external model: PostModel
-     * @param boolean $published: true (only published post) or false
-     * @return array: an array of Post entities instances
+     * Get User entities ordered by creation date
+     * @return array: an array of User entities instances
      */
-    public function getPostList($published = false) {
-        return $this->externalModels['postModel']->getList($published); // param "false" means all posts (with all states)
-    }
-
-    /**
-     * Get Post entities ordered by creation date with their author data
-     * Use an external model: PostModel
-     * @param boolean $published: true (only published post) or false
-     * @return array: an array of Post entities instances with author data
-     */
-    public function getPostListWithAuthor($published = false) {
-        return $this->externalModels['postModel']->getListWithAuthor($published); // param "false" means all posts (with all states)
+    public function getUserList() {
+        return $this->externalModels['adminHomeModel']->getUserList();
     }
 }

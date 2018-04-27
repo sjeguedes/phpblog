@@ -55,7 +55,7 @@ class PostModel extends BaseModel
         if ($datas != false) {
             $post = new Post($datas);
             $postIsOnPage = $this->getPagingForSingle($postId);
-            // Temporary parameter is created here:
+            // Temporary param "pagingNumber" is created here:
             $post->pagingNumber = $postIsOnPage;
 	       return $post;
         } else {
@@ -66,7 +66,7 @@ class PostModel extends BaseModel
     /**
      * Get a single post with its slug
      * @param string $postSlug
-     * @return object: a Post entity instance
+     * @return object\boolean: a Post entity instance or false
      */
 	public function getSingleBySlug($postSlug)
 	{
@@ -236,7 +236,29 @@ class PostModel extends BaseModel
 	}
 
     /**
-     * Get author infos with its post user id
+     * Get an author with its user id
+     * @param string $userId
+     * @return object|boolean: a User entity instance or false
+     */
+    public function getAuthorById($userId)
+    {
+        $query = $this->dbConnector->prepare('SELECT *
+                                              FROM users
+                                              WHERE user_id = :userId');
+        $query->bindParam(':userId', $userId, \PDO::PARAM_INT);
+        $query->execute();
+        $datas = $query->fetch(\PDO::FETCH_ASSOC);
+        // Is there a result?
+        if ($datas != false) {
+            $user = new User($datas);
+            return $user;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Get author infos with a post user id
      * @param string $postUserId
      * @return object|boolean: a User entity instance, or false
      */

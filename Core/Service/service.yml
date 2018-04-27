@@ -17,6 +17,10 @@ service:
             formIdentifier: paf_
             formDatasRequest: POST
         -
+            name: post.updateForm
+            formIdentifier: puf_
+            formDatasRequest: POST
+        -
             name: user.registerForm
             formIdentifier: ref_
             formDatasRequest: POST

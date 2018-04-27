@@ -135,15 +135,15 @@ routing:
     showAdminCreatePost:
         path: /admin/add-post
         module: Admin\Post\AdminPost
-        action: showAdminAddPosts
-        name: Admin\Post\AdminPost|showAdminAddPost
+        action: addPost
+        name: Admin\Post\AdminPost|addPost
         method: GET
 
     showAdminUpdatePost:
         path: /admin/update-post/:id
         module: Admin\Post\AdminPost
-        action: showAdminUpdatePosts
-        name: Admin\Post\AdminPost|showAdminUpdatePosts
+        action: updatePost
+        name: Admin\Post\AdminPost|updatePost
         method: GET
 
     showAdminDeletePost:

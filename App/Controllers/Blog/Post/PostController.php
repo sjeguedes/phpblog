@@ -125,11 +125,11 @@ class PostController extends BaseController
      * @return void
      */
     private function renderSingle($post, $checkedForm = []) {
-        // Post is not published
+        // Post is not published.
         if ((bool) $post[0]->isPublished === false) {
             $this->httpResponse->set404ErrorResponse($this->config::isDebug('The content you try to access doesn\'t exist! [Debug trace: reason is $post is not published]'), $this->router);
             exit();
-        // Post is ready to be displayed in front-end
+        // Post is ready to be displayed in front-end.
         } else {
             // Retrieve single post comments
             $postComments = $this->currentModel->getCommentListForSingle($post[0]->id);
