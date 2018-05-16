@@ -43,7 +43,15 @@
                     <div class="separator separator-neutral"></div>
                     <div class="row">
                         <div class="post-thumbnail col-md-12 col-lg-3 mb-4">
-                            <img class="rounded img-raised" src="http://placehold.it/320x240" alt="{{ item.title|striptags|e('html_attr') }}">
+                            {% set imageSrc = 'http://placehold.it/320x240' %}
+                            {% if item.temporaryParams['postImages'] is defined %}
+                                {% for image in item.temporaryParams['postImages'] %}
+                                    {% if (image.postId == item.id) and (image.dimensions == '320x240') %}
+                                        {% set imageSrc = '/uploads/images/user-'~image.creatorId~'/'~image.name~'.'~image.extension %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            <img class="rounded img-raised" src="{{ imageSrc|e('html_attr') }}" alt="{{ item.title|striptags|e('html_attr') }}">
                         </div>
                         <div class="post-intro text-left col-md-12 col-lg-9">
                             <p class="px-3">{{ item.intro|raw }}</p>
@@ -53,8 +61,8 @@
                     <hr>
                 </article>
             {% endfor %}
-            {% if postListOnPage %}
-                <!-- Pagination -->
+            {% if (postListOnPage is defined) and (postListOnPage['pageQuantity'] > 1) %}
+                <!-- Pagination for at least 2 pages -->
                 {% set pageQuantity = postListOnPage['pageQuantity'] %}
                 {% set currentPage = postListOnPage['currentPage'] %}
                 <nav class="post-list-nav" aria-label="Post list navigation">

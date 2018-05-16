@@ -3,7 +3,6 @@ namespace App\Models\Admin;
 use App\Models\BaseModel;
 use App\Models\Blog\Post\PostModel;
 use Core\Routing\AppRouter;
-use App\Models\Blog\Entity\User;
 
 /**
  * Create a parent class for admin models

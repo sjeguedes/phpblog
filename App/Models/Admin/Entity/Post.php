@@ -2,9 +2,9 @@
 namespace App\Models\Admin\Entity;
 
 /**
- * Create a User entity
+ * Create a Post entity
  */
-class User
+class Post
 {
     /**
      * @var integer
@@ -15,49 +15,41 @@ class User
      */
     private $creationDate;
     /**
-     * @var string
-     */
-    private $familyName;
-    /**
-     * @var string
-     */
-    private $firstName;
-    /**
-     * @var string
-     */
-    private $nickName;
-    /**
-     * @var string
-     */
-    private $email;
-    /**
-     * @var string
-     */
-    private $password;
-    /**
      * @var string|null
      */
-    private $passwordUpdateToken;
-    /**
-     * @var string|null
-     */
-    private $passwordUpdateDate;
-    /**
-     * @var string\null
-     */
-    private $activationCode;
+    private $updateDate;
     /**
      * @var string
      */
-    private $activationDate;
+    private $title;
+    /**
+     * @var string
+     */
+    private $intro; // chapô
+    /**
+     * @var string
+     */
+    private $content;
+    /**
+     * @var string
+     */
+    private $slug;
     /**
      * @var boolean
      */
-    private $isActivated;
+    private $isSlugCustomized;
+    /**
+     * @var boolean
+     */
+    private $isValidated;
+    /**
+     * @var boolean
+     */
+    private $isPublished;
     /**
      * @var integer
      */
-    private $userTypeId;
+    private $userId; // Author id
     /**
      * @var array: an array of temporary properties which are not in database but useful in methods
      */
@@ -162,103 +154,84 @@ class User
     }
 
     /**
-     * Get property: familyName
-     * @return string
-     */
-    public function getFamilyName()
-    {
-        return $this->familyName;
-    }
-
-    /**
-     * Get property: firstName
-     * @return string
-     */
-    public function getFirstName()
-    {
-        return $this->firstName;
-    }
-
-    /**
-     * Get property: nickName
-     * @return string
-     */
-    public function getNickName()
-    {
-        return $this->nickName;
-    }
-
-    /**
-     * Get property: email
-     * @return string
-     */
-    public function getEmail()
-    {
-        return $this->email;
-    }
-
-    /**
-     * Get property: password
-     * @return string
-     */
-    public function getPassword()
-    {
-        return $this->password;
-    }
-
-
-    /**
-     * Get property: passwordUpdateToken
+     * Get property: updateDate
      * @return string|null
      */
-    public function getPasswordUpdateToken()
+    public function getUpdateDate()
     {
-        return $this->passwordUpdateToken;
+        return $this->updateDate;
     }
 
     /**
-     * Get property: passwordUpdateDate
-     * @return string|null
-     */
-    public function getPasswordUpdateDate()
-    {
-        return $this->passwordUpdateDate;
-    }
-
-    /**
-     * Get property: activationCode
-     * @return string\null
-     */
-    public function getActivationCode()
-    {
-        return $this->activationCode;
-    }
-
-    /**
-     * Get property: activationDate
+     * Get property: title
      * @return string
      */
-    public function getActivationDate()
+    public function getTitle()
     {
-        return $this->activationDate;
+        return $this->title;
     }
 
     /**
-     * Get property: isActivated
+     * Get property: intro
+     * @return string
+     */
+    public function getIntro()
+    {
+        return $this->intro;
+    }
+
+    /**
+     * Get property: content
+     * @return string
+     */
+    public function getContent()
+    {
+        return $this->content;
+    }
+
+    /**
+     * Get property: slug
+     * @return string
+     */
+    public function getSlug()
+    {
+        return $this->slug;
+    }
+
+    /**
+     * Get property: isSlugCustomized
      * @return boolean
      */
-    public function getIsActivated()
+    public function getIsSlugCustomized()
     {
-        return $this->isActivated;
+        return $this->isSlugCustomized;
     }
 
     /**
-     * Get property: userTypeId
+     * Get property: isValidated
+     * @return boolean
+     */
+    public function getIsValidated()
+    {
+        return $this->isValidated;
+    }
+
+    /**
+     * Get property: isPublished
+     * @return boolean
+     */
+    public function getIsPublished()
+    {
+        return $this->isPublished;
+    }
+
+    /**
+     * Get property: userId
      * @return integer
      */
-    public function getUserTypeId()
+    public function getUserId() // get author id
     {
-        return $this->userTypeId;
+        return $this->userId;
     }
 
     // Setters
@@ -283,144 +256,122 @@ class User
      */
     public function setCreationDate($creationDate)
     {
-        if (is_string($creationDate)) {
+        if(is_string($creationDate)) {
             $date = new \DateTime($creationDate);
             $this->creationDate = $date->format( 'd-m-Y H:i:s');
         }
     }
 
     /**
-     * Set property: familyName
-     * @param string $familyName
+     * Set property: updateDate
+     * @param string $updateDate
      * @return void
      */
-    public function setFamilyName($familyName)
+    public function setUpdateDate($updateDate)
     {
-        if (is_string($familyName)) {
-            $this->familyName = $familyName;
+        if(is_string($updateDate)) {
+            $date = new \DateTime($updateDate);
+            $this->updateDate = $date->format( 'd-m-Y H:i:s');
         }
     }
 
     /**
-     * Set property: firstName
-     * @param string $firstName
+     * Set property: title
+     * @param string $title
      * @return void
      */
-    public function setFirstName($firstName)
+    public function setTitle($title)
     {
-        if (is_string($firstName)) {
-            $this->firstName = $firstName;
+        if(is_string($title)) {
+            $this->title = $title;
         }
     }
 
     /**
-     * Set property: nickName
-     * @param string $nickName
+     * Set property: intro
+     * @param string $intro
      * @return void
      */
-    public function setNickName($nickName)
+    public function setIntro($intro)
     {
-        if (is_string($nickName)) {
-            $this->nickName = $nickName;
+        if (is_string($intro)) {
+            $this->intro = $intro;
         }
     }
 
     /**
-     * Set property: email
-     * @param string $email
+     * Set property: content
+     * @param string $content
      * @return void
      */
-    public function setEmail($email)
+    public function setContent($content)
     {
-        if (is_string($email)) {
-            $this->email = $email;
+        if (is_string($content)) {
+            $this->content = $content;
         }
     }
 
     /**
-     * Set property: password
-     * @param string $password
+     * Set property: slug
+     * @param string $slug
      * @return void
      */
-    public function setPassword($password)
+    public function setSlug($slug)
     {
-        if (is_string($password)) {
-            $this->password = $password;
+        if (is_string($slug)) {
+            $this->slug = $slug;
         }
     }
 
     /**
-     * Set property: passwordUpdateToken
-     * @param string|null $passwordUpdateToken
+     * Set property: isSlugCustomized
+     * @param boolean $isSlugCustomized
      * @return void
      */
-    public function setPasswordUpdateToken($passwordUpdateToken)
+    public function setIsSlugCustomized($isSlugCustomized)
     {
-        if (is_string($passwordUpdateToken) || is_null($passwordUpdateToken)) {
-            $this->passwordUpdateToken = $passwordUpdateToken;
-        }
-    }
-
-   /**
-     * Set property: passwordUpdateDate
-     * @param string $passwordUpdateDate
-     * @return void
-     */
-    public function setPasswordUpdateDate($passwordUpdateDate)
-    {
-        if (is_string($passwordUpdateDate)) {
-            $this->passwordUpdateDate = $passwordUpdateDate;
+        $isSlugCustomized = (bool) $isSlugCustomized;
+        if (is_bool($isSlugCustomized)) {
+            $this->isSlugCustomized = $isSlugCustomized;
         }
     }
 
     /**
-     * Set property: activationCode
-     * @param string\null $activationCode
+     * Set property: isValidated
+     * @param boolean $isValidated
      * @return void
      */
-    public function setActivationCode($activationCode)
+    public function setIsValidated($isValidated)
     {
-        if (is_string($activationCode) || is_null($activationCode)) {
-            $this->activationCode = $activationCode;
+        $isValidated = (bool) $isValidated;
+        if (is_bool($isValidated)) {
+            $this->isValidated = $isValidated;
         }
     }
 
     /**
-     * Set property: activationDate
-     * @param string $activationDate
+     * Set property: isPublished
+     * @param boolean $isPublished
      * @return void
      */
-    public function setActivationDate($activationDate)
+    public function setIsPublished($isPublished)
     {
-        if (is_string($activationDate)) {
-            $date = new \DateTime($activationDate);
-            $this->activationDate = $date->format( 'd-m-Y H:i:s');
+        $isPublished = (bool) $isPublished;
+        if (is_bool($isPublished)) {
+            $this->isPublished = $isPublished;
         }
     }
 
     /**
-     * Set property: isActivated
-     * @param boolean $isActivated
+     * Set property: userId
+     * @param integer $userId
      * @return void
      */
-    public function setIsActivated($isActivated)
+    public function setUserId($userId)  // set author id
     {
-        $isActivated = (bool) $isActivated;
-        if (is_bool($isActivated)) {
-            $this->isActivated = $isActivated;
-        }
-    }
-
-    /**
-     * Set property: userTypeId
-     * @param integer $userTypeId
-     * @return void
-     */
-    public function setUserTypeId($userTypeId)
-    {
-        $userTypeId = (int) $userTypeId;
-        if ($userTypeId > 0) {
-            $this->userTypeId = $userTypeId;
+        $userId = (int) $userId;
+        if ($userId > 0) {
+            $this->userId = $userId;
         }
     }
 }

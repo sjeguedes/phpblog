@@ -31,7 +31,6 @@ class AdminController extends BaseController
         $this->controlAdminAccess();
     }
 
-
     /**
      * Update user cookie and session tokens if session id was regenerated
      * @return boolean: true if tokens are updated, or false

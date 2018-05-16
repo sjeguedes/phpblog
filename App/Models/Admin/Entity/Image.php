@@ -1,10 +1,10 @@
 <?php
-namespace App\Models\Blog\Entity;
+namespace App\Models\Admin\Entity;
 
 /**
- * Create a Post entity
+ * Create a Image entity
  */
-class Post
+class Image
 {
     /**
      * @var integer
@@ -15,41 +15,33 @@ class Post
      */
     private $creationDate;
     /**
-     * @var string
+     * @var string|null
      */
     private $updateDate;
     /**
      * @var string
      */
-    private $title;
+    private $name;
     /**
      * @var string
      */
-    private $intro; // chapô
+    private $extension;
     /**
      * @var string
      */
-    private $content;
-    /**
-     * @var string
-     */
-    private $slug;
-    /**
-     * @var boolean
-     */
-    private $isSlugCustomized;
-    /**
-     * @var boolean
-     */
-    private $isValidated;
-    /**
-     * @var boolean
-     */
-    private $isPublished;
+    private $dimensions;
     /**
      * @var integer
      */
-    private $userId; // Author id
+    private $size;
+    /**
+     * @var integer
+     */
+    private $creatorId; // authenticated user id
+    /**
+     * @var integer
+     */
+    private $postId;
     /**
      * @var array: an array of temporary properties which are not in database but useful in methods
      */
@@ -155,7 +147,7 @@ class Post
 
     /**
      * Get property: updateDate
-     * @return string
+     * @return string|null
      */
     public function getUpdateDate()
     {
@@ -163,75 +155,58 @@ class Post
     }
 
     /**
-     * Get property: title
+     * Get property: name
      * @return string
      */
-    public function getTitle()
+    public function getName()
     {
-        return $this->title;
+        return $this->name;
     }
 
     /**
-     * Get property: intro
+     * Get property: extension
      * @return string
      */
-    public function getIntro()
+    public function getExtension()
     {
-        return $this->intro;
+        return $this->extension;
     }
 
     /**
-     * Get property: content
+     * Get property: dimensions
      * @return string
      */
-    public function getContent()
+    public function getDimensions()
     {
-        return $this->content;
+        return $this->dimensions;
     }
 
     /**
-     * Get property: slug
-     * @return string
-     */
-    public function getSlug()
-    {
-        return $this->slug;
-    }
-
-    /**
-     * Get property: isSlugCustomized
-     * @return boolean
-     */
-    public function getIsSlugCustomized()
-    {
-        return $this->isSlugCustomized;
-    }
-
-    /**
-     * Get property: isValidated
-     * @return boolean
-     */
-    public function getIsValidated()
-    {
-        return $this->isValidated;
-    }
-
-    /**
-     * Get property: isPublished
-     * @return boolean
-     */
-    public function getIsPublished()
-    {
-        return $this->isPublished;
-    }
-
-    /**
-     * Get property: userId
+     * Get property: size
+     * Value corresponds to size in octets.
      * @return integer
      */
-    public function getUserId() // get author id
+    public function getSize()
     {
-        return $this->userId;
+        return $this->size;
+    }
+
+    /**
+     * Get property: creatorId
+     * @return integer
+     */
+    public function getCreatorId() // get authenticated user id who created post
+    {
+        return $this->creatorId;
+    }
+
+    /**
+     * Get property: postId
+     * @return integer
+     */
+    public function getPostId() // get attached post id
+    {
+        return $this->postId;
     }
 
     // Setters
@@ -276,102 +251,78 @@ class Post
     }
 
     /**
-     * Set property: title
-     * @param string $title
+     * Set property: name
+     * @param string $name
      * @return void
      */
-    public function setTitle($title)
+    public function setName($name)
     {
-        if(is_string($title)) {
-            $this->title = $title;
+        if(is_string($name)) {
+            $this->name = $name;
         }
     }
 
     /**
-     * Set property: intro
-     * @param string $intro
+     * Set property: extension
+     * @param string $extension
      * @return void
      */
-    public function setIntro($intro)
+    public function setExtension($extension)
     {
-        if (is_string($intro)) {
-            $this->intro = $intro;
+        if (is_string($extension)) {
+            $this->extension = $extension;
         }
     }
 
     /**
-     * Set property: content
-     * @param string $content
+     * Set property: dimensions
+     * @param string $dimensions
      * @return void
      */
-    public function setContent($content)
+    public function setDimensions($dimensions)
     {
-        if (is_string($content)) {
-            $this->content = $content;
+        if (is_string($dimensions)) {
+            $this->dimensions = $dimensions;
         }
     }
 
     /**
-     * Set property: slug
-     * @param string $slug
+     * Set property: size
+     * Value corresponds to size in octets.
+     * @param integer $size
      * @return void
      */
-    public function setSlug($slug)
+    public function setSize($size)
     {
-        if (is_string($slug)) {
-            $this->slug = $slug;
+        $size = (int) $size;
+        if ($size > 0) {
+            $this->size = $size;
         }
     }
 
     /**
-     * Set property: isSlugCustomized
-     * @param boolean $isSlugCustomized
+     * Set property: creatorId
+     * @param integer $creatorId
      * @return void
      */
-    public function setIsSlugCustomized($isSlugCustomized)
+    public function setCreatorId($creatorId)  // set user creator id
     {
-        $isSlugCustomized = (bool) $isSlugCustomized;
-        if (is_bool($isSlugCustomized)) {
-            $this->isSlugCustomized = $isSlugCustomized;
+        $creatorId = (int) $creatorId;
+        if ($creatorId > 0) {
+            $this->creatorId = $creatorId;
         }
     }
 
     /**
-     * Set property: isValidated
-     * @param boolean $isValidated
+     * Set property: postId
+     * @param integer $postId
      * @return void
      */
-    public function setIsValidated($isValidated)
+    public function setPostId($postId)  // set attached post id
     {
-        $isValidated = (bool) $isValidated;
-        if (is_bool($isValidated)) {
-            $this->isValidated = $isValidated;
-        }
-    }
-
-    /**
-     * Set property: isPublished
-     * @param boolean $isPublished
-     * @return void
-     */
-    public function setIsPublished($isPublished)
-    {
-        $isPublished = (bool) $isPublished;
-        if (is_bool($isPublished)) {
-            $this->isPublished = $isPublished;
-        }
-    }
-
-    /**
-     * Set property: userId
-     * @param integer $userId
-     * @return void
-     */
-    public function setUserId($userId)  // set author id
-    {
-        $userId = (int) $userId;
-        if ($userId > 0) {
-            $this->userId = $userId;
+        $postId = (int) $postId;
+        if ($postId > 0) {
+            $this->postId = $postId;
         }
     }
 }

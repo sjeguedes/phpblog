@@ -65,6 +65,13 @@ class PostController extends BaseController
                 // Add temporary param "postComments" to object
                 $postList[$i]->postComments = $postComments;
             }
+            // Retrieve single post images
+            $postImages = $this->currentModel->getImageListForSingle($postList[$i]->id);
+            // Images are found for a post.
+            if ($postImages != false) {
+                // Add temporary param "postImages" to object
+                $postList[$i]->postImages = $postImages;
+            }
         }
 		$varsArray = [
 			'metaTitle' => 'Posts list',
@@ -100,6 +107,13 @@ class PostController extends BaseController
                     // Add temporary param "postComments" to object
                     $postListOnPage['postsOnPage'][$i]->postComments = $postComments;
                 }
+                // Retrieve single post images
+                $postImages = $this->currentModel->getImageListForSingle($postListOnPage['postsOnPage'][$i]->id);
+                // Images are found for a post.
+                if ($postImages != false) {
+                    // Add temporary param "postImages" to object
+                    $postListOnPage['postsOnPage'][$i]->postImages = $postImages;
+                }
             }
 			// $currentPageId value is correct: render page with included posts!
 			if ($currentPageId <= $postListOnPage['pageQuantity']) {
@@ -133,6 +147,8 @@ class PostController extends BaseController
         } else {
             // Retrieve single post comments
             $postComments = $this->currentModel->getCommentListForSingle($post[0]->id);
+            // Retrieve single post images
+            $postImages = $this->currentModel->getImageListForSingle($post[0]->id);
             // Prepare template vars
             $cssArray = [
                 0 => [
@@ -171,6 +187,7 @@ class PostController extends BaseController
                 'imgBannerCSSClass' => 'post-single',
                 'post' => $post,
                 'postComments' => $postComments,
+                'postImages' => $postImages,
                 // Get number of Comment entities to show per slide for post comments slider (paging slider)
                 'commentPerSlide' => $this->config::getParam('singlePost.commentPerSlide'),
                 'nickName' => isset($checkedForm['pcf_nickName']) ? $checkedForm['pcf_nickName'] : '',

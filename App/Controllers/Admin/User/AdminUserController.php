@@ -84,13 +84,13 @@ class AdminUserController extends AdminController
         parent::__construct($router);
         $this->currentModel = $this->getCurrentModel(__CLASS__);
         // Initialize register form validator
-        $this->registerFormValidator = $this->container::getFormValidator()[5];
+        $this->registerFormValidator = $this->container::getFormValidator()[6];
         // Initialize login form validator
-        $this->loginFormValidator = $this->container::getFormValidator()[6];
+        $this->loginFormValidator = $this->container::getFormValidator()[7];
         // Initialize request new password (forgotten) validator
-        $this->forgetPasswordFormValidator = $this->container::getFormValidator()[7];
+        $this->forgetPasswordFormValidator = $this->container::getFormValidator()[8];
         // Initialize renew password validator
-        $this->renewPasswordFormValidator = $this->container::getFormValidator()[8];
+        $this->renewPasswordFormValidator = $this->container::getFormValidator()[9];
         // Define used parameters to avoid CSRF on register form
         $this->refTokenIndex = $this->registerFormValidator->generateTokenIndex('ref_check');
         $this->refTokenValue = $this->registerFormValidator->generateTokenValue('ref_token');

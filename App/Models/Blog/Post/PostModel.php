@@ -2,7 +2,8 @@
 namespace App\Models\Blog\Post;
 use App\Models\BaseModel;
 use Core\Routing\AppRouter;
-use App\Models\Blog\Entity\Post;
+use App\Models\Admin\Entity\Post;
+use App\Models\Admin\Entity\Image;
 use App\Models\Admin\Entity\User;
 use App\Models\Admin\Entity\Comment;
 
@@ -54,13 +55,17 @@ class PostModel extends BaseModel
         // Is there a result?
         if ($datas != false) {
             $post = new Post($datas);
-            $postIsOnPage = $this->getPagingForSingle($postId);
-            // Temporary param "pagingNumber" is created here:
-            $post->pagingNumber = $postIsOnPage;
-	       return $post;
-        } else {
-            return false;
+            // Get paging number only for published posts
+            if ($post->isPublished == 1) {
+                $postIsOnPage = $this->getPagingForSingle($postId);
+                if ($postIsOnPage != false) {
+                    // Temporary param "pagingNumber" is created here:
+                    $post->pagingNumber = $postIsOnPage;
+                }
+            }
+            return $post;
         }
+        return false;
 	}
 
     /**
@@ -77,10 +82,11 @@ class PostModel extends BaseModel
 	    $query->bindParam(':postSlug', $postSlug, \PDO::PARAM_STR);
 	    $query->execute();
 	    $datas = $query->fetch(\PDO::FETCH_ASSOC);
-	    if(!$datas) {
-	    	return false;
-	    }
-	    return new Post($datas);
+	    if ($datas != false) {
+            return new Post($datas);
+	    } else {
+            return false;
+        }
 	}
 
     /**
@@ -92,9 +98,9 @@ class PostModel extends BaseModel
 	public function getSingleWithAuthor($postId, $postSlug = null)
 	{
 		// Check if $postSlug exists in database
-		if(!is_null($postSlug)) {
+		if (!is_null($postSlug)) {
 			$isSlug = $this->getSingleBySlug($postSlug);
-			if(!$isSlug) {
+			if (!$isSlug) {
 				return false;
 			}
 		}
@@ -129,14 +135,30 @@ class PostModel extends BaseModel
     	$query = $this->dbConnector->query("SELECT *
     										FROM posts $published
                                             ORDER BY post_creationDate DESC");
-	    while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+	    while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$posts[] = new Post($datas);
 	    }
     	return $posts;
 	}
 
     /**
-     * Get posts for a particular paging number: result depends on post per page quantity.
+     * Get all Image entities
+     * @return array: an array which contains all Image entities instances
+     */
+    public function getImageList()
+    {
+        $images = [];
+        $query = $this->dbConnector->query("SELECT *
+                                            FROM images
+                                            ORDER BY image_creationDate DESC");
+        while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+            $images[] = new Image($datas);
+        }
+        return $images;
+    }
+
+    /**
+     * Get published posts for a particular paging number: result depends on post per page quantity.
      * @param int $pageId
      * @param int $postPerPage
      * @return array: an array of needed parameters with list of posts on a particular page
@@ -157,7 +179,7 @@ class PostModel extends BaseModel
 		$query->bindParam(':postPerPage', $postPerPage, \PDO::PARAM_INT);
 		$query->execute();
 		// Compare post_id from retrieved posts to add rank property to corresponding Post instance
-		while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+		while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$postsOnpage[] = new Post($datas);
 	    }
 		// Get the same result like COUNT() function:
@@ -183,8 +205,8 @@ class PostModel extends BaseModel
 		$paging = ceil($postQuantity / $postPerPage);
 		$interval = [];
 		$start = 0;
-		for($i = 1; $i <= $paging; $i++) {
-			if($start <= $postRank && $postRank < $start + $postPerPage) {
+		for ($i = 1; $i <= $paging; $i++) {
+			if ($start <= $postRank && $postRank < $start + $postPerPage) {
 				$singleIsOnPage = $i;
 				break;
 			}
@@ -201,13 +223,13 @@ class PostModel extends BaseModel
 	public function getRankForSingle($postId)
 	{
 		$postsRank = $this->getRankForAll();
-		for($i = 0; $i < count($postsRank) - 1; $i++) {
-			if($postsRank[$i]['post_id'] == $postId) {
+		for ($i = 0; $i < count($postsRank) - 1; $i++) {
+			if ($postsRank[$i]['post_id'] == $postId) {
 				$singleRank = $postsRank[$i]['rank'];
 				break;
-			}
+            }
 		}
-		return [$singleRank, $postsRank['total']];
+        return [$singleRank, $postsRank['total']];
 	}
 
     /**
@@ -220,9 +242,9 @@ class PostModel extends BaseModel
 		$i = 0;
     	$query = $this->dbConnector->query('SELECT SQL_CALC_FOUND_ROWS p.post_id, (@curRank := @curRank + 1) AS rank
     										FROM posts p, (SELECT @curRank := -1) r
-                                            WHERE post_isPublished = 1
+                                            /*WHERE post_isPublished = 1*/
     										ORDER BY p.post_creationDate DESC');
-	    while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+	    while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$postsRank[$i]['post_id'] = $datas['post_id'];
 	       	$postsRank[$i]['rank'] = $datas['rank'];
 	       	$i++;
@@ -347,6 +369,30 @@ class PostModel extends BaseModel
     }
 
     /**
+     * Get all Image entities for a particular post
+     * @param string $postId
+     * @return array|boolean: an array which contains all Image entities instances or false
+     */
+    public function getImageListForSingle($postId)
+    {
+        $images = [];
+        $query = $this->dbConnector->prepare('SELECT *
+                                              FROM images
+                                              WHERE image_postId = ?
+                                              ORDER BY image_creationDate DESC');
+        $query->bindParam(1, $postId, \PDO::PARAM_INT);
+        $query->execute();
+        while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+            $images[] = new Image($datas);
+        }
+        if (isset($images)) {
+            return $images;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Get all Comment entities for a particular post
      * @param string $postId
      * @return array|boolean: an array which contains all Comment entities instances or false
@@ -360,12 +406,13 @@ class PostModel extends BaseModel
                                               ORDER BY comment_creationDate DESC');
         $query->bindParam(1, $postId, \PDO::PARAM_INT);
         $query->execute();
-        while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+        while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
             $comments[] = new Comment($datas);
         }
-        if(!isset($comments)) {
+        if (isset($comments)) {
+            return $comments;
+        } else {
             return false;
         }
-        return $comments;
     }
 }

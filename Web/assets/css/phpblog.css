@@ -466,8 +466,10 @@ form p.text-danger {
     line-height: normal;
     font-size: 1em;
     display: block;
+    width: 100%;
     height: auto !important;
     min-width: auto !important;
+    cursor: pointer;
 }
 
 .post-custom-image .custom-file-control:lang(en)::before {
@@ -475,7 +477,7 @@ form p.text-danger {
 }
 
 .post-custom-image .custom-file-control:lang(en)::after {
-    content: "Select file...";
+    content: "Select image...";
 }
 
 .post-custom-image .custom-file-control.selected-not-empty:lang(en)::after {
@@ -484,7 +486,7 @@ form p.text-danger {
 
 /*when a value is selected, this class removes the content*/
 .post-custom-image .custom-file-control.selected:lang(en)::after {
-    content: "Select file..." !important;
+    content: "File added!" !important;
 }
 
 .custom-file-control {

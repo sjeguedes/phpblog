@@ -24,6 +24,68 @@ class AdminPostModel extends AdminModel
     }
 
     /**
+     * Insert a Post entity in database
+     * @param array $postDatas: an array of post datas
+     * @return integer: new post id
+     */
+    public function insertPost($postDatas)
+    {
+        // Secure query
+        $query = $this->dbConnector->prepare('INSERT INTO posts
+                                              (post_creationDate, post_updateDate, post_title, post_intro, post_content, post_slug, post_isSlugCustomized, post_isValidated, post_isPublished, post_userId)
+                                              VALUES (NOW(), NOW(), :title, :intro, :content, :slug, :isSlugCustomized, :isValidated, :isPublished, :userId)');
+        $query->bindParam(':title', $title, \PDO::PARAM_STR);
+        $query->bindParam(':intro', $intro, \PDO::PARAM_STR);
+        $query->bindParam(':content', $content, \PDO::PARAM_STR);
+        $query->bindParam(':slug', $slug, \PDO::PARAM_STR);
+        $query->bindParam(':isSlugCustomized', $isSlugCustomized, \PDO::PARAM_BOOL);
+        $query->bindParam(':isValidated', $isValidated, \PDO::PARAM_BOOL);
+        $query->bindParam(':isPublished', $isPublished, \PDO::PARAM_BOOL);
+        $query->bindParam(':userId', $userId, \PDO::PARAM_INT);
+        // Insertion
+        $title = $postDatas['title'];
+        $intro = $postDatas['intro'];
+        $content = $postDatas['content'];
+        $slug = $postDatas['slug'];
+        $isSlugCustomized = $postDatas['isSlugCustomized'];
+        $isValidated = 0;
+        $isPublished = 0;
+        $userId = $postDatas['userId'];
+        $query->execute();
+        // Return last inserted id
+        return $this->dbConnector->lastInsertId();
+    }
+
+    /**
+     * Insert a Image entity in database
+     * @param array $imageDatas: an array of image datas
+     * @return integer: new image id
+     */
+    public function insertImage($imageDatas)
+    {
+        // Secure query
+        $query = $this->dbConnector->prepare('INSERT INTO images
+                                              (image_creationDate, image_updateDate, image_name, image_extension, image_dimensions, image_size, image_creatorId, image_postId)
+                                              VALUES (NOW(), NOW(), :name, :extension, :dimensions, :size, :creatorId, :postId)');
+        $query->bindParam(':name', $name, \PDO::PARAM_STR);
+        $query->bindParam(':extension', $extension, \PDO::PARAM_STR);
+        $query->bindParam(':dimensions', $dimensions, \PDO::PARAM_STR);
+        $query->bindParam(':size', $size, \PDO::PARAM_INT);
+        $query->bindParam(':creatorId', $creatorId, \PDO::PARAM_INT);
+        $query->bindParam(':postId', $postId, \PDO::PARAM_INT);
+        // Insertion
+        $name = $imageDatas['name'];
+        $extension = $imageDatas['extension'];
+        $dimensions = $imageDatas['dimensions'];
+        $size = $imageDatas['size'];
+        $creatorId = $imageDatas['creatorId'];
+        $postId = $imageDatas['postId'];
+        $query->execute();
+        // Return last inserted id
+        return $this->dbConnector->lastInsertId();
+    }
+
+    /**
      * Get a Post entity by id
      * Use an external model: PostModel
      * @param int $postId
@@ -31,6 +93,16 @@ class AdminPostModel extends AdminModel
      */
     public function getPostById($postId) {
         return $this->externalModels['postModel']->getSingleById($postId);
+    }
+
+    /**
+     * Get a Post entity by its slug
+     * Use an external model: PostModel
+     * @param string $postSlug
+     * @return object|boolean: a Post entity instance, or false
+     */
+    public function getPostBySlug($postSlug) {
+        return $this->externalModels['postModel']->getSingleBySlug($postSlug);
     }
 
     /**
