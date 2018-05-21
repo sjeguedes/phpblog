@@ -41,9 +41,9 @@
                             <select id="pnf_userAuthor" name="pnf_userAuthor" class="form-control custom-select">
                             {% for i in 0..userList|length - 1 -%}
                             {% if userList[i].id == userAuthor.id -%}
-                            <option selected value="{{ userList[i].id }}">{{ userList[i].firstName }}&nbsp;{{ userList[i].familyName }}&nbsp;({{ userList[i].nickName }})</option>
+                            <option selected value="{{ userList[i].id|e('html_attr') }}">{{ userList[i].firstName }}&nbsp;{{ userList[i].familyName }}&nbsp;({{ userList[i].nickName }})</option>
                             {% else -%}
-                            <option value="{{ userList[i].id }}">{{ userList[i].firstName }}&nbsp;{{ userList[i].familyName }}&nbsp;({{ userList[i].nickName }})</option>
+                            <option value="{{ userList[i].id|e('html_attr') }}">{{ userList[i].firstName }}&nbsp;{{ userList[i].familyName }}&nbsp;({{ userList[i].nickName }})</option>
                             {% endif -%}
                             {% endfor -%}
                             </select>
@@ -59,7 +59,7 @@
                         <div class="phpblog-switch-block form-hide">
                             <label for="pnf_customSlug" class="phpblog-label text-neutral">Customize slug?</label>&nbsp;
                             <input type="checkbox" id="pnf_customSlug" name="pnf_customSlug" class="bootstrap-switch" data-on-label="YES" data-off-label="NO"{{ customSlug == 1 ? ' value="1" checked' : 'value="0"' }}>
-                            <p class="slug-info text-warning{{ customSlug == 0 ? ' form-hide' }}"><i class="fa fa-info-circle"></i>&nbsp;<strong>Notice</strong>: each time you deactivate custom slug,<br>you will lose any existing personalization!<br>Auto generated slug will replace it definitively.</p>
+                            <p class="slug-info text-warning{{ customSlug == 0 ? ' form-hide' }}"><i class="fa fa-info-circle"></i>&nbsp;<strong>Notice</strong>: each time you deactivate custom slug,<br>you will lose any existing personalization!<br>Auto generated slug (based on title) will replace it definitively.</p>
                             <p class="text-left slug-element{{ customSlug == 0 ? ' form-hide' }}"><small><strong>SLUG</strong></small></p>
                             <div class="slug-element{{ customSlug == 0 ? ' form-hide' }}">
                                 <p class="text-danger{{ errors['pnf_slug'] is not defined ? ' form-hide' }}" role="alert">&nbsp;{{ errors['pnf_slug']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>

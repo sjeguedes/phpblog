@@ -440,9 +440,6 @@ class AdminPostController extends AdminController
         $this->renderAdminPosts($varsArray);
     }
 
-    // --------------------------------------------------------------
-    // --------------------------------------------------------------
-
     /**
      * Check if there is already a success state for update add form
      * @return boolean
@@ -469,7 +466,7 @@ class AdminPostController extends AdminController
         }
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Reset selected image after user removing action
-            if($_POST['pnf_imageRemoved'] == 1) {
+            if ($_POST['pnf_imageRemoved'] == 1) {
                 unset($_SESSION['uploads']['pnf_image']['currentFile']);
             }
             // Store result from post add form validation
@@ -588,7 +585,7 @@ class AdminPostController extends AdminController
      */
     private function validatePostAddForm()
     {
-        // Prepare datas to format (filters are not used here because of HTML datas!)
+        // Prepare datas to format (String filters are not used here because of HTML datas!)
         $datas = [
             0 => ['name' => 'title', 'filter' => null, 'modifiers' => ['trimStr', 'ucfirstStr']],
             1 => ['name' => 'slug', 'filter' => null, 'modifiers' => ['trimStr', 'slugStr']],
@@ -616,11 +613,26 @@ class AdminPostController extends AdminController
         $title = strip_tags(stripslashes($result['pnf_title']), $allowedTags);
         $intro = strip_tags(stripslashes($result['pnf_intro']), $allowedTags);
         $content = strip_tags(stripslashes($result['pnf_content']), $allowedTags);
+        // Post author
+        $authorUserId = $_POST['pnf_userAuthor'];
+        // User author id is valid!
+        if ((int) $authorUserId > 0) {
+            // Is there an existing user author with this id? User can change option value!
+            $author = $this->currentModel->getUserAuthorById($authorUserId);
+            if ($author != false) {
+                $result['pnf_userAuthor'] = $author;
+            } else {
+                $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not created: please try again later.<br>[Debug trace: user author id "<strong>' . htmlentities($authorUserId) . '</strong>" doesn\'t exist in database!]</span>');
+            }
+        } else {
+            // Selected user author id is not valid (it is not an integer).
+            $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not created: please try again later.<br>[Debug trace: reason is user author id "<strong>' . htmlentities($authorUserId) . '</strong>" is not an integer.]</span>');
+        }
         // Particular case: add "customSlug" option to $result
         if (isset($_POST['pnf_customSlug'])) {
             // Option is set to "yes" and is considered as checked, then verify boolean type.
             $result['pnf_customSlug'] = $_POST['pnf_customSlug'];
-            $isSlugCustomized = is_bool((bool) $result['pnf_customSlug']) ? (bool) $result['pnf_customSlug'] : null;
+            $isSlugCustomized = is_bool($result['pnf_customSlug']) ? $result['pnf_customSlug'] : null;
             // Slug (based on customized value)
             $this->adminPostAddValidator->validateRequired('slug', 'slug');
             $isSlugCustomized = false;
@@ -642,40 +654,25 @@ class AdminPostController extends AdminController
         if (isset($result) && empty($result['pnf_errors']) && isset($result['pnf_check']) && $result['pnf_check'] && $isSlugCustomized !== null) {
             // Add Post entity in database
             try {
-                $authorUserId = $_POST['pnf_userAuthor'];
-                // User author id is valid!
-                if ((int) $authorUserId > 0) {
-                    // Is there an existing user author with this id? User can change option value!
-                    $author = $this->currentModel->getUserAuthorById($_POST['pnf_userAuthor']);
-                    if ($author != false) {
-                        // Prepare datas to add
-                        $newDatas = [
-                            'userId' => $authorUserId, // int
-                            'title' => $title, // string
-                            'slug' => $slug, // string
-                            'intro' => $intro, // string
-                            'content' => $content, // string
-                            'isSlugCustomized' => $isSlugCustomized // bool
-                        ];
-                        // Add post
-                        $newPostId = $this->currentModel->insertPost($newDatas);
-                        $insertion = true;
-                    } else {
-                        $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not created: please try again later.<br>[Debug trace: user author id "<strong>' . htmlentities($authorUserId) . '</strong>" doesn\'t exist in database!]</span>');
-                        $insertion = false;
-                    }
-                } else {
-                    // Selected user author id is not valid (it is not an integer).
-                    $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not created: please try again later.<br>[Debug trace: reason is user author id "<strong>' . htmlentities($authorUserId) . '</strong>" is not an integer.]</span>');
-                    $insertion = false;
-                }
+                // Prepare datas to add
+                $newDatas = [
+                    'userId' => $authorUserId, // int
+                    'title' => $title, // string
+                    'slug' => $slug, // string
+                    'intro' => $intro, // string
+                    'content' => $content, // string
+                    'isSlugCustomized' => $isSlugCustomized // bool
+                ];
+                // Add post
+                $newPostId = $this->currentModel->insertPost($newDatas);
+                $insertion = true;
             } catch (\PDOException $e) {
                 $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not created: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
                 $insertion = false;
             }
             // Post entity was saved successfully!
             if ($insertion) {
-                 // Add attached Image entity in database
+                // Add attached Image entity in database
                 try {
                     // Save image
                     $savedImage = $this->adminPostAddValidator->saveImageUpload('image');
@@ -745,8 +742,11 @@ class AdminPostController extends AdminController
                         }
                     // Upload failed
                     } else {
-                        $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened!<br>Your post image was not created: image upload failed!<br>please try again later.<br>[Debug trace: selected image was not saved (upload error)!]</span>');
-                        $imageInsertion = false;
+                        // Real error which excludes particular case "No selected file"!
+                        if (isset($_SESSION['uploads']['pnf_image']['currentFile']['tmp_name'])) {
+                            $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened!<br>Your post image was not created: image upload failed!<br>please try again later.<br>[Debug trace: selected image was not saved (upload error)!]</span>');
+                            $imageInsertion = false;
+                        }
                     }
                 } catch (\PDOException $e) {
                     $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post image was not created: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
@@ -803,8 +803,12 @@ class AdminPostController extends AdminController
             // Post exists in database!
             if ($post != false) {
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+                    // Reset selected image after user removing action
+                    if ($_POST['puf_imageRemoved'] == 1) {
+                        unset($_SESSION['uploads']['puf_image']['currentFile']);
+                    }
                     // Store result from post update form validation
-                    $checkedForm = $this->validatePostUpdateForm();
+                    $checkedForm = $this->validatePostUpdateForm($post->id);
                     // Is it already a success state?
                     if ($this->isUpdatePostSuccess()) {
                         $this->httpResponse->addHeader('Location: /admin/update-post/' . $post->id);
@@ -828,6 +832,15 @@ class AdminPostController extends AdminController
                         $postAuthor = $userList[$i];
                         break;
                     }
+                }
+                // Get post images list with external model (PostModel)
+                $postImages = $this->currentModel->getPostImageList($post->id);
+                if ($postImages != false) {
+                    // Add temporary params to post object
+                    $post->postCreatorId = $postImages[0]->creatorId;
+                    $post->postImage = $postImages[0]->name . '.' . $postImages[0]->extension;
+                } else {
+                    $post->postImage = '';
                 }
                 // Prepare template vars
                 $jsArray = [
@@ -879,12 +892,16 @@ class AdminPostController extends AdminController
                     'slug' => isset($checkedForm['puf_slug']) ? $checkedForm['puf_slug'] : $post->slug,
                     'intro' => isset($checkedForm['puf_intro']) ? $checkedForm['puf_intro'] : $post->intro,
                     'content' => isset($checkedForm['puf_content']) ? $checkedForm['puf_content'] : $post->content,
+                    'image' => isset($_SESSION['uploads']['puf_image']['currentFile']) && !empty($_SESSION['uploads']['puf_image']['currentFile']) ? $_SESSION['uploads']['puf_image']['currentFile']['name'] : $post->postImage,
+                    // Must be set to "0" each time
+                    'imageRemoved' => 0,
                     'pufTokenIndex' => $this->pufTokenIndex,
                     'pufTokenValue' => $this->pufTokenValue,
                     'submit' => isset($_SESSION['puf_success']) && $_SESSION['puf_success'] ? 1 : 0,
                     'tryValidation' => isset($_POST['puf_submit']) ? 1 : 0,
                     'errors' => isset($checkedForm['puf_errors']) ? $checkedForm['puf_errors'] : false,
                     'success' => isset($_SESSION['puf_success']) && $_SESSION['puf_success'] ? true : false,
+                    'imageSuccess' => isset($_SESSION['puf_imageSuccess']) ? $_SESSION['puf_imageSuccess'] : null
                 ];
                 // Is it already a success state?
                 if ($_SERVER['REQUEST_METHOD'] == 'GET' && $this->isUpdatePostSuccess()) {
@@ -918,11 +935,12 @@ class AdminPostController extends AdminController
 
     /**
      * Validate (or not) post update form
+     * @param $postId: post id to update
      * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
      */
-    private function validatePostUpdateForm()
+    private function validatePostUpdateForm($postId)
     {
-        // Prepare datas to format (filters are not used here because of HTML datas!)
+        // Prepare datas to format (String filters are not used here because of HTML datas!)
         $datas = [
             0 => ['name' => 'title', 'filter' => null, 'modifiers' => ['trimStr', 'ucfirstStr']],
             1 => ['name' => 'slug', 'filter' => null, 'modifiers' => ['trimStr', 'slugStr']],
@@ -941,6 +959,21 @@ class AdminPostController extends AdminController
         $this->adminPostUpdateValidator->validateRequired('intro', 'intro');
         // Content
         $this->adminPostUpdateValidator->validateRequired('content', 'content');
+        // Image
+        // Get previous post images list with external model (PostModel)
+        $postImages = $this->currentModel->getPostImageList($postId);
+        // Previous images exist.
+        if ($postImages != false) {
+            // No file is selected, use current images!
+            if (empty($_FILES['puf_image']['name'])) {
+                $_SESSION['uploads']['puf_image']['currentFile']['name'] = $postImages[0]->name . '.' . $postImages[0]->extension;
+            } else {
+                 $image = $this->adminPostUpdateValidator->validateImageUpload('image');
+            }
+        // No previous images
+        } else {
+            $image = $this->adminPostUpdateValidator->validateImageUpload('image');
+        }
         // Get validation result to use it after data filtering and pass values to strip_tags function
         $result = $this->adminPostUpdateValidator->getResult();
         // tinyMCE editor allowed tags
@@ -949,11 +982,26 @@ class AdminPostController extends AdminController
         $slug = strip_tags(stripslashes($result['puf_slug']));
         $intro = strip_tags(stripslashes($result['puf_intro']), $allowedTags);
         $content = strip_tags(stripslashes($result['puf_content']), $allowedTags);
+        // Post author
+        $authorUserId = $_POST['puf_userAuthor'];
+        // User author id is valid!
+        if ((int) $authorUserId > 0) {
+            // Is there an existing user author with this id? User can change option value!
+            $author = $this->currentModel->getUserAuthorById($authorUserId);
+             if ($author != false) {
+                $result['puf_userAuthor'] = $author;
+            } else {
+                $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: user author id "<strong>' . htmlentities($authorUserId) . '</strong>" doesn\'t exist in database!]</span>');
+            }
+        } else {
+            // Selected user author id is not valid (it is not an integer).
+            $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: reason is user author id "<strong>' . htmlentities($authorUserId) . '</strong>" is not an integer.]</span>');
+        }
         // Particular case: add "customSlug" option to $result
         if (isset($_POST['puf_customSlug'])) {
             // Option is set to "yes" and is considered as checked, then verify boolean type.
             $result['puf_customSlug'] = $_POST['puf_customSlug'];
-            $isSlugCustomized = is_bool((bool) $result['puf_customSlug']) ? (bool) $result['puf_customSlug'] : null;
+            $isSlugCustomized = is_bool($result['puf_customSlug']) ? $result['puf_customSlug'] : null;
         } else {
             // Option is set to "no".
             $result['puf_customSlug'] = false;
@@ -963,84 +1011,157 @@ class AdminPostController extends AdminController
         if (isset($result) && empty($result['puf_errors']) && isset($result['puf_check']) && $result['puf_check'] && $isSlugCustomized !== null) {
             // Update Post entity in database
             try {
-                // Check post id used in form
-                // Is there an existing post with this id? User can change hidden input value!
-                $post = $this->currentModel->getPostById($_POST['puf_postId']);
-                $postId = $_POST['puf_postId'];
-                if ($post != false) {
-                    $authorUserId = $_POST['puf_userAuthor'];
-                    // User author id is valid!
-                    if ((int) $authorUserId > 0) {
-                        // Is there an existing user author with this id? User can change option value!
-                        $author = $this->currentModel->getUserAuthorById($_POST['puf_userAuthor']);
-                        if ($author != false) {
-                            // Prepare datas to update
-                            $updatedDatas = [
-                                'entity' => 'post',
-                                'values' => [
-                                    0 => [
-                                        'type' => 0, // int
-                                        'column' => 'userId',
-                                        'value' => $authorUserId
-                                    ],
-                                    1 => [
-                                        'type' => 1, // string
-                                        'column' => 'title',
-                                        'value' => $title
-                                    ],
-                                    2 => [
-                                        'type' => 1, // string
-                                        'column' => 'slug',
-                                        'value' => $slug
-                                    ],
-                                    3 => [
-                                        'type' => 2, // bool
-                                        'column' => 'isSlugCustomized',
-                                        'value' => $isSlugCustomized
-                                    ],
-                                    4 => [
-                                        'type' => 1, // string
-                                        'column' => 'intro',
-                                        'value' => $intro
-                                    ],
-                                    5 => [
-                                        'type' => 1, // string
-                                        'column' => 'content',
-                                        'value' => $content
-                                    ],
-                                    6 => [
-                                        'type' => 1, // string
-                                        'column' => 'updateDate',
-                                        'value' => date('Y-m-d H:i:s')
-                                    ]
-                                ]
-                            ];
-                            // Update post
-                            $this->currentModel->updateEntity($post->id, $updatedDatas);
-                            $update = true;
-                        } else {
-                            $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: user author id "<strong>' . htmlentities($authorUserId) . '</strong>" doesn\'t exist in database!]</span>');
-                            $update = false;
-                        }
-                    } else {
-                        // Selected user author id is not valid (it is not an integer).
-                        $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: reason is user author id "<strong>' . htmlentities($authorUserId) . '</strong>" is not an integer.]</span>');
-                        $update = false;
-                    }
-                } else {
-                    $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: post id "<strong>' . htmlentities($postId) . '</strong>" doesn\'t exist in database!]</span>');
-                    $update = false;
-                }
+                // Prepare datas to update
+                $updatedDatas = [
+                    'entity' => 'post',
+                    'values' => [
+                        0 => [
+                            'type' => 0, // int
+                            'column' => 'userId',
+                            'value' => $authorUserId
+                        ],
+                        1 => [
+                            'type' => 1, // string
+                            'column' => 'title',
+                            'value' => $title
+                        ],
+                        2 => [
+                            'type' => 1, // string
+                            'column' => 'slug',
+                            'value' => $slug
+                        ],
+                        3 => [
+                            'type' => 2, // bool
+                            'column' => 'isSlugCustomized',
+                            'value' => $isSlugCustomized
+                        ],
+                        4 => [
+                            'type' => 1, // string
+                            'column' => 'intro',
+                            'value' => $intro
+                        ],
+                        5 => [
+                            'type' => 1, // string
+                            'column' => 'content',
+                            'value' => $content
+                        ],
+                        6 => [
+                            'type' => 1, // string
+                            'column' => 'updateDate',
+                            'value' => date('Y-m-d H:i:s')
+                        ]
+                    ]
+                ];
+                // Update post
+                $this->currentModel->updateEntity($postId, $updatedDatas);
+                $update = true;
             } catch (\PDOException $e) {
                 $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
                 $update = false;
             }
             // Post entity was updated successfully!
             if ($update) {
-                // Reset the form
-                $result = [];
-                // Show success message
-                $_SESSION['puf_success'] = true;
+                // Update attached Image entity in database
+                try {
+                    // Save image
+                    $savedImage = $this->adminPostUpdateValidator->saveImageUpload('image');
+                    if ($savedImage != false) {
+                        $failed = false;
+                        // Insert original renamed image
+                        // Prepare datas to add
+                        $newDatas1 = [
+                            'name' => pathinfo($savedImage, PATHINFO_FILENAME), // string
+                            'extension' => pathinfo($savedImage, PATHINFO_EXTENSION), // string
+                            'dimensions' => getimagesize($savedImage)[0] . 'x' . getimagesize($savedImage)[1], // string
+                            'size' => filesize($savedImage), // int
+                            'creatorId' => $this->session::isUserAuthenticated()['userId'], // int
+                            'postId' => $postId // int
+                        ];
+                        // Add image
+                        $this->currentModel->insertImage($newDatas1);
+                        $imageInsertion = true;
+                        // Resize big image (signle post)
+                        $resizedBigImage = $this->adminPostUpdateValidator->resizeImageWithCrop('image', $savedImage, 480, 360);
+                        // Resize failed, so unlink images
+                        if ($resizedBigImage == false) {
+                            $this->adminPostUpdateValidator->deleteUnattachedImage('image');
+                            $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened!<br>Your post image was not updated: image resizing failed!<br>please try again later.<br>[Debug trace: selected image was not resized (480x360 error)!]</span>');
+                            $imageInsertion = false;
+                            $failed = true;
+                        } else {
+                             // Insert image only if resizing is a success.
+                             if ($failed == false) {
+                                // Prepare datas to add
+                                $newDatas2 = [
+                                    'name' => pathinfo($resizedBigImage, PATHINFO_FILENAME), // string
+                                    'extension' => pathinfo($resizedBigImage, PATHINFO_EXTENSION), // string
+                                    'dimensions' => '480x360', // string
+                                    'size' => filesize($resizedBigImage), // int
+                                    'creatorId' => $this->session::isUserAuthenticated()['userId'], // int
+                                    'postId' => $postId // int
+                                ];
+                                // Add image
+                                $this->currentModel->insertImage($newDatas2);
+                                $imageInsertion = true;
+                            }
+                        }
+                        // Resize small image (thumbnail on post list)
+                        $resizedSmallImage = $this->adminPostUpdateValidator->resizeImageWithCrop('image', $savedImage, 320, 240);
+                        // Resize failed, so unlink images
+                        if ($failed == true || $resizedSmallImage == false) {
+                            $this->adminPostUpdateValidator->deleteUnattachedImage('image');
+                            $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened!<br>Your post image was not updated: image resizing failed!<br>please try again later.<br>[Debug trace: selected image was not resized (320x240 error)!]</span>');
+                            $imageInsertion = false;
+                            $failed = true;
+                        } else {
+                            if ($failed == false) {
+                                // Prepare datas to add
+                                $newDatas3 = [
+                                    'name' => pathinfo($resizedSmallImage, PATHINFO_FILENAME), // string
+                                    'extension' => pathinfo($resizedSmallImage, PATHINFO_EXTENSION), // string
+                                    'dimensions' => '320x240', // string
+                                    'size' => filesize($resizedSmallImage), // int
+                                    'creatorId' => $this->session::isUserAuthenticated()['userId'], // int
+                                    'postId' => $postId // int
+                                ];
+                                // Add image
+                                $this->currentModel->insertImage($newDatas3);
+                                $imageInsertion = true;
+                            }
+                        }
+                    // Upload failed
+                    } else {
+                        // Real error which excludes particular case "No selected file"!
+                        if (isset($_SESSION['uploads']['puf_image']['currentFile']['tmp_name'])) {
+                            $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened!<br>Your post image was not updated: image upload failed!<br>please try again later.<br>[Debug trace: selected image was not saved (upload error)!]</span>');
+                            $imageInsertion = false;
+                        }
+                    }
+                } catch (\PDOException $e) {
+                    $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post image was not updated: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                    $imageInsertion = false;
+                }
+                if (empty($result['puf_errors'])) {
+                    // Reset the form
+                    $result = [];
+                    // Show success message
+                    $_SESSION['puf_success'] = true;
+                    // Delete uploads session values
+                    unset($_SESSION['uploads']);
+                    // Image entity was saved successfully!
+                    if ($imageInsertion) {
+                        $_SESSION['puf_imageSuccess'] = 'Attached images were updated without issue!<br>They will appear on post.';
+                        // Delete previous uploaded images if they exists (This is a normal case!).
+                        if ($postImages != false) {
+                            for ($i = 0; $i < count($postImages); $i ++) {
+                                $this->currentModel->deleteEntity($postImages[$i]->id, ['entity' => 'image']);
+                                @unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/images/ci-' . $postImages[$i]->creatorId . '/' . $postImages[$i]->name  . '.' .  $postImages[$i]->extension);
+                            }
+                        }
+                    } else {
+                         $_SESSION['puf_imageSuccess'] = 'Notice: Attached images update failed!<br>previous uploaded images will appear on post.<br>You can try to update post later to modify them.';
+                    }
+                }
             }
         }
         // Update datas in form, error messages near fields, and notice error/success message

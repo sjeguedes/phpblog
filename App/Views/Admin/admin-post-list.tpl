@@ -4,7 +4,7 @@
         <div class="row">
             <div id="bloc-post-list" class="col-md-12 ml-auto mr-auto text-center">
                 <h2 class="title">Admin post list</h2>
-                <p class="description">All the posts created by members in back-end are present here!<br>They can be easily updated, and need to be validated before publication..</p>
+                <p class="description">All the posts created by members in back-end are present here!<br>They can be easily updated, and need to be validated before publication.</p>
                 <!-- User notice message -->
                 <div class="row">
                     <div class="col-lg-8 text-center col-md-10 ml-auto mr-auto">

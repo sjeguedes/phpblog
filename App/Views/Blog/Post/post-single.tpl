@@ -12,7 +12,7 @@
                         {% set imageSrc = 'http://placehold.it/480x360' %}
                         {% for image in postImages if postImages != 0 %}
                             {% if image.dimensions == '480x360' %}
-                                {% set imageSrc = '/uploads/images/user-'~image.creatorId~'/'~image.name~'.'~image.extension %}
+                                {% set imageSrc = '/uploads/images/ci-'~image.creatorId~'/'~image.name~'.'~image.extension %}
                             {% endif %}
                         {% endfor %}
                         <img class="rounded img-raised" src="{{ imageSrc|e('html_attr') }}" alt="{{ post[0].title|striptags|e('html_attr') }}">

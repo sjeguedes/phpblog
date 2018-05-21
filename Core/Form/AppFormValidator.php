@@ -367,6 +367,9 @@ class AppFormValidator
     {
         try {
             $name = $this->formIdentifier . $name;
+            if (!isset($_SESSION['uploads'][$name]['currentFile']['tmp_name'])) {
+                return false;
+            }
             $fileName = $_SESSION['uploads'][$name]['currentFile']['tmp_name'];
             $newFileName = bin2hex(mcrypt_create_iv(10, MCRYPT_DEV_URANDOM));
             // User file input extension
@@ -376,6 +379,7 @@ class AppFormValidator
             if (!is_dir($pathToUploadFolder)) {
                 mkdir($_SERVER['DOCUMENT_ROOT'] . '/uploads/', 0755, true);
                 mkdir($_SERVER['DOCUMENT_ROOT'] . '/uploads/images', 0755, true);
+                // Not really a good practice to generate .htaccess for security reason
                 $file = fopen($_SERVER['DOCUMENT_ROOT'] . '/uploads/images/.htaccess', 'a+');
                 $content = '# Define allowed files' . PHP_EOL .
                            'Order Allow,Deny' . PHP_EOL .
@@ -385,11 +389,13 @@ class AppFormValidator
                            'Allow from all' . PHP_EOL .
                            '</FilesMatch>';
                 fwrite($file, $content);
-                fclose($files);
+                fclose($file);
+                // Owner can read and write, others can only read.
+                chmod($file, 0644);
             }
             // Get authenticated user id
             $authenticatedUser = $this->router->getSession()::isUserAuthenticated();
-            $userFolder = 'user-' . $authenticatedUser['userId'];
+            $userFolder = 'ci-' . $authenticatedUser['userId'];
             // Define folder
             $folder = $pathToUploadFolder . '/' . $userFolder;
             // New image path
@@ -513,13 +519,13 @@ class AppFormValidator
                 imagedestroy($image2);
                 // Rename image with defined dimensions
                 $imagePath3 = pathinfo($imagePath, PATHINFO_DIRNAME) . '/' . pathinfo($imagePath, PATHINFO_FILENAME) . "-{$width}x{$height}." .pathinfo($imagePath, PATHINFO_EXTENSION);
-                $imageFunction($image3, $imagePath3, 80);
+                $imageFunction($image3, $imagePath3, 90); // quality 90%
                 $_SESSION['uploads'][$name]['lastCreated'][] = $imagePath3;
                 return $imagePath3;
             } else {
                 // Rename image with defined dimensions
                 $imagePath2 = pathinfo($imagePath, PATHINFO_DIRNAME) . '/' . pathinfo($imagePath, PATHINFO_FILENAME) . "-{$width}x{$height}." .pathinfo($imagePath, PATHINFO_EXTENSION);
-                $imageFunction($image2, $imagePath2, 80);
+                $imageFunction($image2, $imagePath2, 90); // quality 90%
                 $_SESSION['uploads'][$name]['lastCreated'][] = $imagePath2;
                 return $imagePath2;
             }

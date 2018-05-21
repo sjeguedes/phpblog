@@ -47,7 +47,7 @@
                             {% if item.temporaryParams['postImages'] is defined %}
                                 {% for image in item.temporaryParams['postImages'] %}
                                     {% if (image.postId == item.id) and (image.dimensions == '320x240') %}
-                                        {% set imageSrc = '/uploads/images/user-'~image.creatorId~'/'~image.name~'.'~image.extension %}
+                                        {% set imageSrc = '/uploads/images/ci-'~image.creatorId~'/'~image.name~'.'~image.extension %}
                                     {% endif %}
                                 {% endfor %}
                             {% endif %}

@@ -143,25 +143,57 @@ jQuery(function($) {
     // -------------------------------------------------------------------------------------------------------
 
     // Show file name value after file select
-    $('.custom-file-input').on('change', function(e) {
+    $(document).on('change', '.custom-file-input', function(e) {
         var files = e.target.files;
-        var filename = files[0].name;
-        var extension = files[0].type;
-        var filePath = $(this).val();
+        if (files[0] !== undefined) {
+            var filename = files[0].name.replace(/[\u00A0-\u9999<>\&]/gim, function(i) { // escape html entities
+              return '&#' + i.charCodeAt(0) + ';';
+            });
+            var extension = files[0].type; // not used here!
+            var filePath = $(this).val(); // not used here!
+        } else {
+            var filename = '';
+        }
         $(this).attr('value', $(this).val());
         if (filename != '') {
             // Filename is not empty.
-            if ($(this).next('.form-control-file').parents('.input-group').prev('p.selected-image').length > 0) {
-                $(this).next('.form-control-file').parents('.input-group').prev('p.selected-image').remove();
+            if ($(this).parents('.input-group').prev('p.selected-image').length > 0) {
+                $(this).parents('.input-group').prev('p.selected-image').remove();
             }
-            $(this).next('.form-control-file').parents('.input-group').before('<p class="selected-image text-center"><span class="text-warning"><i class="fa fa-info-circle"></i>&nbsp;<strong>Your file is:</strong></span><br>"<em>' + filename + '</em>"</p>');
-            $(this).next('.form-control-file').text('File added!');
-            $(this).next('.form-control-file').addClass('selected-not-empty');
+            $(this).parents('.input-group').prev('.text-danger').addClass('form-hide').html('');
+            $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').removeClass('form-hide').find('em').text(filename);
+            // Reset user image removing action if necessary
+            $(this).prev('input[type="hidden"]').val('0').attr('value', '0');
+            $(this).next('.form-control-file').addClass('selected');
+            // Remove default preview
+            $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').find('.image-preview').remove();
         } else {
             // Nothing is selected.
-            $(this).next('.form-control-file').addClass('selected');
+            $(this).next('.form-control-file').removeClass('selected');
+            // Remove previous selected file
+            $(this).trigger('delete');
+            // Remove default preview
+            $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').find('.image-preview').remove();
         }
-    })
+    });
+
+    // Delete/Cancel selected file
+    $(document).on('delete', '.custom-file-input', function(e) {
+        $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').addClass('form-hide').find('em').text('');
+        $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').next('.text-danger').next('.post-custom-image').find('.custom-file-input').val('').attr('value', '');
+        // Set data for user image removing action
+        $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').next('.text-danger').next('.post-custom-image').find('.custom-file-input').prev('input[type="hidden"]').val('1').attr('value', '1');
+        $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').next('.text-danger').next('.post-custom-image').find('.form-control-file').removeClass('selected');
+    });
+
+    // Remove selected file
+    $(document).on('click', '.selected-image .btn-danger', function(e) {
+        e.preventDefault();
+        // Call "delete" event behaviour
+        $(this).parent('.selected-image').next('.text-danger').next('.post-custom-image').find('.custom-file-input').trigger('delete');
+        // Call "change" event behaviour
+        $(this).parent('.selected-image').next('.text-danger').next('.post-custom-image').find('.custom-file-input').trigger('change');
+    });
 
     // -------------------------------------------------------------------------------------------------------
 
@@ -293,7 +325,8 @@ var formJustLoaded = false,
     fieldType = formSelector + ' .input-group input[type="text"],' +
                 formSelector + ' .input-group input[type="checkbox"],' +
                 formSelector + ' .input-group select,' +
-                formSelector + ' .input-group textarea';
+                formSelector + ' .input-group textarea,' +
+                formSelector + ' .input-group input[type="file"]';
 
 // -------------------------------------------------------------------------------------------------------
 
@@ -312,11 +345,20 @@ var checkForm = function(element, functionsArray) {
         case formIdentifier + 'slug':
         case formIdentifier + 'intro':
         case formIdentifier + 'content':
+        case formIdentifier + 'image':
             if (element.val().replace(/<[^>]+>/gm, '').replace(/^\s+|\s+$/gm, '') == '') {
-                // Use jsLcFirst()
-                var elementLabel = functionsArray[0](element.attr('aria-label'));
-                fieldErrorMessage.html('&nbsp;Please fill in ' + elementLabel +
+                // particular "change" event for image is managed above.
+                if (element.attr('id') != formIdentifier + 'image') {
+                    // Use jsLcFirst()
+                    var elementLabel = functionsArray[0](element.attr('aria-label'));
+                    fieldErrorMessage.html('&nbsp;Please fill in ' + elementLabel +
                                   '.&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
+                } else {
+                    // Enable other error messages
+                    if (formJustLoaded === false) {
+                        fieldErrorMessage.html('&nbsp;No file is selected.<br>Previous image will be displayed after validation!&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
+                    }
+                }
                 errorsOnFields[element.attr('id')] = true;
             } else {
                 errorsOnFields[element.attr('id')] = false;

@@ -146,6 +146,16 @@ class AdminPostModel extends AdminModel
     }
 
     /**
+     * Get Image entities for a particular post
+     * Use an external model: PostModel
+     * @param int $postId
+     * @return array|boolean: an array of Image entities instances, or false
+     */
+    public function getPostImageList($postId) {
+        return $this->externalModels['postModel']->getImageListForSingle($postId);
+    }
+
+    /**
      * Get all Comment entities ordered by creation date and by post id
      * @return array: an array which contains all Comment entities instances
      */
