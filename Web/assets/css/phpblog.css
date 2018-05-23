@@ -68,6 +68,18 @@ body {
     /*height: inherit;*/
 }
 
+.content {
+    padding-top: 2em !important;
+}
+
+.content h1, .content .h1 {
+    margin-top: 0 !important;
+}
+
+.section:first-child {
+    padding: 0 0 30px;
+}
+
 small {
     font-weight: 700;
     font-size: 70%;
@@ -356,6 +368,16 @@ ul.phpblog-list {
     display: inline-block;
 }
 
+.post-intro {
+    position: relative;
+}
+
+.post-intro .read-more {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
 .post-thumbnail img, .post-img img {
     border-width: 0 10px;
     border-style: solid;
@@ -417,7 +439,6 @@ form p.text-danger {
     max-width: 100%;
     height: auto !important;
     margin-bottom: 0;
-    cursor: pointer;
 }
 
 .custom-file-control {
@@ -440,6 +461,8 @@ form p.text-danger {
     border: 2px solid rgba(255, 255, 255, 0.1) !important;
     border-left-width: 0 !important;
     border-radius: 0 5px 5px 0 !important;
+    text-align: left;
+    white-space: nowrap;
 }
 
 .custom-file-control::before {
@@ -469,7 +492,6 @@ form p.text-danger {
     width: 100%;
     height: auto !important;
     min-width: auto !important;
-    cursor: pointer;
 }
 
 .post-custom-image .custom-file-control:lang(en)::before {
@@ -487,11 +509,6 @@ form p.text-danger {
 /*when a value is selected, this class removes the content*/
 .post-custom-image .custom-file-control.selected:lang(en)::after {
     content: "File added!" !important;
-}
-
-.custom-file-control {
-    text-align: left;
-    white-space: nowrap;
 }
 /*End custom input type file*/
 

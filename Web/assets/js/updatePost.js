@@ -143,6 +143,7 @@ jQuery(function($) {
     // -------------------------------------------------------------------------------------------------------
 
     // Show file name value after file select
+    $('.custom-file-input').attr('title', '');
     $(document).on('change', '.custom-file-input', function(e) {
         var files = e.target.files;
         if (files[0] !== undefined) {
@@ -158,7 +159,7 @@ jQuery(function($) {
         if (filename != '') {
             // Filename is not empty.
             if ($(this).parents('.input-group').prev('p.selected-image').length > 0) {
-                $(this).parents('.input-group').prev('p.selected-image').remove();
+                $(this).parents('.input-group').prev('p.selected-image').addClass('form-hide');
             }
             $(this).parents('.input-group').prev('.text-danger').addClass('form-hide').html('');
             $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').removeClass('form-hide').find('em').text(filename);
@@ -166,14 +167,18 @@ jQuery(function($) {
             $(this).prev('input[type="hidden"]').val('0').attr('value', '0');
             $(this).next('.form-control-file').addClass('selected');
             // Remove default preview
-            $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').find('.image-preview').remove();
+            $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').find('.image-preview').addClass('form-hide');
+            // Remove default no preview message
+            $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').find('.image-no-preview').removeClass('form-hide');
         } else {
             // Nothing is selected.
             $(this).next('.form-control-file').removeClass('selected');
             // Remove previous selected file
             $(this).trigger('delete');
             // Remove default preview
-            $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').find('.image-preview').remove();
+            $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').find('.image-preview').removeClass('form-hide');
+            // Remove default no preview message
+            $(this).parents('.input-group').prev('.text-danger').prev('.selected-image').find('.image-no-preview').addClass('form-hide');
         }
     });
 
@@ -356,7 +361,7 @@ var checkForm = function(element, functionsArray) {
                 } else {
                     // Enable other error messages
                     if (formJustLoaded === false) {
-                        fieldErrorMessage.html('&nbsp;No file is selected.<br>Previous image will be displayed after validation!&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>');
+                        fieldErrorMessage.html('<span class="text-warning"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i>&nbsp;No new file is selected.<br>Previous validated image will be displayed!&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></span>');
                     }
                 }
                 errorsOnFields[element.attr('id')] = true;

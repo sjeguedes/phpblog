@@ -16,7 +16,7 @@
                                 </span>
                             </button>
                         </p>
-                        <p class="alert alert-danger form-error{{ errors == 0 ? ' form-hide'}}" role="alert">
+                        <p class="alert alert-danger form-error{{ errors['user']['state'] == 0 ? ' form-hide'}}" role="alert">
                             <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERRORS!</strong>&nbsp;Change a few things up and try submitting again.{% if errors['haf_check'] is defined %}<br><br>{{ errors['haf_check']|raw }}{% endif %}
                             {% if errors['haf_failed']['user']['message'] is defined %}<br><br>{{ errors['haf_failed']['user']['message']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>{% endif %}
                             {% if errors['haf_failed']['user']['message2'] is defined %}<br><br>{{ errors['haf_failed']['user']['message2']|raw }}{% endif %}

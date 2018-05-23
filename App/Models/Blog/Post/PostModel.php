@@ -133,7 +133,8 @@ class PostModel extends BaseModel
 		$posts = [];
         $published = $published ? 'WHERE post_isPublished = 1' : '';
     	$query = $this->dbConnector->query("SELECT *
-    										FROM posts $published
+    										FROM posts
+                                            $published
                                             ORDER BY post_creationDate DESC");
 	    while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$posts[] = new Post($datas);
@@ -167,7 +168,6 @@ class PostModel extends BaseModel
 	{
 		// Get first post row to show for group of posts which appears on selected page : must begin to 0 on first page ($pageId = 1)
 		$start = ($pageId - 1) * $postPerPage;
-		$i = 0;
 		$postsOnpage = [];
 		// SQL_CALC_FOUND_ROWS (MySQL 4+) also stores total number of rows (ignores LIMIT) with one query (to avoid secondary query with COUNT()!). OFFSET is more readable.
 		$query = $this->dbConnector->prepare('SELECT SQL_CALC_FOUND_ROWS *
@@ -222,7 +222,7 @@ class PostModel extends BaseModel
      */
 	public function getRankForSingle($postId)
 	{
-		$postsRank = $this->getRankForAll();
+		$postsRank = $this->getRankForAll(); // no arguments means true: get rank only for all published posts
 		for ($i = 0; $i < count($postsRank) - 1; $i++) {
 			if ($postsRank[$i]['post_id'] == $postId) {
 				$singleRank = $postsRank[$i]['rank'];
@@ -234,16 +234,18 @@ class PostModel extends BaseModel
 
     /**
      * Get rank for each post
+     * @param boolean $published: true (only published posts) or false (all status)
      * @return array: an array which contains post id and rank for each post and total quantity of posts in database
      */
-	public function getRankForAll()
+	public function getRankForAll($published = true)
 	{
 		$postsRank = [];
 		$i = 0;
-    	$query = $this->dbConnector->query('SELECT SQL_CALC_FOUND_ROWS p.post_id, (@curRank := @curRank + 1) AS rank
+        $published = $published ? 'WHERE post_isPublished = 1' : '';
+    	$query = $this->dbConnector->query("SELECT SQL_CALC_FOUND_ROWS p.post_id, (@curRank := @curRank + 1) AS rank
     										FROM posts p, (SELECT @curRank := -1) r
-                                            /*WHERE post_isPublished = 1*/
-    										ORDER BY p.post_creationDate DESC');
+                                            $published
+    										ORDER BY p.post_creationDate DESC");
 	    while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$postsRank[$i]['post_id'] = $datas['post_id'];
 	       	$postsRank[$i]['rank'] = $datas['rank'];

@@ -335,21 +335,21 @@ class AppFormValidator
                 // Store selected file in session
                 } else {
                     // Update current file data
-                    if (isset($_SESSION['uploads'][$name]['currentFile'])) {
-                        unset($_SESSION['uploads'][$name]['currentFile']);
+                    if (isset($_SESSION['uploads'][$name]['tempFile'])) {
+                        unset($_SESSION['uploads'][$name]['tempFile']);
                     }
-                    $_SESSION['uploads'][$name]['currentFile'] = $_FILES[$name];
-                    $this->result[$name] = $_SESSION['uploads'][$name]['currentFile'];
+                    $_SESSION['uploads'][$name]['tempFile'] = $_FILES[$name];
+                    $this->result[$name] = $_SESSION['uploads'][$name]['tempFile'];
                 }
             }
-            // File is already uploaded, so cancel error message after new submission try without selected file.
-            if (isset($_SESSION['uploads'][$name]['currentFile']) && $_SESSION['uploads'][$name]['currentFile'] != '') {
+            // File is already uploaded, so cancel error message after new submission try with empty $_FILES.
+            if (isset($_SESSION['uploads'][$name]['tempFile'])) {
                 // Unset error if it exists (not to show it in case of previous selected image) and prevent image to be saved again!
                 if (isset($this->result[$this->errorIndex][$name])) {
                     unset($this->result[$this->errorIndex][$name]);
                 }
                 // Return current file
-                return $_SESSION['uploads'][$name]['currentFile'];
+                return $_SESSION['uploads'][$name]['tempFile'];
             } else {
                 return false;
             }
@@ -361,64 +361,102 @@ class AppFormValidator
     /**
      * Save an uploaded image
      * @param string $name: field name
+     * @param boolean $temporary: generate a temporary file or not
      * @return string|boolean: path to uploaded image or false
      */
-    public function saveImageUpload($name)
+    public function saveImageUpload($name, $temporary = false)
     {
         try {
             $name = $this->formIdentifier . $name;
-            if (!isset($_SESSION['uploads'][$name]['currentFile']['tmp_name'])) {
-                return false;
-            }
-            $fileName = $_SESSION['uploads'][$name]['currentFile']['tmp_name'];
-            $newFileName = bin2hex(mcrypt_create_iv(10, MCRYPT_DEV_URANDOM));
-            // User file input extension
-            $extension = strtolower(pathinfo($_SESSION['uploads'][$name]['currentFile']['name'], PATHINFO_EXTENSION));
-            $pathToUploadFolder = $_SERVER['DOCUMENT_ROOT'] . '/uploads/images';
-            // Create directory if it does not exist.
-            if (!is_dir($pathToUploadFolder)) {
-                mkdir($_SERVER['DOCUMENT_ROOT'] . '/uploads/', 0755, true);
-                mkdir($_SERVER['DOCUMENT_ROOT'] . '/uploads/images', 0755, true);
-                // Not really a good practice to generate .htaccess for security reason
-                $file = fopen($_SERVER['DOCUMENT_ROOT'] . '/uploads/images/.htaccess', 'a+');
-                $content = '# Define allowed files' . PHP_EOL .
-                           'Order Allow,Deny' . PHP_EOL .
-                           'Deny from all' . PHP_EOL .
-                           '<FilesMatch "\.(jpe?g|gif|png)$">' . PHP_EOL .
-                           'Order Deny,Allow' . PHP_EOL .
-                           'Allow from all' . PHP_EOL .
-                           '</FilesMatch>';
-                fwrite($file, $content);
-                fclose($file);
-                // Owner can read and write, others can only read.
-                chmod($file, 0644);
+            if ($temporary == false) {
+                if (!isset($_SESSION['uploads'][$name]['tempFile']['saved'])) {
+                    return false;
+                }
+                $fileName = $_SESSION['uploads'][$name]['tempFile']['saved'];
+                $newFileName = bin2hex(mcrypt_create_iv(10, MCRYPT_DEV_URANDOM));
+                // User file input extension
+                $extension = strtolower(pathinfo($_SESSION['uploads'][$name]['tempFile']['saved'], PATHINFO_EXTENSION));
+                $pathToUploadFolder = $_SERVER['DOCUMENT_ROOT'] . '/uploads/images';
+                // Create directory if it does not exist.
+                if (!is_dir($pathToUploadFolder)) {
+                    mkdir($_SERVER['DOCUMENT_ROOT'] . '/uploads/', 0755, true);
+                    mkdir($_SERVER['DOCUMENT_ROOT'] . '/uploads/images', 0755, true);
+                    // Not really a good practice to generate .htaccess for security reason
+                    $file = fopen($_SERVER['DOCUMENT_ROOT'] . '/uploads/images/.htaccess', 'a+');
+                    $content = '# Define allowed files' . PHP_EOL .
+                               'Order Allow,Deny' . PHP_EOL .
+                               'Deny from all' . PHP_EOL .
+                               '<FilesMatch "\.(jpe?g|gif|png)$">' . PHP_EOL .
+                               'Order Deny,Allow' . PHP_EOL .
+                               'Allow from all' . PHP_EOL .
+                               '</FilesMatch>';
+                    fwrite($file, $content);
+                    fclose($file);
+                    // Owner can read and write, others can only read.
+                    chmod($file, 0644);
+                }
+            // Temporary file
+            } else {
+                if (!isset($_SESSION['uploads'][$name]['tempFile']['tmp_name'])) {
+                    return false;
+                }
+                $fileName = $_SESSION['uploads'][$name]['tempFile']['tmp_name'];
+                $newFileName = bin2hex(mcrypt_create_iv(10, MCRYPT_DEV_URANDOM));
+                // User file input extension
+                $extension = strtolower(pathinfo($_SESSION['uploads'][$name]['tempFile']['name'], PATHINFO_EXTENSION));
+                $pathToUploadFolder = $_SERVER['DOCUMENT_ROOT'] . '/uploads/images/temp';
+                // Delete previous temporary files if they exist.
+                if (is_dir($pathToUploadFolder)) {
+                    $files = glob($pathToUploadFolder . '/*'); // get all file names
+                    foreach ($files as $file){ // iterate files
+                        if (is_file($file)) {
+                            @unlink($file); // delete file
+                        }
+                    }
+                // No directory, so create it!
+                } else {
+                    mkdir($_SERVER['DOCUMENT_ROOT'] . '/uploads/images/temp', 0755, true);
+                }
             }
             // Get authenticated user id
-            $authenticatedUser = $this->router->getSession()::isUserAuthenticated();
-            $userFolder = 'ci-' . $authenticatedUser['userId'];
-            // Define folder
-            $folder = $pathToUploadFolder . '/' . $userFolder;
+            if ($temporary == false) {
+                $authenticatedUser = $this->router->getSession()::isUserAuthenticated();
+                $userFolder = 'ci-' . $authenticatedUser['userId'];
+                // Define folder
+                $folder = $pathToUploadFolder . '/' . $userFolder;
+                // Create particular user directory if it does not exist.
+                if (!is_dir($pathToUploadFolder. '/' . $userFolder)) {
+                    mkdir($pathToUploadFolder . '/' . $userFolder, 0755, true);
+                }
+            } else {
+                // Define folder
+                $folder = $pathToUploadFolder;
+            }
             // New image path
             $newImagePath = $folder . '/' . $newFileName . '.' . $extension;
-            // Create particular user directory if it does not exist.
-            if (!is_dir($pathToUploadFolder. '/' . $userFolder)) {
-                mkdir($pathToUploadFolder . '/' . $userFolder, 0755, true);
-            }
             // File already exists.
             if (file_exists($folder . '/' . $newFileName . '.' . $extension)) {
                 $this->result[$this->errorIndex][$name] = 'File already exists.';
                 return false;
-            }
-            elseif (!move_uploaded_file($fileName, $newImagePath)) {
+            } elseif ($temporary == true && !move_uploaded_file($fileName, $newImagePath)) {
                 $this->result[$this->errorIndex][$name] = 'File can not be saved.';
+                return false;
+            } elseif ($temporary == false && !rename($fileName, $newImagePath)) {
+                $this->result[$this->errorIndex][$name] = 'File can not be moved.';
                 return false;
             // Copy renamed file in chosen folder.
             } else {
+                // Store path in success result for both temporary and final file
                 $this->result[$name] = $newImagePath;
-                // Unlink previous references to files if files are already uploaded.
-                $this->deleteUnattachedImage($name);
-                //$_SESSION['uploads'][$name]['lastCreated'] = [];
-                $_SESSION['uploads'][$name]['lastCreated'][] = $newImagePath;
+                // Final file
+                if ($temporary == false) {
+                    // Unlink previous references to files if files are already uploaded.
+                    $this->deleteUnattachedImage($name);
+                    $_SESSION['uploads'][$name]['lastCreated'][] = $newImagePath;
+                // Temporary file
+                } else {
+                    $_SESSION['uploads'][$name]['tempFile']['saved'] = $newImagePath;
+                }
                 return $newImagePath;
             }
         } catch (\Exception $e) {

@@ -279,8 +279,17 @@ class AdminPostController extends AdminController
             'successMessage' => 'Deleting action was performed successfully<br>as concerns post #',
             'datas' => ['entity' => 'post'],
         ];
-        // Validate or not form datas
-        $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
+        // Get post images list with external model (PostModel) and delete them physically
+        // Get post id param from route
+        $postId = (int) $matches[0];
+        // Post id is valid!
+        if ($postId > 0) {
+            $postImages = $this->currentModel->getPostImageList($postId);
+        } else {
+            $postImages = false;
+        }
+        // Validate or not form datas without redirection
+        $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator);
         // Reset form token immediately after success state
         // This can not be made directly in "validateEntityForms()" because of private properties
         if ($this->isActionSuccess()) {
@@ -290,11 +299,21 @@ class AdminPostController extends AdminController
             // Regenerate token to be updated in forms
             $this->ppdTokenIndex = $this->adminPostValidator->generateTokenIndex('ppd_check');
             $this->ppdTokenValue = $this->adminPostValidator->generateTokenValue('ppd_token');
+            // Delete post images physically
+            if ($postImages != false) {
+                for ($i = 0; $i < count($postImages); $i ++) {
+                    @unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/images/ci-' . $postImages[$i]->creatorId . '/' . $postImages[$i]->name  . '.' .  $postImages[$i]->extension);
+                }
+            }
+            // Redirect here to enable images deleting
+            $this->httpResponse->addHeader('Location: /admin/posts');
+            exit();
         }
         // Remind current paging slide item
         $varsArray['slideRankAfterSubmit'] = isset($_POST['ppd_slide_rank']) && (int) $_POST['ppd_slide_rank'] !== 0 ? $_POST['ppd_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin posts (success state)
         $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+        $varsArray['errors']['post']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -342,6 +361,7 @@ class AdminPostController extends AdminController
         $varsArray['slideRankAfterSubmit'] = isset($_POST['ppv_slide_rank']) && (int) $_POST['ppv_slide_rank'] !== 0 ? $_POST['ppv_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin posts (success state)
         $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+        $varsArray['errors']['post']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -389,6 +409,7 @@ class AdminPostController extends AdminController
         $varsArray['slideRankAfterSubmit'] = isset($_POST['ppp_slide_rank']) && (int) $_POST['ppp_slide_rank'] !== 0 ? $_POST['ppp_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin posts (success state)
         $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+        $varsArray['errors']['post']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -436,6 +457,7 @@ class AdminPostController extends AdminController
         $varsArray['slideRankAfterSubmit'] = isset($_POST['ppu_slide_rank']) && (int) $_POST['ppu_slide_rank'] !== 0 ? $_POST['ppu_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin posts (success state)
         $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+        $varsArray['errors']['post']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -467,7 +489,7 @@ class AdminPostController extends AdminController
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Reset selected image after user removing action
             if ($_POST['pnf_imageRemoved'] == 1) {
-                unset($_SESSION['uploads']['pnf_image']['currentFile']);
+                unset($_SESSION['uploads']['pnf_image']['tempFile']);
             }
             // Store result from post add form validation
             $checkedForm = $this->validatePostAddForm();
@@ -549,7 +571,7 @@ class AdminPostController extends AdminController
             'slug' => isset($checkedForm['pnf_slug']) ? $checkedForm['pnf_slug'] : '',
             'intro' => isset($checkedForm['pnf_intro']) ? $checkedForm['pnf_intro'] : '',
             'content' => isset($checkedForm['pnf_content']) ? $checkedForm['pnf_content'] : '',
-            'image' => isset($_SESSION['uploads']['pnf_image']['currentFile']) && !empty($_SESSION['uploads']['pnf_image']['currentFile']) ? $_SESSION['uploads']['pnf_image']['currentFile']['name'] : '',
+            'image' => isset($_SESSION['uploads']['pnf_image']['tempFile']) && !empty($_SESSION['uploads']['pnf_image']['tempFile']) ? $_SESSION['uploads']['pnf_image']['tempFile']['name'] : '',
             // Must be set to "0" each time
             'imageRemoved' => 0,
             'pnfTokenIndex' => $this->pnfTokenIndex,
@@ -606,6 +628,11 @@ class AdminPostController extends AdminController
         $this->adminPostAddValidator->validateRequired('content', 'content');
         // Image
         $image = $this->adminPostAddValidator->validateImageUpload('image');
+        // Uploaded image seems to be valid!
+        if ($image != false) {
+            // Save temporary image
+            $temporarySavedImage = $this->adminPostAddValidator->saveImageUpload('image', true);
+        }
         // Get validation result to use it after data filtering and pass values to strip_tags function
         $result = $this->adminPostAddValidator->getResult();
         // Filter HTML user inputs with tinyMCE editor allowed tags
@@ -632,7 +659,7 @@ class AdminPostController extends AdminController
         if (isset($_POST['pnf_customSlug'])) {
             // Option is set to "yes" and is considered as checked, then verify boolean type.
             $result['pnf_customSlug'] = $_POST['pnf_customSlug'];
-            $isSlugCustomized = is_bool($result['pnf_customSlug']) ? $result['pnf_customSlug'] : null;
+            $isSlugCustomized = filter_var($result['pnf_customSlug'], FILTER_VALIDATE_BOOLEAN) ? $result['pnf_customSlug'] : null;
             // Slug (based on customized value)
             $this->adminPostAddValidator->validateRequired('slug', 'slug');
             $isSlugCustomized = false;
@@ -743,7 +770,7 @@ class AdminPostController extends AdminController
                     // Upload failed
                     } else {
                         // Real error which excludes particular case "No selected file"!
-                        if (isset($_SESSION['uploads']['pnf_image']['currentFile']['tmp_name'])) {
+                        if (isset($_SESSION['uploads']['pnf_image']['tempFile']['tmp_name'])) {
                             $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened!<br>Your post image was not created: image upload failed!<br>please try again later.<br>[Debug trace: selected image was not saved (upload error)!]</span>');
                             $imageInsertion = false;
                         }
@@ -752,27 +779,26 @@ class AdminPostController extends AdminController
                     $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post image was not created: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
                     $imageInsertion = false;
                 }
-                $_SESSION['pnf_newPost'] = $result;
-                // Reset the form
-                $result = [];
-                // Show success message
-                $_SESSION['pnf_success'] = true;
-                // Delete uploads session values
-                unset($_SESSION['uploads']);
-                // Image entity was saved successfully!
-                if ($imageInsertion) {
-                    $_SESSION['pnf_imageSuccess'] = 'Attached images were created without issue!<br>They will appear on post.';
-                } else {
-                     $_SESSION['pnf_imageSuccess'] = 'Notice: Attached images creation failed!<br>Default images will appear on post.<br>You can try to update post to modify them.';
+                if (empty($result['pnf_errors'])) {
+                    $_SESSION['pnf_newPost'] = $result;
+                    // Reset the form
+                    $result = [];
+                    // Show success message
+                    $_SESSION['pnf_success'] = true;
+                    // Delete uploads session values
+                    unset($_SESSION['uploads']);
+                    // Image entity was saved successfully!
+                    if ($imageInsertion) {
+                        $_SESSION['pnf_imageSuccess'] = 'Attached images were created without issue!<br>They will appear on post.';
+                    } else {
+                         $_SESSION['pnf_imageSuccess'] = 'Notice: Attached images creation failed!<br>Default images will appear on post.<br>You can try to update post to modify them.';
+                    }
                 }
             }
         }
         // Update datas in form, error messages near fields, and notice error/success message
         return $result;
     }
-
-    // --------------------------------------------------------------
-    // --------------------------------------------------------------
 
     /**
      * Check if there is already a success state for update post form
@@ -805,7 +831,7 @@ class AdminPostController extends AdminController
                 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     // Reset selected image after user removing action
                     if ($_POST['puf_imageRemoved'] == 1) {
-                        unset($_SESSION['uploads']['puf_image']['currentFile']);
+                        unset($_SESSION['uploads']['puf_image']['tempFile']);
                     }
                     // Store result from post update form validation
                     $checkedForm = $this->validatePostUpdateForm($post->id);
@@ -892,7 +918,7 @@ class AdminPostController extends AdminController
                     'slug' => isset($checkedForm['puf_slug']) ? $checkedForm['puf_slug'] : $post->slug,
                     'intro' => isset($checkedForm['puf_intro']) ? $checkedForm['puf_intro'] : $post->intro,
                     'content' => isset($checkedForm['puf_content']) ? $checkedForm['puf_content'] : $post->content,
-                    'image' => isset($_SESSION['uploads']['puf_image']['currentFile']) && !empty($_SESSION['uploads']['puf_image']['currentFile']) ? $_SESSION['uploads']['puf_image']['currentFile']['name'] : $post->postImage,
+                    'image' => isset($_SESSION['uploads']['puf_image']['tempFile']) && !empty($_SESSION['uploads']['puf_image']['tempFile']) ? $_SESSION['uploads']['puf_image']['tempFile']['name'] : $post->postImage,
                     // Must be set to "0" each time
                     'imageRemoved' => 0,
                     'pufTokenIndex' => $this->pufTokenIndex,
@@ -962,17 +988,21 @@ class AdminPostController extends AdminController
         // Image
         // Get previous post images list with external model (PostModel)
         $postImages = $this->currentModel->getPostImageList($postId);
-        // Previous images exist.
-        if ($postImages != false) {
-            // No file is selected, use current images!
-            if (empty($_FILES['puf_image']['name'])) {
-                $_SESSION['uploads']['puf_image']['currentFile']['name'] = $postImages[0]->name . '.' . $postImages[0]->extension;
+        // No file is selected!
+        if (empty($_FILES['puf_image']['tmp_name'])) {
+            // Previous image exist, use it.
+            if ($postImages != false) {
+                $result['puf_image'] = $postImages[0]->name . '.' . $postImages[0]->extension;
             } else {
-                 $image = $this->adminPostUpdateValidator->validateImageUpload('image');
+                // Get empty error file
+                $image = $this->adminPostUpdateValidator->validateImageUpload('image');
             }
-        // No previous images
         } else {
             $image = $this->adminPostUpdateValidator->validateImageUpload('image');
+            if ($image != false) {
+                // Save temporary image
+                $temporarySavedImage = $this->adminPostUpdateValidator->saveImageUpload('image', true);
+            }
         }
         // Get validation result to use it after data filtering and pass values to strip_tags function
         $result = $this->adminPostUpdateValidator->getResult();
@@ -1001,7 +1031,7 @@ class AdminPostController extends AdminController
         if (isset($_POST['puf_customSlug'])) {
             // Option is set to "yes" and is considered as checked, then verify boolean type.
             $result['puf_customSlug'] = $_POST['puf_customSlug'];
-            $isSlugCustomized = is_bool($result['puf_customSlug']) ? $result['puf_customSlug'] : null;
+            $isSlugCustomized = filter_var($result['puf_customSlug'], FILTER_VALIDATE_BOOLEAN) ? $result['puf_customSlug'] : null;
         } else {
             // Option is set to "no".
             $result['puf_customSlug'] = false;
@@ -1159,7 +1189,7 @@ class AdminPostController extends AdminController
                             }
                         }
                     } else {
-                         $_SESSION['puf_imageSuccess'] = 'Notice: Attached images update failed!<br>previous uploaded images will appear on post.<br>You can try to update post later to modify them.';
+                         $_SESSION['puf_imageSuccess'] = 'Notice: Attached images didn\'t change!<br>Previous uploaded images will appear on post.';
                     }
                 }
             }
@@ -1200,6 +1230,7 @@ class AdminPostController extends AdminController
         $varsArray['slideRankAfterSubmit'] = isset($_POST['pcd_slide_rank']) && (int) $_POST['pcd_slide_rank'] !== 0 ? $_POST['pcd_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin posts (success state)
         $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+        $varsArray['errors']['comment']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -1247,6 +1278,7 @@ class AdminPostController extends AdminController
         $varsArray['slideRankAfterSubmit'] = isset($_POST['pcv_slide_rank']) && (int) $_POST['pcv_slide_rank'] !== 0 ? $_POST['pcv_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin posts (success state)
         $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+        $varsArray['errors']['comment']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -1294,6 +1326,7 @@ class AdminPostController extends AdminController
         $varsArray['slideRankAfterSubmit'] = isset($_POST['pcp_slide_rank']) && (int) $_POST['pcp_slide_rank'] !== 0 ? $_POST['pcp_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin posts (success state)
         $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+        $varsArray['errors']['comment']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -1341,6 +1374,7 @@ class AdminPostController extends AdminController
         $varsArray['slideRankAfterSubmit'] = isset($_POST['pcu_slide_rank']) && (int) $_POST['pcu_slide_rank'] !== 0 ? $_POST['pcu_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin posts (success state)
         $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+        $varsArray['errors']['comment']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }

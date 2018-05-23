@@ -15,6 +15,7 @@
             <div class="col-lg-8 text-center col-md-10 ml-auto mr-auto">
                 <p class="alert alert-success form-success{{ success == 0 ? ' form-hide'}}" role="alert">
                     <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>WELL DONE!</strong>&nbsp;Post was updated successfully.{% if post.isPublished == 0 %}<br>Don't forget to publish this post to show it on front-end!{% endif %}<br>Actual permalink is:<br><strong class="text-lower text-muted">{{ domain }}/post/{{ post.slug }}-{{ post.id }}</strong>
+                    {% if imageSuccess is not null %}<br>{{ imageSuccess|raw }}{% endif %}
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">
                             <i class="now-ui-icons ui-1_simple-remove"></i>
@@ -92,11 +93,17 @@
                             <textarea class="form-control" aria-label="Your content" id="puf_content" name="puf_content" rows="4" cols="80" placeholder="Type a content...">{{ content|raw }}</textarea>
                         </div>
                         <p class="text-left mb-0"><small><strong>IMAGE</strong></small></p>
-                        <p class="selected-image text-center mt-0{{ image is empty ? ' form-hide' }}"><span class="text-warning"><i class="fa fa-info-circle"></i>&nbsp;<strong>Your file is:</strong></span><br>"<em>{{ image }}</em>"&nbsp;&nbsp;<button class="btn btn-danger btn-sm" title="Delete image"><i class="now-ui-icons ui-1_simple-remove"></i></button><br>
-                        {% if post.temporaryParams['postImage'] is not empty %}
-                        <small class="image-preview">Current uploaded and validated image (front-end)</small>
-                        <img class="raised rounded image-preview" src="/uploads/images/ci-{{ post.temporaryParams['postCreatorId']|e('html_attr') }}/{{ post.temporaryParams['postImage']|e('html_attr') }}" alt="{{ post.temporaryParams['postImage']|e('html_attr') }}">
+                        <p class="selected-image text-center mt-0{{ image is empty ? ' form-hide' }}"><span class="text-warning"><i class="fa fa-info-circle"></i>&nbsp;<strong>Your selected file is:</strong></span><br>"<em>{{ image }}</em>"&nbsp;&nbsp;<button class="btn btn-danger btn-sm" title="Delete image"><i class="now-ui-icons ui-1_simple-remove"></i></button><br>
+                        {% if (post.temporaryParams['postImage'] is not empty) and (post.temporaryParams['postImage'] == image) %}
+                            {% set preview = '' %}
+                            {% set noPreview = ' form-hide' %}
+                        {% else %}
+                            {% set preview = ' form-hide' %}
+                            {% set noPreview = '' %}
                         {% endif %}
+                        <small class="image-preview{{ preview }}">Current uploaded and validated image (front-end)</small>
+                        <img class="raised rounded image-preview{{ preview }}" src="/uploads/images/ci-{{ post.temporaryParams['postCreatorId']|e('html_attr') }}/{{ post.temporaryParams['postImage']|e('html_attr') }}" alt="{{ post.temporaryParams['postImage']|e('html_attr') }}">
+                        <small class="image-no-preview{{ noPreview }}">Image preview is available only after validation.</small>
                         </p>
                         <p class="text-danger{{ errors['puf_image'] is not defined ? ' form-hide' }}" role="alert">&nbsp;{{ errors['puf_image']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                         <div class="input-group phpblog-field-group form-group-no-border input-lg post-custom-image">
@@ -105,7 +112,7 @@
                             </span>
                             <label class="custom-file" id="customFile">
                                 <input type="hidden" id="puf_imageRemoved" name="puf_imageRemoved" value="{{ imageRemoved|e('html_attr') }}">
-                                <input type="file" id="puf_image" name="puf_image" class="custom-file-input form-control" aria-describedby="fileHelp" lang="en" value="{{ image|e('html_attr') }}">
+                                <input type="file" id="puf_image" name="puf_image" class="custom-file-input form-control" lang="en" value="{{ image|e('html_attr') }}">
                                 <span class="custom-file-control form-control-file{{ image is not empty ? ' selected' }}"></span>
                             </label>
                         </div>
@@ -114,7 +121,7 @@
                         <div class="send-button">
                             <button type="submit" class="btn btn-warning btn-lg" name="puf_submit" value="{{ submit }}">CONFIRM YOUR POST UPDATE</button>
                         </div>
-                        <p class="form-text">Update is obviously not mandatory.</p>
+                        <p class="form-text">Update is obviously not mandatory.<br>However, fields can not be empty!</p>
                     </form>
                 </div>
             </div>

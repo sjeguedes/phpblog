@@ -91,11 +91,20 @@ class PostController extends BaseController
 	{
 		// Get page number to show with paging
 		$currentPageId = $matches[0];
-		// $currentPageId doesn't exist (string or int < 0)
+		// $currentPageId doesn't exist (string or int <= 0)
 		if ((int) $currentPageId <= 0) {
-			$this->httpResponse->set404ErrorResponse('Sorry this page doesn\'t exist!', $this->router);
+			$this->httpResponse->set404ErrorResponse('Sorry this page doesn\'t exist! [Debug trace: reason is paging starts at number "1".]', $this->router);
             exit();
 		} else {
+            // Get published posts
+            $publishedPostsList = $this->currentModel->getList();
+            // Get total number of pages for paging
+            $pagesQuantity = ceil(count($publishedPostsList) / $this->config::getParam('posts.postPerPage'));
+            // $currentPageId value is too high!
+            if ((int) $currentPageId > $pagesQuantity) {
+                $this->httpResponse->set404ErrorResponse('Sorry this page doesn\'t exist! [Debug trace: reason is current page id > page quantity.]', $this->router);
+                exit();
+            }
 			// Get posts datas for current page and get post Quantity to show per page
 			$postListOnPage = $this->currentModel->getListByPaging($currentPageId, $this->config::getParam('posts.postPerPage'));
             // Loop to find any existing comments attached to each post
@@ -116,19 +125,13 @@ class PostController extends BaseController
                 }
             }
 			// $currentPageId value is correct: render page with included posts!
-			if ($currentPageId <= $postListOnPage['pageQuantity']) {
-				$varsArray = [
-					'metaTitle' => 'Posts list',
-					'metaDescription' => 'Here, you can follow our news and technical topics.',
-					'imgBannerCSSClass' => 'post-list',
-					'postListOnPage' => $postListOnPage
-				];
-				echo $this->page->renderTemplate('Blog/Post/post-list.tpl', $varsArray);
-			} else {
-                // $currentPageId value is too high!
-				$this->httpResponse->set404ErrorResponse($this->config::isDebug('The content you try to access doesn\'t exist! [Debug trace: reason is $currentPageId > $postListOnPage["pageQuantity"]]'), $this->router);
-                exit();
-			}
+			$varsArray = [
+				'metaTitle' => 'Posts list',
+				'metaDescription' => 'Here, you can follow our news and technical topics.',
+				'imgBannerCSSClass' => 'post-list',
+				'postListOnPage' => $postListOnPage
+			];
+			echo $this->page->renderTemplate('Blog/Post/post-list.tpl', $varsArray);
 		}
 	}
 

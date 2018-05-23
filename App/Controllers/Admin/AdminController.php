@@ -111,7 +111,7 @@ class AdminController extends BaseController
      * @param string $redirectUrl: url to redirect after validation success
      * @return array: an array which contains result of validation (errors, form values, ...)
      */
-    protected function validateEntityForms($params, $formValidatorObject, $redirectUrl)
+    protected function validateEntityForms($params, $formValidatorObject, $redirectUrl = null)
     {
         // Use value as var name
         $tokenIndex = $params['tokenIndex'];
@@ -132,7 +132,7 @@ class AdminController extends BaseController
         // Additional error message in case of form errors
         if (!empty($result[$formIdentifier . 'errors'])) {
             // Check wrong entity id used in form
-            if ($this->currentModel->$getEntityByid($_POST[$entityIdIndex]) == false) {
+            if ((int) $_POST[$entityIdIndex] > 0 && $this->currentModel->$getEntityByid($_POST[$entityIdIndex]) == false) {
                 $result[$formIdentifier . 'errors'][$formIdentifier . 'failed'][$entity]['message'] = $params['errorMessage'] . htmlentities($_POST[$entityIdIndex]) . '.';
             }
         }
@@ -142,7 +142,7 @@ class AdminController extends BaseController
             try {
                 // Check entity id used in form
                 // Is there an existing entity with this id?
-                if ($this->currentModel->$getEntityByid($_POST[$entityIdIndex]) != false) {
+                if ((int) $_POST[$entityIdIndex] > 0 && $this->currentModel->$getEntityByid($_POST[$entityIdIndex]) != false) {
                     // Delete or validate or publish or unpublish entity
                     call_user_func_array([$this->currentModel, $action], $arguments);
                     $performed = true;
@@ -166,8 +166,10 @@ class AdminController extends BaseController
                     'slideRank' => htmlentities($_POST[$tokenPrefix . 'slide_rank']) // last slide item reminder to position slide after redirection
                 ];
                 // Redirect to admin home action (to reset submitted form)
-                $this->httpResponse->addHeader('Location: ' . $redirectUrl);
-                exit();
+                if (!is_null($redirectUrl)) {
+                    $this->httpResponse->addHeader('Location: ' . $redirectUrl);
+                    exit();
+                }
             }
         }
         // Update error notice messages and form values

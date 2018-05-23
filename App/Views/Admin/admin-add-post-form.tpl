@@ -88,7 +88,9 @@
                             <textarea class="form-control" aria-label="Your content" id="pnf_content" name="pnf_content" rows="4" cols="80" placeholder="Type a content...">{{ content|raw }}</textarea>
                         </div>
                         <p class="text-left mb-0"><small><strong>IMAGE</strong></small></p>
-                        <p class="selected-image text-center mt-0{{ image is empty ? ' form-hide' }}"><span class="text-warning"><i class="fa fa-info-circle"></i>&nbsp;<strong>Your file is:</strong></span><br>"<em>{{ image }}</em>"&nbsp;&nbsp;<button class="btn btn-danger btn-sm" title="Delete image"><i class="now-ui-icons ui-1_simple-remove"></i></button></p>
+                        <p class="selected-image text-center mt-0{{ image is empty ? ' form-hide' }}"><span class="text-warning"><i class="fa fa-info-circle"></i>&nbsp;<strong>Your selected file is:</strong></span><br>"<em>{{ image }}</em>"&nbsp;&nbsp;<button class="btn btn-danger btn-sm" title="Delete image"><i class="now-ui-icons ui-1_simple-remove"></i></button><br>
+                        <small class="image-preview">Image preview is available only after validation (post update).</small>
+                        </p>
                         <p class="text-danger{{ errors['pnf_image'] is not defined ? ' form-hide' }}" role="alert">&nbsp;{{ errors['pnf_image']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                         <div class="input-group phpblog-field-group form-group-no-border input-lg post-custom-image">
                             <span class="input-group-addon phpblog-mce">
@@ -96,7 +98,7 @@
                             </span>
                             <label class="custom-file" id="customFile">
                                 <input type="hidden" id="pnf_imageRemoved" name="pnf_imageRemoved" value="{{ imageRemoved|e('html_attr') }}">
-                                <input type="file" id="pnf_image" name="pnf_image" class="custom-file-input form-control" aria-describedby="fileHelp" lang="en" value="{{ image|e('html_attr') }}">
+                                <input type="file" id="pnf_image" name="pnf_image" class="custom-file-input form-control" lang="en" value="{{ image|e('html_attr') }}">
                                 <span class="custom-file-control form-control-file{{ image is not empty ? ' selected' }}"></span>
                             </label>
                         </div>

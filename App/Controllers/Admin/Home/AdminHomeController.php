@@ -191,6 +191,7 @@ class AdminHomeController extends AdminController
         $varsArray['slideRankAfterSubmit'] = isset($_POST['cd_slide_rank']) && (int) $_POST['cd_slide_rank'] !== 0 ? $_POST['cd_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin home (success state)
         $varsArray['errors'] = isset($checkedForm['haf_errors']) ? $checkedForm['haf_errors'] : false;
+        $varsArray['errors']['contact']['state'] = isset($checkedForm['haf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminHome($varsArray);
     }
@@ -227,6 +228,7 @@ class AdminHomeController extends AdminController
         $varsArray['slideRankAfterSubmit'] = isset($_POST['ud_slide_rank']) && (int) $_POST['ud_slide_rank'] !== 0 ? $_POST['ud_slide_rank'] : 1;
         // Need to update errors template var, while there is no redirection to admin home (success state)
         $varsArray['errors'] = isset($checkedForm['haf_errors']) ? $checkedForm['haf_errors'] : false;
+        $varsArray['errors']['user']['state'] = isset($checkedForm['haf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminHome($varsArray);
     }
