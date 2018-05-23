@@ -53,6 +53,7 @@ jQuery(function($) {
         formJustLoaded = true;
         // Initialize error state on switch input
         $('#' + formIdentifier + 'hsi').trigger('switchChange.bootstrapSwitch');
+        triggerEventOnLoad = true;
         // Update fields error state on "fieldType"
         fieldsToUpdate($(fieldType));
     });
@@ -104,7 +105,10 @@ jQuery(function($) {
                     }
                     // Show error notice message if user already tried to submit (no input in queue)
                     if ($(formSelector).data('try-validation') == 1 && fieldsInQueue.length == 0) {
-                        showErrorNoticeMessage(false);
+                        if (!triggerEventOnLoad) {
+                            showErrorNoticeMessage(false);
+                        }
+                        triggerEventOnLoad = false;
                     }
                     // Dequeue event
                     $(document).dequeue();
@@ -125,6 +129,7 @@ var formSelector = '.comment-form',
 // User inputs are modified.
 // Field types 'hpi' (honeypot), 'tli' (time check), 'check' (CSRF token) are not checked on client side (but can be if AJAX is implemented)
 var formJustLoaded = false,
+    triggerEventOnLoad = false,
     currentElement,
     elements,
     fieldsInQueue = [],

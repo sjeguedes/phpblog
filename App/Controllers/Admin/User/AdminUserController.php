@@ -801,24 +801,30 @@ class AdminUserController extends AdminController
                 $user = $this->currentModel->getUserByEmail($result['fpf_email']);
                 // Email account exists in database
                 if ($user != false) {
-                    // Prepare profile name to show in email
-                    $result['fpf_firstName'] = $user->firstName;
-                    $result['fpf_familyName'] = $user->familyName;
-                    // Create password renewal authentication token to send to user (thanks to his email address!): he will use it in password renewal form
-                    $result['fpf_passwordUpdateToken'] = $this->generateUserPasswordUpdateToken($result['fpf_email']);
-                    $datas = [
-                        'entity' => 'user',
-                        'values' => [
-                            0 => [
-                                'type' => 2, // string
-                                'column' => 'passwordUpdateToken',
-                                'value' =>  $result['fpf_passwordUpdateToken'] // update token value
+                    // No activated account
+                    if ($user->isActivated === false) {
+                        $result['fpf_errors']['fpf_renewalCode'] = $this->config::isDebug('<span class="form-check-notice">Sorry, your request failed! Please activate your account first!<br>[Debug trace: email account "<strong>' . htmlentities($result['fpf_email']) . '</strong>" is not activated in database!]</span>');
+                        $update = false;
+                    } else {
+                        // Prepare profile name to show in email
+                        $result['fpf_firstName'] = $user->firstName;
+                        $result['fpf_familyName'] = $user->familyName;
+                        // Create password renewal authentication token to send to user (thanks to his email address!): he will use it in password renewal form
+                        $result['fpf_passwordUpdateToken'] = $this->generateUserPasswordUpdateToken($result['fpf_email']);
+                        $datas = [
+                            'entity' => 'user',
+                            'values' => [
+                                0 => [
+                                    'type' => 2, // string
+                                    'column' => 'passwordUpdateToken',
+                                    'value' =>  $result['fpf_passwordUpdateToken'] // update token value
+                                ]
                             ]
-                        ]
-                    ];
-                    // Update user password renewal authentication token and code datas
-                    $this->currentModel->updateEntity($user->id, $datas);
-                    $update = true;
+                        ];
+                        // Update user password renewal authentication token and code datas
+                        $this->currentModel->updateEntity($user->id, $datas);
+                        $update = true;
+                    }
                 } else {
                     // No existing email account
                     $result['fpf_errors']['fpf_renewalCode'] = $this->config::isDebug('<span class="form-check-notice">Sorry, authentication failed! Please check your email!<br>[Debug trace: email account "<strong>' . htmlentities($result['fpf_email']) . '</strong>" doesn\'t exist in database!]</span>');
@@ -1010,40 +1016,46 @@ class AdminUserController extends AdminController
                 $user = $this->currentModel->getUserByEmail($result['rpf_email']);
                 // Existing user email account
                 if ($user != false) {
-                    // Check user input authentication token value which must match password token value in database
-                    $validPasswordUpdateToken = $this->checkPasswordUpdateTokenValue($result['rpf_passwordUpdateToken'], $user->passwordUpdateToken);
-                    if ($validPasswordUpdateToken) {
-                        // Hash user password before update
-                        $result['rpf_password'] = $this->generateUserPasswordEncryption($result['rpf_password']);
-                        $datas = [
-                            'entity' => 'user',
-                            'values' => [
-                                0 => [
-                                    'type' => 2, // string
-                                    'column' => 'password',
-                                    'value' =>  $result['rpf_password'] // set password value
-                                ],
-                                1 => [
-                                    'type' => 2, // string
-                                    'column' => 'passwordUpdateToken',
-                                    'value' =>  'NULL' // set update token value
-                                ],
-                                2 => [
-                                    'type' => 2, // string
-                                    'column' => 'passwordUpdateDate',
-                                    'value' =>  date('Y-m-d H:i:s') // set update date value
-                                ]
-                            ]
-                        ];
-                        // Update user password renewal authentication token and code datas
-                        $this->currentModel->updateEntity($user->id, $datas);
-                        $update = true;
-                    } else {
-                        // Show detailed error message in error box
-                        $result['rpf_errors']['rpf_renewal'] = $this->config::isDebug('<span class="form-check-notice">Sorry, your token is not valid.<br>Please check your token value or corresponding email account.<br>[Debug trace: <strong>' . htmlentities($result['rpf_passwordUpdateToken']) . '</strong> does not match email account, or does not exist in database.]</span>');
-                        // Show captcha error already checked before.
-                        $result['rpf_errors']['g-recaptcha-response'] = 'Please confirm you are a human.';
+                    // No activated account
+                    if ($user->isActivated === false) {
+                        $result['rpf_errors']['rpf_renewal'] = $this->config::isDebug('<span class="form-check-notice">Sorry, your request failed! Please activate your account first!<br>[Debug trace: email account "<strong>' . htmlentities($result['rpf_email']) . '</strong>" is not activated in database!]</span>');
                         $update = false;
+                    } else {
+                        // Check user input authentication token value which must match password token value in database
+                        $validPasswordUpdateToken = $this->checkPasswordUpdateTokenValue($result['rpf_passwordUpdateToken'], $user->passwordUpdateToken);
+                        if ($validPasswordUpdateToken) {
+                            // Hash user password before update
+                            $result['rpf_password'] = $this->generateUserPasswordEncryption($result['rpf_password']);
+                            $datas = [
+                                'entity' => 'user',
+                                'values' => [
+                                    0 => [
+                                        'type' => 2, // string
+                                        'column' => 'password',
+                                        'value' =>  $result['rpf_password'] // set password value
+                                    ],
+                                    1 => [
+                                        'type' => 2, // string
+                                        'column' => 'passwordUpdateToken',
+                                        'value' =>  'NULL' // set update token value
+                                    ],
+                                    2 => [
+                                        'type' => 2, // string
+                                        'column' => 'passwordUpdateDate',
+                                        'value' =>  date('Y-m-d H:i:s') // set update date value
+                                    ]
+                                ]
+                            ];
+                            // Update user password renewal authentication token and code datas
+                            $this->currentModel->updateEntity($user->id, $datas);
+                            $update = true;
+                        } else {
+                            // Show detailed error message in error box
+                            $result['rpf_errors']['rpf_renewal'] = $this->config::isDebug('<span class="form-check-notice">Sorry, your token is not valid.<br>Please check your token value or corresponding email account.<br>[Debug trace: <strong>' . htmlentities($result['rpf_passwordUpdateToken']) . '</strong> does not match email account, or does not exist in database.]</span>');
+                            // Show captcha error already checked before.
+                            $result['rpf_errors']['g-recaptcha-response'] = 'Please confirm you are a human.';
+                            $update = false;
+                        }
                     }
                 } else {
                     $result['rpf_errors']['rpf_renewal'] = $this->config::isDebug('<span class="form-check-notice">Sorry, your email account is not valid.<br>[Debug trace: <strong>' . htmlentities($result['rpf_email']) . '</strong> does not exist in database.]</span>');
