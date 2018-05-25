@@ -91,7 +91,8 @@ class AdminPostModel extends AdminModel
      * @param int $postId
      * @return object|boolean: a Post entity instance, or false
      */
-    public function getPostById($postId) {
+    public function getPostById($postId)
+    {
         return $this->externalModels['postModel']->getSingleById($postId);
     }
 
@@ -101,7 +102,8 @@ class AdminPostModel extends AdminModel
      * @param string $postSlug
      * @return object|boolean: a Post entity instance, or false
      */
-    public function getPostBySlug($postSlug) {
+    public function getPostBySlug($postSlug)
+    {
         return $this->externalModels['postModel']->getSingleBySlug($postSlug);
     }
 
@@ -111,7 +113,8 @@ class AdminPostModel extends AdminModel
      * @param int $userId
      * @return object|boolean: a User entity instance, or false
      */
-    public function getUserAuthorById($userId) {
+    public function getUserAuthorById($userId)
+    {
         return $this->externalModels['postModel']->getAuthorById($userId);
     }
 
@@ -121,7 +124,8 @@ class AdminPostModel extends AdminModel
      * @param int $commentId
      * @return object|boolean: a Comment entity instance, or false
      */
-    public function getCommentById($commentId) {
+    public function getCommentById($commentId)
+    {
         return $this->externalModels['postModel']->getCommentById($commentId);
     }
 
@@ -131,7 +135,8 @@ class AdminPostModel extends AdminModel
      * @param boolean $published: true (only published post) or false
      * @return array: an array of Post entities instances
      */
-    public function getPostList($published = false) {
+    public function getPostList($published = false)
+    {
         return $this->externalModels['postModel']->getList($published); // param "false" means all posts (with all states)
     }
 
@@ -141,7 +146,8 @@ class AdminPostModel extends AdminModel
      * @param boolean $published: true (only published post) or false
      * @return array: an array of Post entities instances with author data
      */
-    public function getPostListWithAuthor($published = false) {
+    public function getPostListWithAuthor($published = false)
+    {
         return $this->externalModels['postModel']->getListWithAuthor($published); // param "false" means all posts (with all states)
     }
 
@@ -151,7 +157,8 @@ class AdminPostModel extends AdminModel
      * @param int $postId
      * @return array|boolean: an array of Image entities instances, or false
      */
-    public function getPostImageList($postId) {
+    public function getPostImageList($postId)
+    {
         return $this->externalModels['postModel']->getImageListForSingle($postId);
     }
 
@@ -178,7 +185,8 @@ class AdminPostModel extends AdminModel
      * Get User entities ordered by creation date
      * @return array: an array of User entities instances
      */
-    public function getUserList() {
+    public function getUserList()
+    {
         return $this->externalModels['adminHomeModel']->getUserList();
     }
 }

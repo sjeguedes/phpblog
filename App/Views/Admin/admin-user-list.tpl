@@ -91,7 +91,11 @@
                                             <span class="flex-label">ACTION</span>
                                         </div>
                                         <p class="flex-content">
-                                            <button data-toggle="modal" data-target="#ud-modal-{{ userList[i].id }}" class="btn btn-danger btn-sm" title="Delete user"><i class="now-ui-icons ui-1_simple-remove"></i></button>
+                                            {% if userList[i].temporaryParams['noDeletingAction'] is defined %}
+                                                <button class="btn btn-deactivate btn-sm" title="{{ userList[i].temporaryParams['noDeletingAction']['message']|e('html_attr') }}" disabled><i class="now-ui-icons ui-1_simple-remove"></i></button>
+                                            {% else %}
+                                                <button data-toggle="modal" data-target="#ud-modal-{{ userList[i].id }}" class="btn btn-danger btn-sm" title="Delete user"><i class="now-ui-icons ui-1_simple-remove"></i></button>
+                                            {% endif %}
                                         </p>
                                     </div>
                                 </div>

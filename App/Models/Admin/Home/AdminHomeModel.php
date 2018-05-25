@@ -65,6 +65,17 @@ class AdminHomeModel extends AdminModel
     }
 
     /**
+     * Get Post entities ordered by creation date with their author data
+     * Use an external model: PostModel
+     * @param boolean $published: true (only published post) or false
+     * @return array: an array of Post entities instances with author data
+     */
+    public function getPostListWithAuthor($published = false)
+    {
+        return $this->externalModels['postModel']->getListWithAuthor($published); // param "false" means all posts (with all states)
+    }
+
+    /**
      * Get Contact entities ordered by sending date
      * @return array: an array of Contact entities instances
      */
@@ -96,6 +107,15 @@ class AdminHomeModel extends AdminModel
             $users[] = new User($datas);
         }
         return $users;
+    }
+
+    /**
+     * Get all Image entities ordered by creation date
+     * @return array: an array which contains all Image entities instances
+     */
+    public function getImageList()
+    {
+        return $this->externalModels['postModel']->getImageList();
     }
 
     /**

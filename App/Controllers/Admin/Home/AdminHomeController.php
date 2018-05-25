@@ -2,7 +2,7 @@
 namespace App\Controllers\Admin\Home;
 use App\Controllers\Admin\AdminController;
 use Core\Routing\AppRouter;
-use Core\Service\AppContainer;
+use App\Models\Admin\Entity\User;
 
 /**
  * Manage admin homepage actions
@@ -65,6 +65,12 @@ class AdminHomeController extends AdminController
             // This generates temporary param "userTypeLabel".
             $data = $this->currentModel->getUserTypeLabelById($userList[$i]->userTypeId);
             $userList[$i]->userTypeLabel = $data['userType_label'];
+            // can user be deleted?
+            $disallowDeleting = $this->disallowUserDeleting($userList[$i]);
+            // User deleting is disallowed because of one particular condition among several cases!
+            if (!empty($disallowDeleting)) {
+                $userList[$i]->noDeletingAction = $disallowDeleting[0];
+            }
         }
         $cssArray = [
             0 => [
@@ -197,6 +203,56 @@ class AdminHomeController extends AdminController
     }
 
     /**
+     * Check several particular conditions to allow User entity deleting
+     * @param User $user: User entity to delete
+     * @return array: an array with data to retrieve not allowed main condition (empty array if deleting is allowed)
+     */
+    public function disallowUserDeleting(User $user)
+    {
+        // Authenticated user id
+        $authenticatedUserId = $_SESSION['user']['userId'];
+        // Get all posts (author data included) with external model (PostModel)
+        $postList = $this->currentModel->getPostListWithAuthor();
+        // Is user to delete a posts author?
+        $isUserAuthor = false;
+        if (count($postList) > 0) {
+            for ($i = 0; $i < count($postList); $i ++) {
+                if ($user->id == $postList[$i]->temporaryParams['author']->id) {
+                    $isUserAuthor = true;
+                    break;
+                }
+            }
+        }
+        // Get all images with external model (PostModel)
+        $imageList = $this->currentModel->getImageList();
+        // Is user to delete a images creator (authenticated user who uploaded images as concerns posts)?
+        $isUserImageCreator = false;
+        if (count($imageList ) > 0) {
+            for ($i = 0; $i < count($imageList ); $i ++) {
+                if ($user->id == $imageList[$i]->creatorId) {
+                    $isUserImageCreator = true;
+                    break;
+                }
+            }
+        }
+        $check = [];
+        // Check if authenticated user tries to delete  his own account, so do not allow deleting.
+        if ($user->id === $authenticatedUserId) {
+            $check[] = ['id' => $user->id, 'state' =>'authenticated user', 'message' =>'Sorry, you are not able to delete your own account by this way!'];
+        // Check if user to delete is an administrator, so do not allow deleting.
+        } elseif ($user->userTypeId === 1) {
+            $check[] = ['id' => $user->id, 'state' =>'administrator', 'message' =>'Sorry, you are not able to delete administrator user.'];
+        // Check if user to delete is a posts author, so do not allow deleting: prevent data from being corrupted because at this level, application doesn't manage this point yet!
+        } elseif ($isUserAuthor) {
+            $check[] = ['id' => $user->id, 'state' =>'posts author', 'message' =>'Sorry, you are not able to delete a user with associated posts (author).'];
+        // Check if user to delete is an image creator (user who uploaded posts images), so do not allow deleting: prevent data from being corrupted because at this level, application doesn't manage this point yet!
+        } elseif ($isUserImageCreator) {
+            $check[] = ['id' => $user->id, 'state' =>'images creator', 'message' =>'Sorry, you are not able to delete a user with associated images used in posts (images creator).'];
+        }
+        return $check;
+    }
+
+    /**
      * Delete a User entity in database
      * @param array $matches: an array of parameters matched in route
      * @return void
@@ -212,23 +268,37 @@ class AdminHomeController extends AdminController
             'successMessage' => 'Deleting action was performed successfully<br>as concerns user #',
             'datas' => ['entity' => 'user'],
         ];
-        // Validate or not form datas
-        $checkedForm = $this->validateEntityForms($paramsArray, $this->adminHomeValidator, '/admin');
-        // Reset form token immediately after success state
-        // This can not be made directly in "validateEntityForms()" because of private properties
-        if ($this->isActionSuccess()) {
-            // Delete current token
-            unset($_SESSION['ud_check']);
-            unset($_SESSION['ud_token']);
-            // Regenerate token to be updated in forms
-            $this->udTokenIndex = $this->adminHomeValidator->generateTokenIndex('ud_check');
-            $this->udTokenValue = $this->adminHomeValidator->generateTokenValue('ud_token');
+        if ((int) $matches[0] > 0) {
+            $user = $this->currentModel->getUserById($matches[0]);
+            if ($user != false) {
+                $disallowDeleting = $this->disallowUserDeleting($user);
+                // User deleting is disallowed because of one particular condition among several cases!
+                if (!empty($disallowDeleting)) {
+                    $varsArray['errors']['user']['state'] = true;
+                    $varsArray['errors']['haf_failed']['user']['message2'] = $this->config::isDebug('<span class="form-check-notice">' . $disallowDeleting[0]['message'] . '<br>[Debug trace: User id to delete is "<strong>' . htmlentities($user->id) . '</strong>".]</span>');
+                } else {
+                    var_dump('user will be deleted');
+                    exit();
+                    // Validate or not form datas
+                    $checkedForm = $this->validateEntityForms($paramsArray, $this->adminHomeValidator, '/admin');
+                    // Reset form token immediately after success state
+                    // This can not be made directly in "validateEntityForms()" because of private properties
+                    if ($this->isActionSuccess()) {
+                        // Delete current token
+                        unset($_SESSION['ud_check']);
+                        unset($_SESSION['ud_token']);
+                        // Regenerate token to be updated in forms
+                        $this->udTokenIndex = $this->adminHomeValidator->generateTokenIndex('ud_check');
+                        $this->udTokenValue = $this->adminHomeValidator->generateTokenValue('ud_token');
+                    }
+                    // Remind current paging slide item
+                    $varsArray['slideRankAfterSubmit'] = isset($_POST['ud_slide_rank']) && (int) $_POST['ud_slide_rank'] !== 0 ? $_POST['ud_slide_rank'] : 1;
+                    // Need to update errors template var, while there is no redirection to admin home (success state)
+                    $varsArray['errors'] = isset($checkedForm['haf_errors']) ? $checkedForm['haf_errors'] : false;
+                    $varsArray['errors']['user']['state'] = isset($checkedForm['haf_errors']) ? true : false;
+                }
+            }
         }
-        // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = isset($_POST['ud_slide_rank']) && (int) $_POST['ud_slide_rank'] !== 0 ? $_POST['ud_slide_rank'] : 1;
-        // Need to update errors template var, while there is no redirection to admin home (success state)
-        $varsArray['errors'] = isset($checkedForm['haf_errors']) ? $checkedForm['haf_errors'] : false;
-        $varsArray['errors']['user']['state'] = isset($checkedForm['haf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminHome($varsArray);
     }

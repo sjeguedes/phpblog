@@ -143,7 +143,7 @@ class PostModel extends BaseModel
 	}
 
     /**
-     * Get all Image entities
+     * Get all Image entities ordered by creation date
      * @return array: an array which contains all Image entities instances
      */
     public function getImageList()

@@ -2,7 +2,6 @@
 namespace App\Controllers\Admin\Post;
 use App\Controllers\Admin\AdminController;
 use Core\Routing\AppRouter;
-use Core\Service\AppContainer;
 
 /**
  * Manage all actions as concerns Post entity in back-end

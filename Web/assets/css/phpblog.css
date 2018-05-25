@@ -713,6 +713,15 @@ select:-webkit-autofill {
     margin-bottom: 0;
 }
 
+.btn-deactivate {
+    opacity: 0.15 !important;
+    cursor: not-allowed;
+}
+
+.btn-deactivate:hover {
+    box-shadow: none;
+}
+
 @media screen and (max-width: 767px) {
     .flex-table {
         flex-direction: column;
