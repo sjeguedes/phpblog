@@ -15,7 +15,7 @@
                         </span>
                     </button>
                 </p>
-                <p class="alert alert-danger form-error{{ errors == 0 ? ' form-hide'}}" role="alert">
+                <p class="alert alert-danger form-error{{ errors == 0 ? ' form-hide'}}{{ errors['expiredSession'] is defined ? ' expired-session' }}" role="alert">
                     {% if errors['expiredSession'] is defined %}
                     <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>YOU ARE NOT AUTHENTICATED ANYMORE!</strong>{% if errors['expiredSession']['unauthorizedFromAdmin'] is defined %}<br>You were disconnected for security reason.{% endif %}<br>Your session expired. Please login again.
                     {% else %}

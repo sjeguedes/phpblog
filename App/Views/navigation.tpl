@@ -18,8 +18,8 @@
                 {% if authenticatedUser is defined %}
                 <!-- Show user profile -->
                 <li class="navbar-nav-profile">
-                    <a href="/admin/logout/?userKey={{ authenticatedUser['userKey']|e('html_attr') }}" title="Logout">
-                        <strong><small>CONNECTED USER</small><span>{{ authenticatedUser['userName'][0]|title ~' '~ authenticatedUser['userName'][1]|upper }}&nbsp;<i class="fa fa-user fa-lg" aria-hidden="true"></i></span></strong>
+                    <a href="/admin/logout/?userKey={{ authenticatedUser['userKey']|e('html_attr') }}" class="profile-box" title="Logout">
+                        <strong><small>CONNECTED USER</small><span>{{ authenticatedUser['userName'][0]|title ~' '~ authenticatedUser['userName'][1]|upper }}&nbsp;<i class="fa fa-user fa-lg" aria-hidden="true"></i>&nbsp;<i class="fa fa-times" aria-hidden="true"></i></span></strong>
                     </a>
                 </li>
                 <!-- End show ser profile -->

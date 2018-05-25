@@ -53,6 +53,10 @@ jQuery(function($) {
 
     // Manage errors on fields
     $(document).on('change keyup input paste', fieldType, function(e) {
+        // Hide disconnection error message
+        if ($('.form-error.expired-session').is(':visible')) {
+           $('.form-error.expired-session').slideUp(700).removeClass('expired-session');
+        }
         // Look at /assets/js/phpblog.js for declared functions
         // Avoid multiple call to form check on the same element: one call is queued each time.
         if (fieldsInQueue.indexOf($(this).attr('id')) != -1) {
