@@ -277,8 +277,6 @@ class AdminHomeController extends AdminController
                     $varsArray['errors']['user']['state'] = true;
                     $varsArray['errors']['haf_failed']['user']['message2'] = $this->config::isDebug('<span class="form-check-notice">' . $disallowDeleting[0]['message'] . '<br>[Debug trace: User id to delete is "<strong>' . htmlentities($user->id) . '</strong>".]</span>');
                 } else {
-                    var_dump('user will be deleted');
-                    exit();
                     // Validate or not form datas
                     $checkedForm = $this->validateEntityForms($paramsArray, $this->adminHomeValidator, '/admin');
                     // Reset form token immediately after success state

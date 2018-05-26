@@ -53,7 +53,6 @@ jQuery(function($) {
         formJustLoaded = true;
         // Initialize error state on switch input
         $('#' + formIdentifier + 'hsi').trigger('switchChange.bootstrapSwitch');
-        triggerEventOnLoad = true;
         // Update fields error state on "fieldType"
         fieldsToUpdate($(fieldType));
     });
@@ -62,6 +61,14 @@ jQuery(function($) {
 
     // Set input value on bootstrap switch UI
     $(document).on('switchChange.bootstrapSwitch', 'input[name="' + formIdentifier + 'hsi"]', function(event, state) {
+        // Initialize switch to manage return false in listener below
+        if (formJustLoaded) {
+            if ($(this).attr('value') == 'on') {
+                state = true;
+            } else {
+                state = false;
+            }
+        }
         // Look at http://bootstrapswitch.com/events.html for events explanations:
         if (state) {
             $(this).attr('value', 'on');
@@ -78,7 +85,7 @@ jQuery(function($) {
     $(document).on('change keyup input paste switchChange.bootstrapSwitch', fieldType, function(e) {
         // Cancel "switchChange.bootstrapSwitch" event here when page is simply loaded!
         if (formJustLoaded && $(this).attr('id') == formIdentifier + 'hsi') {
-            return false;
+           return false;
         }
         // Render first letter in uppercase immediately when typing for "nickname", "title" and "content" inputs
         if ($(this).attr('id') == formIdentifier + 'nickName' || $(this).attr('id') == formIdentifier + 'title' || $(this).attr('id') == formIdentifier + 'content') {
@@ -105,10 +112,7 @@ jQuery(function($) {
                     }
                     // Show error notice message if user already tried to submit (no input in queue)
                     if ($(formSelector).data('try-validation') == 1 && fieldsInQueue.length == 0) {
-                        if (!triggerEventOnLoad) {
-                            showErrorNoticeMessage(false);
-                        }
-                        triggerEventOnLoad = false;
+                        showErrorNoticeMessage(false);
                     }
                     // Dequeue event
                     $(document).dequeue();
@@ -129,7 +133,6 @@ var formSelector = '.comment-form',
 // User inputs are modified.
 // Field types 'hpi' (honeypot), 'tli' (time check), 'check' (CSRF token) are not checked on client side (but can be if AJAX is implemented)
 var formJustLoaded = false,
-    triggerEventOnLoad = false,
     currentElement,
     elements,
     fieldsInQueue = [],

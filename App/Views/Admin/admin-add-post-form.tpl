@@ -8,7 +8,7 @@
         <!-- User notice message -->
         <div class="row">
             <div class="col-lg-8 text-center col-md-10 ml-auto mr-auto">
-                <p class="alert alert-success form-success{{ success == 0 ? ' form-hide'}}" role="alert">
+                <p class="alert alert-success form-success{{ success == 0 ? ' form-hide' }}" role="alert">
                     <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>WELL DONE!</strong>&nbsp;Post was created successfully.<br>Don't forget to publish this post to show it on front-end!<br>Actual permalink is:<br><strong class="text-lower text-muted">{{ domain }}/post/{{ post.slug }}-{{ post.id }}</strong>
                     {% if imageSuccess is not null %}<br>{{ imageSuccess|raw }}{% endif %}
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -17,7 +17,7 @@
                         </span>
                     </button>
                 </p>
-                <p class="alert alert-danger form-error{{ errors == 0 ? ' form-hide'}}" role="alert">
+                <p class="alert alert-danger form-error{{ errors == 0 ? ' form-hide' }}" role="alert">
                     <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERRORS!</strong>&nbsp;Change a few things up and try submitting again.{% if errors['pnf_check'] is defined %}<br>{{ errors['pnf_check']|raw }}{% endif %}{% if errors['pnf_notCreated'] is defined %}<br>{{ errors['pnf_notCreated']|raw }}{% endif %}
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">
