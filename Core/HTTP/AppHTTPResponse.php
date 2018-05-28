@@ -114,7 +114,6 @@ class AppHTTPResponse
                 $message = 'Sorry, uncaught (or invalid) HTTP response happened.';
                 $this->autoSetErrorResponse($message, $router, false, true);
             } else {
-                $title = $codes[$status][0];
                 $message = $codes[$status][1];
                 $this->autoSetErrorResponse($message, $router, $status);
             }

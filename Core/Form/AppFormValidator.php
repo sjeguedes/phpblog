@@ -590,7 +590,7 @@ class AppFormValidator
         // Call a 401 error response for forms which are not part of back office.
         } else {
             $_SESSION['unauthorizedFormSubmission'] = true;
-            $this->router->getHTTPResponse()->set401ErrorResponse('<strong>Form submission is unauthorized.</strong><br>this message is mainly due to security reason.<br>This issue could also be due to inactivity (session expiration) on our website.<br>Please go back to <a href="/' . $this->router->getUrl() . '" class="normal-link" title="Previous visited page">previous page</a> and try again.', $this->router);
+            $this->router->getHTTPResponse()->set401ErrorResponse('<strong>Form submission is unauthorized.</strong><br>This message is mainly due to security reason.<br>This issue could also be due to inactivity (session expiration) on our website.<br>Please go back to <a href="/' . $this->router->getUrl() . '" class="normal-link" title="Previous visited page">previous page</a> and try again.', $this->router);
             exit();
         }
     }

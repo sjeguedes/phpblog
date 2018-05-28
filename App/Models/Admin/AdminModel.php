@@ -41,7 +41,7 @@ abstract class AdminModel extends BaseModel
                                               FROM $table
                                               WHERE ${columnPrefix}id = ?");
         $query->bindParam(1, $entityId, \PDO::PARAM_INT);
-        $result = $query->execute();
+        $query->execute();
     }
 
     /**

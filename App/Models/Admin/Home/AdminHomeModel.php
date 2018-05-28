@@ -120,11 +120,11 @@ class AdminHomeModel extends AdminModel
 
     /**
      * Get User entity user type label by id
+     * @param integer $userTypeId: user type id (corresponds to "administrator", "member", ...)
      * @return array: an array which contains user type label (administrator, member...) or false
      */
     public function getUserTypeLabelById($userTypeId)
     {
-        $users = [];
         $query = $this->dbConnector->prepare('SELECT ut.userType_label
                                               FROM users u
                                               INNER JOIN userTypes ut ON (u.user_userTypeId = ut.userType_id)

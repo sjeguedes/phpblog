@@ -278,7 +278,7 @@ class AdminPostController extends AdminController
             'successMessage' => 'Deleting action was performed successfully<br>as concerns post #',
             'datas' => ['entity' => 'post'],
         ];
-        // Get post images list with external model (PostModel) and delete them physically
+        // Get post images list with external model (PostModel) to delete them physically
         // Get post id param from route
         $postId = (int) $matches[0];
         // Post id is valid!
@@ -319,10 +319,9 @@ class AdminPostController extends AdminController
 
     /**
      * Validate (moderate) a Post entity changing its state in database
-     * @param array $matches: an array of parameters matched in route
      * @return void
      */
-    public function validatePost($matches)
+    public function validatePost()
     {
         // Initialize necessary vars for admin posts
         $varsArray = $this->initAdminPosts();
@@ -367,10 +366,9 @@ class AdminPostController extends AdminController
 
     /**
      * Publish a Post entity changing its state in database
-     * @param array $matches: an array of parameters matched in route
      * @return void
      */
-    public function publishPost($matches)
+    public function publishPost()
     {
         // Initialize necessary vars for admin posts
         $varsArray = $this->initAdminPosts();
@@ -415,10 +413,9 @@ class AdminPostController extends AdminController
 
     /**
      * Cancel publication for Post entity changing its state in database
-     * @param array $matches: an array of parameters matched in route
      * @return void
      */
-    public function unpublishPost($matches)
+    public function unpublishPost()
     {
         // Initialize necessary vars for admin posts
         $varsArray = $this->initAdminPosts();
@@ -630,7 +627,7 @@ class AdminPostController extends AdminController
         // Uploaded image seems to be valid!
         if ($image != false) {
             // Save temporary image
-            $temporarySavedImage = $this->adminPostAddValidator->saveImageUpload('image', true);
+            $this->adminPostAddValidator->saveImageUpload('image', true);
         }
         // Get validation result to use it after data filtering and pass values to strip_tags function
         $result = $this->adminPostAddValidator->getResult();
@@ -693,7 +690,7 @@ class AdminPostController extends AdminController
                 $newPostId = $this->currentModel->insertPost($newDatas);
                 $insertion = true;
             } catch (\PDOException $e) {
-                $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not created: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not created: please try again later.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
                 $insertion = false;
             }
             // Post entity was saved successfully!
@@ -775,7 +772,7 @@ class AdminPostController extends AdminController
                         }
                     }
                 } catch (\PDOException $e) {
-                    $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post image was not created: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                    $result['pnf_errors']['pnf_notCreated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post image was not created: please try again later.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
                     $imageInsertion = false;
                 }
                 if (empty($result['pnf_errors'])) {
@@ -904,7 +901,7 @@ class AdminPostController extends AdminController
                 ];
                 $varsArray = [
                     'JS' => $jsArray,
-                    'metaTitle' => 'Update post - ' . $post->title,
+                    'metaTitle' => 'Update post - ' . strip_tags($post->title),
                     'metaDescription' => 'Here, you can update particular post #' . $post->id . '.',
                     'metaRobots' => 'noindex, nofollow',
                     'post' => $post,
@@ -1000,7 +997,7 @@ class AdminPostController extends AdminController
             $image = $this->adminPostUpdateValidator->validateImageUpload('image');
             if ($image != false) {
                 // Save temporary image
-                $temporarySavedImage = $this->adminPostUpdateValidator->saveImageUpload('image', true);
+                $this->adminPostUpdateValidator->saveImageUpload('image', true);
             }
         }
         // Get validation result to use it after data filtering and pass values to strip_tags function
@@ -1085,7 +1082,7 @@ class AdminPostController extends AdminController
                 $this->currentModel->updateEntity($postId, $updatedDatas);
                 $update = true;
             } catch (\PDOException $e) {
-                $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
                 $update = false;
             }
             // Post entity was updated successfully!
@@ -1167,7 +1164,7 @@ class AdminPostController extends AdminController
                         }
                     }
                 } catch (\PDOException $e) {
-                    $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post image was not updated: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                    $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post image was not updated: please try again later.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
                     $imageInsertion = false;
                 }
                 if (empty($result['puf_errors'])) {
@@ -1199,10 +1196,9 @@ class AdminPostController extends AdminController
 
     /**
      * Delete a Comment entity in database
-     * @param array $matches: an array of parameters matched in route
      * @return void
      */
-    public function deleteComment($matches)
+    public function deleteComment()
     {
         $varsArray = $this->initAdminPosts();
         $paramsArray = [
@@ -1236,10 +1232,9 @@ class AdminPostController extends AdminController
 
     /**
      * Validate (moderate) a Comment entity changing its state in database
-     * @param array $matches: an array of parameters matched in route
      * @return void
      */
-    public function validateComment($matches)
+    public function validateComment()
     {
         // Initialize necessary vars for admin posts
         $varsArray = $this->initAdminPosts();
@@ -1284,10 +1279,9 @@ class AdminPostController extends AdminController
 
     /**
      * Publish a Comment entity changing its state in database
-     * @param array $matches: an array of parameters matched in route
      * @return void
      */
-    public function publishComment($matches)
+    public function publishComment()
     {
         // Initialize necessary vars for admin posts
         $varsArray = $this->initAdminPosts();
@@ -1332,10 +1326,9 @@ class AdminPostController extends AdminController
 
     /**
      * Cancel publication for Comment entity changing its state in database
-     * @param array $matches: an array of parameters matched in route
      * @return void
      */
-    public function unpublishComment($matches)
+    public function unpublishComment()
     {
         // Initialize necessary vars for admin posts
         $varsArray = $this->initAdminPosts();

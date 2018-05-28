@@ -20,13 +20,9 @@ class AppConfig
      */
     private static $_router;
     /**
-     * @var object: an instance of AppHTTPResponse
+     * @var AppHTTPResponse instance
      */
 	private static $_httpResponse;
-    /**
-     * @var array: an array of config yaml file parameters
-     */
-    private static $_params;
 
     /**
      * Instanciate a unique AppConfig object (Singleton)
@@ -162,14 +158,15 @@ class AppConfig
      * @return string: html with debug datas
      */
     public static function renderDebug($element, $label = null) {
-		return '<div class="alert alert-warning" role="alert" style="position:relative">
-			<p class="h6">' . $info . '</p>
-            <pre>' . print_r($element, true) . '</pre>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close"style="position:absolute;top:10px;right:10px">
-                <span aria-hidden="true">
-                    <i class="now-ui-icons ui-1_simple-remove"></i>
-                </span>
-            </button>
-        </div>';
+        $label = !is_null($label) ? $label : 'No label to debug';
+		return '<div class="alert alert-warning" role="alert" style="position:relative">' . PHP_EOL .
+		            '<p class="h6">' . $label . '</p>' . PHP_EOL .
+                    '<pre>' . print_r($element, true) . '</pre>' . PHP_EOL .
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close" style="position:absolute;top:10px;right:10px">' . PHP_EOL .
+                        '<span aria-hidden="true">' . PHP_EOL .
+                            '<i class="now-ui-icons ui-1_simple-remove"></i>' . PHP_EOL .
+                        '</span>' . PHP_EOL .
+                    '</button>' . PHP_EOL .
+               '</div>';
 	}
 }

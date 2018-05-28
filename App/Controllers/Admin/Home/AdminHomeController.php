@@ -166,10 +166,9 @@ class AdminHomeController extends AdminController
 
     /**
      * Delete a Contact entity in database
-     * @param array $matches: an array of parameters matched in route
      * @return void
      */
-    public function deleteContact($matches)
+    public function deleteContact()
     {
         $varsArray = $this->initAdminHome();
         $paramsArray = [

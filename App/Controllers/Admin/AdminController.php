@@ -80,7 +80,7 @@ class AdminController extends BaseController
                 } else {
                     if ($_SESSION['newSID']['request'] >= 3) {
                         // Custom cookie is not set yet or does not exist!
-                        foreach ($_COOKIE as $key => $value) {
+                        foreach (array_keys($_COOKIE) as $key) {
                             // Similar cookie may be found
                             if (preg_match('#^UPDATEDUST((?=.\w)(?=.\d).*)$#', $key)) {
                                 // Check wrong custom cookie index: this can be suspicious in case of session hijacking!
@@ -151,7 +151,7 @@ class AdminController extends BaseController
                     $performed = false;
                 }
             } catch (\PDOException $e) {
-                $result[$formIdentifier . 'errors'][$formIdentifier . 'failed'][$entity]['message2'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Please try again later.<br>Action [Debug trace: <strong>' . $params["action"] . '</strong>] on ' . $entity . ' [Debug trace: <strong> ' . $entity . ' id ' . htmlentities($_POST[$entityIdIndex]) . '</strong>] was not performed correctly.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $result[$formIdentifier . 'errors'][$formIdentifier . 'failed'][$entity]['message2'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Please try again later.<br>Action [Debug trace: <strong>' . $params["action"] . '</strong>] on ' . $entity . ' [Debug trace: <strong> ' . $entity . ' id ' . htmlentities($_POST[$entityIdIndex]) . '</strong>] was not performed correctly.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
                 $performed = false;
             }
             // Action was performed successfully on entity!
@@ -182,7 +182,7 @@ class AdminController extends BaseController
      */
     protected function regenerateAllFormTokens() {
         // Change token dynamic key and value for each existing token
-        foreach ($_SESSION as $key => $value) {
+        foreach (array_keys($_SESSION) as $key) { // no use of $value
             if (preg_match("#_check|_token#", $key)) {
                 unset($_SESSION[$key]);
             }

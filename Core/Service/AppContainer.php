@@ -24,15 +24,15 @@ class AppContainer
 	 */
 	private static $_instance;
     /**
-     * @var object: an instance of AppRouter
+     * @var AppRouter instance
      */
     private static $_router;
 	/**
-     * @var object: an instance of AppConfig
+     * @var AppConfig instance
      */
 	private static $_config;
     /**
-     * @var object: an instance of AppHTTPResponse
+     * @var AppHTTPResponse instance
      */
     private static $_httpResponse;
 	/**
@@ -99,7 +99,8 @@ class AppContainer
      */
     public static function init()
     {
-        self::setParams(self::getParams());
+        $params = self::getParams();
+        self::setParams($params);
     }
 
 	/**

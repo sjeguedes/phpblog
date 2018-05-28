@@ -77,7 +77,6 @@ class AppPage
     private static function addSessionTemplateParams($vars)
     {
         self::$_session::start(true);
-        $sessionDatas = self::$_session::getDatas();
         // Is user authenticated? if this is true, then get needed User infos.
         $user = self::$_session::isUserAuthenticated();
         if ($user != false) {
