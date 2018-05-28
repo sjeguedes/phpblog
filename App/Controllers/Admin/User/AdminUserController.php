@@ -321,7 +321,7 @@ class AdminUserController extends AdminController
                     $insertion = true;
                 }
             } catch (\PDOException $e) {
-                $result['ref_errors']['ref_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to create an account at this time: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $result['ref_errors']['ref_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to create an account at this time: please try again later.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
                 $insertion = false;
             }
             // User entity was saved successfuly!
@@ -432,7 +432,7 @@ class AdminUserController extends AdminController
                 $activation = false;
             }
         } catch (\PDOException $e) {
-            $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to activate your account at this time: please try again later<br>or <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+            $result['ref_act_errors']['ref_act_register'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to activate your account at this time: please try again later<br>or <a href="/#contact-us" class="text-muted text-lower" title="Contact us"><strong>contact us</strong></a> if it\'s necessary.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
             $activation = false;
         }
         // User entity was activated successfully!
@@ -637,7 +637,7 @@ class AdminUserController extends AdminController
                     $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry, authentication failed! Please check your email and password!<br>[Debug trace: email account "<strong>' . htmlentities($result['lif_email']) . '</strong>" doesn\'t exist in database!]</span>');
                 }
             } catch (\PDOException $e) {
-                $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to login at this time: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to login at this time: please try again later.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
             }
 
         }
@@ -831,7 +831,7 @@ class AdminUserController extends AdminController
                     $update = false;
                 }
             } catch (\PDOException $e) {
-                $result['fpf_errors']['fpf_renewalCode'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to get your authentication code at this time: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $result['fpf_errors']['fpf_renewalCode'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to get your authentication code at this time: please try again later.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
                 $update = false;
             }
             // Authentication code was generated successfully!
@@ -1062,7 +1062,7 @@ class AdminUserController extends AdminController
                     $update = false;
                 }
             } catch (\PDOException $e) {
-                $result['rpf_errors']['rpf_renewal'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to renew your password at this time: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $result['rpf_errors']['rpf_renewal'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to renew your password at this time: please try again later.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
                 $update = false;
             }
             // User password was updated successfully!

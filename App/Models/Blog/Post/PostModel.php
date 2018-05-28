@@ -203,7 +203,6 @@ class PostModel extends BaseModel
 		$postQuantity = intval($result[1]);
 		$postPerPage = $this->config::getParam('posts.postPerPage');
 		$paging = ceil($postQuantity / $postPerPage);
-		$interval = [];
 		$start = 0;
 		for ($i = 1; $i <= $paging; $i++) {
 			if ($start <= $postRank && $postRank < $start + $postPerPage) {
