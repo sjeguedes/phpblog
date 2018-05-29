@@ -182,6 +182,16 @@ class AdminPostModel extends AdminModel
     }
 
     /**
+     * Get a single user with its id
+     * @param string $userId
+     * @return object|boolean: a User entity instance or false
+     */
+    public function getUserById($userId)
+    {
+        return $this->externalModels['adminHomeModel']->getUserById($userId);
+    }
+
+    /**
      * Get User entities ordered by creation date
      * @return array: an array of User entities instances
      */

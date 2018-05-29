@@ -69,6 +69,7 @@ class AdminHomeController extends AdminController
             $disallowDeleting = $this->disallowUserDeleting($userList[$i]);
             // User deleting is disallowed because of one particular condition among several cases!
             if (!empty($disallowDeleting)) {
+                 // This generates temporary param "noDeletingAction".
                 $userList[$i]->noDeletingAction = $disallowDeleting[0];
             }
         }

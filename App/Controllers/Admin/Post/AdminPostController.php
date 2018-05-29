@@ -2,6 +2,7 @@
 namespace App\Controllers\Admin\Post;
 use App\Controllers\Admin\AdminController;
 use Core\Routing\AppRouter;
+use App\Models\Admin\Entity\User;
 
 /**
  * Manage all actions as concerns Post entity in back-end
@@ -100,6 +101,10 @@ class AdminPostController extends AdminController
      * @var string: dynamic value for publication cancelation comment form token
      */
     private $pcuTokenValue;
+    /**
+     * @var User|boolean: User instance or false
+     */
+    private $authenticatedUser;
 
     /**
      * Constructor
@@ -147,6 +152,22 @@ class AdminPostController extends AdminController
         // Comment publication cancelation token
         $this->pcuTokenIndex = $this->adminPostValidator->generateTokenIndex('pcu_check');
         $this->pcuTokenValue = $this->adminPostValidator->generateTokenValue('pcu_token');
+        // Get authenticated user id to get current connected user
+        $authenticatedUserId = (int) $_SESSION['user']['userId'];
+        if ($authenticatedUserId > 0) {
+            $this->authenticatedUser = $this->currentModel->getUserById($authenticatedUserId);
+            if ($this->authenticatedUser != false) {
+                // can user be deleted?
+                $disallowManagement = $this->disallowPostAndCommentManagement($this->authenticatedUser);
+                // Posts and comments management is disallowed because of one particular condition among several cases!
+                if (!empty($disallowManagement)) {
+                    // This generates temporary param "noManagementAction".
+                    $this->authenticatedUser->noManagementAction = $disallowManagement[0];
+                }
+            }
+        } else {
+            $this->authenticatedUser = false;
+        }
     }
 
     /**
@@ -190,6 +211,7 @@ class AdminPostController extends AdminController
             // Get complete list of each entity type
             'commentList' => $commentList,
             'postList' => $postList,
+            'connectedUser' => $this->authenticatedUser != false ? $this->authenticatedUser : null,
             // Get number of entities to show per slide for each slider (paging sliders)
             'commentPerSlide' => $this->config::getParam('admin.posts.commentPerSlide'),
             'postPerSlide' => $this->config::getParam('admin.posts.postPerSlide'),
@@ -263,6 +285,23 @@ class AdminPostController extends AdminController
     }
 
     /**
+     * Check several particular conditions to allow authenticated user to manage Post and Comment entities
+     * @param User $authenticatedUser: User entity to check
+     * @return array: an array with data to retrieve not allowed main condition (empty array if management is allowed)
+     */
+    public function disallowPostAndCommentManagement(User $authenticatedUser)
+    {
+        $check = [];
+        // Check if authenticated user is not an administrator, so do not allow management.
+        if ($authenticatedUser->userTypeId !== 1) {
+            $check[] = ['id' => $authenticatedUser->id, 'state' =>'no administrator capability', 'message' =>'Sorry, you are not able to manage this entity: you are not an administrator.'];
+        }
+        // Other cases: do stuff here!
+        // Must return only the first matched case!
+        return $check;
+    }
+
+    /**
      * Delete a Post entity in database
      * @param array $matches: an array of parameters matched in route
      * @return void
@@ -278,41 +317,50 @@ class AdminPostController extends AdminController
             'successMessage' => 'Deleting action was performed successfully<br>as concerns post #',
             'datas' => ['entity' => 'post'],
         ];
-        // Get post images list with external model (PostModel) to delete them physically
-        // Get post id param from route
-        $postId = (int) $matches[0];
-        // Post id is valid!
-        if ($postId > 0) {
-            $postImages = $this->currentModel->getPostImageList($postId);
-        } else {
-            $postImages = false;
-        }
-        // Validate or not form datas without redirection
-        $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator);
-        // Reset form token immediately after success state
-        // This can not be made directly in "validateEntityForms()" because of private properties
-        if ($this->isActionSuccess()) {
-            // Delete current token
-            unset($_SESSION['ppd_check']);
-            unset($_SESSION['ppd_token']);
-            // Regenerate token to be updated in forms
-            $this->ppdTokenIndex = $this->adminPostValidator->generateTokenIndex('ppd_check');
-            $this->ppdTokenValue = $this->adminPostValidator->generateTokenValue('ppd_token');
-            // Delete post images physically
-            if ($postImages != false) {
-                for ($i = 0; $i < count($postImages); $i ++) {
-                    @unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/images/ci-' . $postImages[$i]->creatorId . '/' . $postImages[$i]->name  . '.' .  $postImages[$i]->extension);
+        if ($this->authenticatedUser != false) {
+            $disallowManagement = $this->disallowPostAndCommentManagement($this->authenticatedUser);
+            // Post management is disallowed because of one particular condition among several cases!
+            if (!empty($disallowManagement)) {
+                $varsArray['errors']['post']['state'] = true;
+                $varsArray['errors']['paf_failed']['post']['message2'] = $this->config::isDebug('<span class="form-check-notice">' . $disallowManagement[0]['message'] . '<br>[Debug trace: authenticated user id is "<strong>' . htmlentities($this->authenticatedUser->id) . '</strong>".]</span>');
+            } else {
+                // Get post images list with external model (PostModel) to delete them physically
+                // Get post id param from route
+                $postId = (int) $matches[0];
+                // Post id is valid!
+                if ($postId > 0) {
+                    $postImages = $this->currentModel->getPostImageList($postId);
+                } else {
+                    $postImages = false;
                 }
+                // Validate or not form datas without redirection
+                $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator);
+                // Reset form token immediately after success state
+                // This can not be made directly in "validateEntityForms()" because of private properties
+                if ($this->isActionSuccess()) {
+                    // Delete current token
+                    unset($_SESSION['ppd_check']);
+                    unset($_SESSION['ppd_token']);
+                    // Regenerate token to be updated in forms
+                    $this->ppdTokenIndex = $this->adminPostValidator->generateTokenIndex('ppd_check');
+                    $this->ppdTokenValue = $this->adminPostValidator->generateTokenValue('ppd_token');
+                    // Delete post images physically
+                    if ($postImages != false) {
+                        for ($i = 0; $i < count($postImages); $i ++) {
+                            @unlink($_SERVER['DOCUMENT_ROOT'] . '/uploads/images/ci-' . $postImages[$i]->creatorId . '/' . $postImages[$i]->name  . '.' .  $postImages[$i]->extension);
+                        }
+                    }
+                    // Redirect here to enable images deleting
+                    $this->httpResponse->addHeader('Location: /admin/posts');
+                    exit();
+                }
+                // Remind current paging slide item
+                $varsArray['slideRankAfterSubmit'] = isset($_POST['ppd_slide_rank']) && (int) $_POST['ppd_slide_rank'] !== 0 ? $_POST['ppd_slide_rank'] : 1;
+                // Need to update errors template var, while there is no redirection to admin posts (success state)
+                $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+                $varsArray['errors']['post']['state'] = isset($checkedForm['paf_errors']) ? true : false;
             }
-            // Redirect here to enable images deleting
-            $this->httpResponse->addHeader('Location: /admin/posts');
-            exit();
         }
-        // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = isset($_POST['ppd_slide_rank']) && (int) $_POST['ppd_slide_rank'] !== 0 ? $_POST['ppd_slide_rank'] : 1;
-        // Need to update errors template var, while there is no redirection to admin posts (success state)
-        $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
-        $varsArray['errors']['post']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -343,23 +391,32 @@ class AdminPostController extends AdminController
                 ]
             ]
         ];
-        // Validate or not form datas
-        $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
-        // Reset form token immediately after success state
-        // This can not be made directly in "validateEntityForms()" because of private properties
-        if ($this->isActionSuccess()) {
-            // Delete current token
-            unset($_SESSION['ppv_check']);
-            unset($_SESSION['ppv_token']);
-            // Regenerate token to be updated in forms
-            $this->ppvTokenIndex = $this->adminPostValidator->generateTokenIndex('ppv_check');
-            $this->ppvTokenValue = $this->adminPostValidator->generateTokenValue('ppv_token');
+        if ($this->authenticatedUser != false) {
+            $disallowManagement = $this->disallowPostAndCommentManagement($this->authenticatedUser);
+            // Post management is disallowed because of one particular condition among several cases!
+            if (!empty($disallowManagement)) {
+                $varsArray['errors']['post']['state'] = true;
+                $varsArray['errors']['paf_failed']['post']['message2'] = $this->config::isDebug('<span class="form-check-notice">' . $disallowManagement[0]['message'] . '<br>[Debug trace: authenticated user id is "<strong>' . htmlentities($this->authenticatedUser->id) . '</strong>".]</span>');
+            } else {
+                // Validate or not form datas
+                $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
+                // Reset form token immediately after success state
+                // This can not be made directly in "validateEntityForms()" because of private properties
+                if ($this->isActionSuccess()) {
+                    // Delete current token
+                    unset($_SESSION['ppv_check']);
+                    unset($_SESSION['ppv_token']);
+                    // Regenerate token to be updated in forms
+                    $this->ppvTokenIndex = $this->adminPostValidator->generateTokenIndex('ppv_check');
+                    $this->ppvTokenValue = $this->adminPostValidator->generateTokenValue('ppv_token');
+                }
+                // Remind current paging slide item
+                $varsArray['slideRankAfterSubmit'] = isset($_POST['ppv_slide_rank']) && (int) $_POST['ppv_slide_rank'] !== 0 ? $_POST['ppv_slide_rank'] : 1;
+                // Need to update errors template var, while there is no redirection to admin posts (success state)
+                $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+                $varsArray['errors']['post']['state'] = isset($checkedForm['paf_errors']) ? true : false;
+            }
         }
-        // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = isset($_POST['ppv_slide_rank']) && (int) $_POST['ppv_slide_rank'] !== 0 ? $_POST['ppv_slide_rank'] : 1;
-        // Need to update errors template var, while there is no redirection to admin posts (success state)
-        $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
-        $varsArray['errors']['post']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -390,23 +447,32 @@ class AdminPostController extends AdminController
                 ]
             ]
         ];
-        // Validate or not form datas
-        $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
-        // Reset form token immediately after success state
-        // This can not be made directly in "validateEntityForms()" because of private properties
-        if ($this->isActionSuccess()) {
-            // Delete current token
-            unset($_SESSION['ppp_check']);
-            unset($_SESSION['ppp_token']);
-            // Regenerate token to be updated in forms
-            $this->pppTokenIndex = $this->adminPostValidator->generateTokenIndex('ppp_check');
-            $this->pppTokenValue = $this->adminPostValidator->generateTokenValue('ppp_token');
+        if ($this->authenticatedUser != false) {
+            $disallowManagement = $this->disallowPostAndCommentManagement($this->authenticatedUser);
+            // Post management is disallowed because of one particular condition among several cases!
+            if (!empty($disallowManagement)) {
+                $varsArray['errors']['post']['state'] = true;
+                $varsArray['errors']['paf_failed']['post']['message2'] = $this->config::isDebug('<span class="form-check-notice">' . $disallowManagement[0]['message'] . '<br>[Debug trace: authenticated user id is "<strong>' . htmlentities($this->authenticatedUser->id) . '</strong>".]</span>');
+            } else {
+                // Validate or not form datas
+                $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
+                // Reset form token immediately after success state
+                // This can not be made directly in "validateEntityForms()" because of private properties
+                if ($this->isActionSuccess()) {
+                    // Delete current token
+                    unset($_SESSION['ppp_check']);
+                    unset($_SESSION['ppp_token']);
+                    // Regenerate token to be updated in forms
+                    $this->pppTokenIndex = $this->adminPostValidator->generateTokenIndex('ppp_check');
+                    $this->pppTokenValue = $this->adminPostValidator->generateTokenValue('ppp_token');
+                }
+                // Remind current paging slide item
+                $varsArray['slideRankAfterSubmit'] = isset($_POST['ppp_slide_rank']) && (int) $_POST['ppp_slide_rank'] !== 0 ? $_POST['ppp_slide_rank'] : 1;
+                // Need to update errors template var, while there is no redirection to admin posts (success state)
+                $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+                $varsArray['errors']['post']['state'] = isset($checkedForm['paf_errors']) ? true : false;
+            }
         }
-        // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = isset($_POST['ppp_slide_rank']) && (int) $_POST['ppp_slide_rank'] !== 0 ? $_POST['ppp_slide_rank'] : 1;
-        // Need to update errors template var, while there is no redirection to admin posts (success state)
-        $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
-        $varsArray['errors']['post']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -437,23 +503,32 @@ class AdminPostController extends AdminController
                 ]
             ]
         ];
-        // Validate or not form datas
-        $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
-        // Reset form token immediately after success state
-        // This can not be made directly in "validateEntityForms()" because of private properties
-        if ($this->isActionSuccess()) {
-            // Delete current token
-            unset($_SESSION['ppu_check']);
-            unset($_SESSION['ppu_token']);
-            // Regenerate token to be updated in forms
-            $this->ppuTokenIndex = $this->adminPostValidator->generateTokenIndex('ppu_check');
-            $this->ppuTokenValue = $this->adminPostValidator->generateTokenValue('ppu_token');
+        if ($this->authenticatedUser != false) {
+            $disallowManagement = $this->disallowPostAndCommentManagement($this->authenticatedUser);
+            // Post management is disallowed because of one particular condition among several cases!
+            if (!empty($disallowManagement)) {
+                $varsArray['errors']['post']['state'] = true;
+                $varsArray['errors']['paf_failed']['post']['message2'] = $this->config::isDebug('<span class="form-check-notice">' . $disallowManagement[0]['message'] . '<br>[Debug trace: authenticated user id is "<strong>' . htmlentities($this->authenticatedUser->id) . '</strong>".]</span>');
+            } else {
+                // Validate or not form datas
+                $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
+                // Reset form token immediately after success state
+                // This can not be made directly in "validateEntityForms()" because of private properties
+                if ($this->isActionSuccess()) {
+                    // Delete current token
+                    unset($_SESSION['ppu_check']);
+                    unset($_SESSION['ppu_token']);
+                    // Regenerate token to be updated in forms
+                    $this->ppuTokenIndex = $this->adminPostValidator->generateTokenIndex('ppu_check');
+                    $this->ppuTokenValue = $this->adminPostValidator->generateTokenValue('ppu_token');
+                }
+                // Remind current paging slide item
+                $varsArray['slideRankAfterSubmit'] = isset($_POST['ppu_slide_rank']) && (int) $_POST['ppu_slide_rank'] !== 0 ? $_POST['ppu_slide_rank'] : 1;
+                // Need to update errors template var, while there is no redirection to admin posts (success state)
+                $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+                $varsArray['errors']['post']['state'] = isset($checkedForm['paf_errors']) ? true : false;
+            }
         }
-        // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = isset($_POST['ppu_slide_rank']) && (int) $_POST['ppu_slide_rank'] !== 0 ? $_POST['ppu_slide_rank'] : 1;
-        // Need to update errors template var, while there is no redirection to admin posts (success state)
-        $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
-        $varsArray['errors']['post']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -1209,23 +1284,32 @@ class AdminPostController extends AdminController
             'successMessage' => 'Deleting action was performed successfully<br>as concerns comment #',
             'datas' => ['entity' => 'comment'],
         ];
-        // Validate or not form datas
-        $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
-        // Reset form token immediately after success state
-        // This can not be made directly in "validateEntityForms()" because of private properties
-        if ($this->isActionSuccess()) {
-            // Delete current token
-            unset($_SESSION['pcd_check']);
-            unset($_SESSION['pcd_token']);
-            // Regenerate token to be updated in forms
-            $this->pcdTokenIndex = $this->adminPostValidator->generateTokenIndex('pcd_check');
-            $this->pcdTokenValue = $this->adminPostValidator->generateTokenValue('pcd_token');
+        if ($this->authenticatedUser != false) {
+            $disallowManagement = $this->disallowPostAndCommentManagement($this->authenticatedUser);
+            // Comment management is disallowed because of one particular condition among several cases!
+            if (!empty($disallowManagement)) {
+                $varsArray['errors']['comment']['state'] = true;
+                $varsArray['errors']['paf_failed']['comment']['message2'] = $this->config::isDebug('<span class="form-check-notice">' . $disallowManagement[0]['message'] . '<br>[Debug trace: authenticated user id is "<strong>' . htmlentities($this->authenticatedUser->id) . '</strong>".]</span>');
+            } else {
+                // Validate or not form datas
+                $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
+                // Reset form token immediately after success state
+                // This can not be made directly in "validateEntityForms()" because of private properties
+                if ($this->isActionSuccess()) {
+                    // Delete current token
+                    unset($_SESSION['pcd_check']);
+                    unset($_SESSION['pcd_token']);
+                    // Regenerate token to be updated in forms
+                    $this->pcdTokenIndex = $this->adminPostValidator->generateTokenIndex('pcd_check');
+                    $this->pcdTokenValue = $this->adminPostValidator->generateTokenValue('pcd_token');
+                }
+                // Remind current paging slide item
+                $varsArray['slideRankAfterSubmit'] = isset($_POST['pcd_slide_rank']) && (int) $_POST['pcd_slide_rank'] !== 0 ? $_POST['pcd_slide_rank'] : 1;
+                // Need to update errors template var, while there is no redirection to admin posts (success state)
+                $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+                $varsArray['errors']['comment']['state'] = isset($checkedForm['paf_errors']) ? true : false;
+            }
         }
-        // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = isset($_POST['pcd_slide_rank']) && (int) $_POST['pcd_slide_rank'] !== 0 ? $_POST['pcd_slide_rank'] : 1;
-        // Need to update errors template var, while there is no redirection to admin posts (success state)
-        $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
-        $varsArray['errors']['comment']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -1256,23 +1340,32 @@ class AdminPostController extends AdminController
                 ]
             ]
         ];
-        // Validate or not form datas
-        $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
-        // Reset form token immediately after success state
-        // This can not be made directly in "validateEntityForms()" because of private properties
-        if ($this->isActionSuccess()) {
-            // Delete current token
-            unset($_SESSION['pcv_check']);
-            unset($_SESSION['pcv_token']);
-            // Regenerate token to be updated in forms
-            $this->pcvTokenIndex = $this->adminPostValidator->generateTokenIndex('pcv_check');
-            $this->pcvTokenValue = $this->adminPostValidator->generateTokenValue('pcv_token');
+        if ($this->authenticatedUser != false) {
+            $disallowManagement = $this->disallowPostAndCommentManagement($this->authenticatedUser);
+            // Comment management is disallowed because of one particular condition among several cases!
+            if (!empty($disallowManagement)) {
+                $varsArray['errors']['comment']['state'] = true;
+                $varsArray['errors']['paf_failed']['comment']['message2'] = $this->config::isDebug('<span class="form-check-notice">' . $disallowManagement[0]['message'] . '<br>[Debug trace: authenticated user id is "<strong>' . htmlentities($this->authenticatedUser->id) . '</strong>".]</span>');
+            } else {
+                // Validate or not form datas
+                $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
+                // Reset form token immediately after success state
+                // This can not be made directly in "validateEntityForms()" because of private properties
+                if ($this->isActionSuccess()) {
+                    // Delete current token
+                    unset($_SESSION['pcv_check']);
+                    unset($_SESSION['pcv_token']);
+                    // Regenerate token to be updated in forms
+                    $this->pcvTokenIndex = $this->adminPostValidator->generateTokenIndex('pcv_check');
+                    $this->pcvTokenValue = $this->adminPostValidator->generateTokenValue('pcv_token');
+                }
+                // Remind current paging slide item
+                $varsArray['slideRankAfterSubmit'] = isset($_POST['pcv_slide_rank']) && (int) $_POST['pcv_slide_rank'] !== 0 ? $_POST['pcv_slide_rank'] : 1;
+                // Need to update errors template var, while there is no redirection to admin posts (success state)
+                $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+                $varsArray['errors']['comment']['state'] = isset($checkedForm['paf_errors']) ? true : false;
+            }
         }
-        // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = isset($_POST['pcv_slide_rank']) && (int) $_POST['pcv_slide_rank'] !== 0 ? $_POST['pcv_slide_rank'] : 1;
-        // Need to update errors template var, while there is no redirection to admin posts (success state)
-        $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
-        $varsArray['errors']['comment']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -1303,23 +1396,32 @@ class AdminPostController extends AdminController
                 ]
             ]
         ];
-        // Validate or not form datas
-        $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
-        // Reset form token immediately after success state
-        // This can not be made directly in "validateEntityForms()" because of private properties
-        if ($this->isActionSuccess()) {
-            // Delete current token
-            unset($_SESSION['pcp_check']);
-            unset($_SESSION['pcp_token']);
-            // Regenerate token to be updated in forms
-            $this->pcpTokenIndex = $this->adminPostValidator->generateTokenIndex('pcp_check');
-            $this->pcpTokenValue = $this->adminPostValidator->generateTokenValue('pcp_token');
+        if ($this->authenticatedUser != false) {
+            $disallowManagement = $this->disallowPostAndCommentManagement($this->authenticatedUser);
+            // Comment management is disallowed because of one particular condition among several cases!
+            if (!empty($disallowManagement)) {
+                $varsArray['errors']['comment']['state'] = true;
+                $varsArray['errors']['paf_failed']['comment']['message2'] = $this->config::isDebug('<span class="form-check-notice">' . $disallowManagement[0]['message'] . '<br>[Debug trace: authenticated user id is "<strong>' . htmlentities($this->authenticatedUser->id) . '</strong>".]</span>');
+            } else {
+                // Validate or not form datas
+                $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
+                // Reset form token immediately after success state
+                // This can not be made directly in "validateEntityForms()" because of private properties
+                if ($this->isActionSuccess()) {
+                    // Delete current token
+                    unset($_SESSION['pcp_check']);
+                    unset($_SESSION['pcp_token']);
+                    // Regenerate token to be updated in forms
+                    $this->pcpTokenIndex = $this->adminPostValidator->generateTokenIndex('pcp_check');
+                    $this->pcpTokenValue = $this->adminPostValidator->generateTokenValue('pcp_token');
+                }
+                // Remind current paging slide item
+                $varsArray['slideRankAfterSubmit'] = isset($_POST['pcp_slide_rank']) && (int) $_POST['pcp_slide_rank'] !== 0 ? $_POST['pcp_slide_rank'] : 1;
+                // Need to update errors template var, while there is no redirection to admin posts (success state)
+                $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+                $varsArray['errors']['comment']['state'] = isset($checkedForm['paf_errors']) ? true : false;
+            }
         }
-        // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = isset($_POST['pcp_slide_rank']) && (int) $_POST['pcp_slide_rank'] !== 0 ? $_POST['pcp_slide_rank'] : 1;
-        // Need to update errors template var, while there is no redirection to admin posts (success state)
-        $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
-        $varsArray['errors']['comment']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
@@ -1350,23 +1452,32 @@ class AdminPostController extends AdminController
                 ]
             ]
         ];
-        // Validate or not form datas
-        $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
-        // Reset form token immediately after success state
-        // This can not be made directly in "validateEntityForms()" because of private properties
-        if ($this->isActionSuccess()) {
-            // Delete current token
-            unset($_SESSION['pcu_check']);
-            unset($_SESSION['pcu_token']);
-            // Regenerate token to be updated in forms
-            $this->pcuTokenIndex = $this->adminPostValidator->generateTokenIndex('pcu_check');
-            $this->pcuTokenValue = $this->adminPostValidator->generateTokenValue('pcu_token');
+        if ($this->authenticatedUser != false) {
+            $disallowManagement = $this->disallowPostAndCommentManagement($this->authenticatedUser);
+            // Comment management is disallowed because of one particular condition among several cases!
+            if (!empty($disallowManagement)) {
+                $varsArray['errors']['comment']['state'] = true;
+                $varsArray['errors']['paf_failed']['comment']['message2'] = $this->config::isDebug('<span class="form-check-notice">' . $disallowManagement[0]['message'] . '<br>[Debug trace: authenticated user id is "<strong>' . htmlentities($this->authenticatedUser->id) . '</strong>".]</span>');
+            } else {
+                // Validate or not form datas
+                $checkedForm = $this->validateEntityForms($paramsArray, $this->adminPostValidator, '/admin/posts');
+                // Reset form token immediately after success state
+                // This can not be made directly in "validateEntityForms()" because of private properties
+                if ($this->isActionSuccess()) {
+                    // Delete current token
+                    unset($_SESSION['pcu_check']);
+                    unset($_SESSION['pcu_token']);
+                    // Regenerate token to be updated in forms
+                    $this->pcuTokenIndex = $this->adminPostValidator->generateTokenIndex('pcu_check');
+                    $this->pcuTokenValue = $this->adminPostValidator->generateTokenValue('pcu_token');
+                }
+                // Remind current paging slide item
+                $varsArray['slideRankAfterSubmit'] = isset($_POST['pcu_slide_rank']) && (int) $_POST['pcu_slide_rank'] !== 0 ? $_POST['pcu_slide_rank'] : 1;
+                // Need to update errors template var, while there is no redirection to admin posts (success state)
+                $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
+                $varsArray['errors']['comment']['state'] = isset($checkedForm['paf_errors']) ? true : false;
+            }
         }
-        // Remind current paging slide item
-        $varsArray['slideRankAfterSubmit'] = isset($_POST['pcu_slide_rank']) && (int) $_POST['pcu_slide_rank'] !== 0 ? $_POST['pcu_slide_rank'] : 1;
-        // Need to update errors template var, while there is no redirection to admin posts (success state)
-        $varsArray['errors'] = isset($checkedForm['paf_errors']) ? $checkedForm['paf_errors'] : false;
-        $varsArray['errors']['comment']['state'] = isset($checkedForm['paf_errors']) ? true : false;
         // Render template with updated vars
         $this->renderAdminPosts($varsArray);
     }
