@@ -22,11 +22,13 @@ span.btn {
     cursor: default !important;
 }
 
-span.btn:hover,span.btn:focus {
-    background-color: #888;
-    box-shadow: none;
+a:not(.btn):hover {
+    text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.4);
 }
 
+.form-success a:hover {
+    text-shadow: 0px 2px 2px rgba(255, 255, 255, 0.4);
+}
 /* End override BootStrap */
 
 /* Override Now ui */
@@ -34,40 +36,74 @@ span.btn:hover,span.btn:focus {
     position: relative;
 }
 
-.alert .close {
+.alert a.text-lower strong, .text-lower {
+    font-size: 1em !important;
+    text-transform: lowercase !important;
+}
+
+.alert button.close {
     position: absolute;
-    top: 0;
+    top: 0px;
     right: 5px;
+    transform: none;
     cursor: pointer;
 }
 
-.alert .close .now-ui-icons:before {
+.alert button.close .now-ui-icons:before {
     font-size: 0.75em;
 }
 /* End override Now ui */
-
+/* Override Recaptcha */
 .g-recaptcha {
     display: inline-block;
+    margin-bottom: 5px;
+}
+/* End override Recaptcha */
+
+html {
+    height: 100%;
 }
 
 body {
-    height: 100%;
+    height: inherit;
+}
+
+ul.phpblog-list {
+    display: inline-block;
+    padding: 1em;
 }
 
 .navbar.bg-phpblog-neutral {
     background-color: rgb(153, 153, 153);
 }
 
+.navbar {
+    min-height: 115px;
+}
+
 .navbar a {
     margin: 0;
+}
+
+.navbar-brand {
+    margin: 0;
+    transform-origin: 50% 50% 50%;
+    backface-visibility: hidden;
+    transform: scale(0.95) translate3d(0, 0, 0);
+    transition: all 0.3s;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.1) translate3d(0, 0, 0);
+    transition: all 0.3s ease-out;
 }
 
 .navbar-brand .btn {
     cursor: pointer !important;
 }
 
-.navbar-brand:hover {
-    color: #888 !important;
+.navbar-brand .btn:hover {
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
 }
 
 .navbar-brand .custom-logo {
@@ -75,7 +111,8 @@ body {
     height: auto;
     position: relative;
     top: 0;
-    left: 0.2em;
+    left: 0;
+    padding: 0.5em;
 }
 
 .navbar-brand .navbar-brand-title {
@@ -98,7 +135,59 @@ body {
     top: 2px;
 }
 
+/* User profile */
+.navbar .navbar-nav .navbar-nav-profile {
+    position: fixed;
+    top: 0;
+    left: 2rem;
+    right: 2rem;
+    display: block;
+    text-align: right;
+}
+
+.navbar .navbar-nav .navbar-nav-profile a {
+    position: relative;
+    top: 0;
+    left: 0;
+    display: inline-block;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-bottom: 2px solid #ffb236;
+    padding: 0.3rem 0.5rem;
+    text-decoration: none;
+    text-align: center;
+    color: #fff;
+    transition: color, border 0.3s ease-out;
+}
+
+.navbar .navbar-nav .navbar-nav-profile a:hover {
+    color: #ffb236;
+    border-color: #fff;
+}
+
+.navbar .navbar-nav .navbar-nav-profile a small {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+.navbar .navbar-nav .navbar-nav-profile a span {
+    position: relative;
+    top: 0.4rem;
+    left: 0;
+}
+
+@media screen and (max-width: 991px) {
+    .navbar .navbar-nav .navbar-nav-profile {
+        left: 1rem;
+        right: 1rem;
+        text-align: center;
+    }
+}
+/* End user profile */
+
 .navbar .navbar-nav .nav-link:not(.btn) i.fa {
+    color: #ffb236;
     top: -1px;
 }
 
@@ -138,10 +227,10 @@ body {
     }
 
     .sidebar-collapse .navbar .dropdown.show .dropdown-menu.show {
-        transform: translate(0,7px);
+        transform: translate(0, 7px);
         transition: all 0.5s linear;
         opacity: 1;
-        height: 100%;
+        height: auto;
     }
 }
 
@@ -159,6 +248,14 @@ body {
 
 .page-header-image.admin-home {
     background-image: url('/assets/images/phpblog/admin-home.jpg');
+}
+
+.page-header-image.admin-login {
+    background-image: url('/assets/images/phpblog/admin-login.jpg');
+}
+
+.page-header-image.admin-register {
+    background-image: url('/assets/images/phpblog/admin-register.jpg');
 }
 
 .page-header-image.admin-post {
@@ -266,11 +363,14 @@ body {
 
 /* Single post */
 .post-comment-list-paging .slick-slide { /*comments paging*/
-    padding: 10px 20px 40px;
+    padding: 10px 20px 0;
 }
 
 /* Forms */
-.cf-error .cf-check-notice, .form-check-notice {
+body.new-session .form-token-notice {
+    display: none;
+}
+.form-check-notice, .form-token-notice {
     display: block;
     color: rgba(255, 54, 54, 0.8);
     background-color: #fff;
@@ -302,15 +402,40 @@ form p.text-danger {
     border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
+.section-contact-us .contact-form .input-group {
+    padding: 0;
+}
+
 .section-contact-us .contact-form .textarea-container,
 .textarea-container  {
     margin: 0 0 10px;
+    padding: 0;
 }
 
 .section-contact-us .contact-form .textarea-container.input-group .input-group-addon,
 .textarea-container.input-group .input-group-addon {
     padding-top: 19px;
     align-items: flex-start;
+}
+
+.phpblog-form-text {
+    font-weight: 400;
+    font-size: 0.85em;
+}
+
+.phpblog-form-text a {
+    font-weight: 600;
+    color: #9a9a9a;
+}
+
+.phpblog-form-text a:hover {
+    outline: none;
+    text-decoration: none;
+    color: #fff !important;
+}
+
+.phpblog-form-text a:focus {
+    outline: none;
 }
 
 /* Use it instead of .btn-warning */
@@ -325,12 +450,10 @@ form p.text-danger {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
-.section-contact-us .cf-hide,
 .form-hide {
     display: none;
 }
 
-.section-contact-us .cf-screen-reader,
 .form-screen-reader {
     position: absolute !important;
     clip: rect(1px 1px 1px 1px);

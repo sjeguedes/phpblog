@@ -1,6 +1,6 @@
 <?php
 namespace Core\Helper;
-use Core\AppHTTPResponse;
+use Core\Routing\AppRouter;
 
 /**
  * Format a string with helpers
@@ -11,25 +11,45 @@ class AppStringModifier
 	 * @var object: unique instance of AppStringModifier
 	 */
 	private static $_instance;
+    /**
+     * @var AppRouter instance
+     */
+    private static $_router;
+    /**
+     * @var object: an instance of AppConfig
+     */
+    private static $_config;
+    /**
+     * @var object: an instance of AppHTTPResponse
+     */
+    private static $_httpResponse;
 
-     /**
+    /**
      * Instanciate a unique AppStringModifier object (Singleton)
+     * @param object: an AppRouter instance
      * @return AppStringModifier: a unique instance of AppStringModifier
      */
-	public static function getInstance()
+    public static function getInstance(AppRouter $router)
     {
         if (is_null(self::$_instance)) {
-            self::$_instance = new AppStringModifier();
+            self::$_instance = new AppStringModifier($router);
         }
         return self::$_instance;
     }
 
     /**
      * Constructor
+     * @param object: an AppRouter instance
      * @return void
      */
-    private function __construct()
+    private function __construct(AppRouter $router)
     {
+        // Set AppRouter instance
+        self::$_router = $router;
+        // Set AppHTTPResponse instance used router!
+        self::$_httpResponse = self::$_router->getHTTPResponse();
+        // Set AppConfig instance used by router!
+        self::$_config = self::$_router->getConfig();
     }
 
     /**
@@ -38,7 +58,8 @@ class AppStringModifier
     */
     public function __clone()
     {
-        self::$_httpResponse->set404ErrorResponse(self::isDebug('Technical error [Debug trace: Don\'t try to clone singleton ' . __CLASS__ . '!]'));
+        self::$_httpResponse->set404ErrorResponse(self::$_config::isDebug('Technical error [Debug trace: Don\'t try to clone singleton ' . __CLASS__ . '!]'), self::$_router);
+        exit();
     }
 
     /**

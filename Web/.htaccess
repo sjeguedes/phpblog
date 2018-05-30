@@ -1,5 +1,6 @@
 Options +FollowSymLinks
 RewriteEngine on
+RewriteBase /
 # Rewrite if the file does not exist
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]

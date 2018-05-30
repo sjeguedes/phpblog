@@ -48,6 +48,41 @@ routing:
         name: Admin\Home\AdminHome|showAdminHome
         method: GET
 
+    adminShowAccess:
+        path: /admin/login
+        module: Admin\User\AdminUser
+        action: showAdminAccess
+        name: Admin\User\AdminUser|showAdminAccess
+        method: GET
+
+    adminShowRegister:
+        path: /admin/register
+        module: Admin\User\AdminUser
+        action: showAdminRegister
+        name: Admin\User\AdminUser|showAdminRegister
+        method: GET
+
+    adminShowRequestNewPassword:
+        path: /admin/request-new-password
+        module: Admin\User\AdminUser
+        action: showAdminRequestNewPassword
+        name: Admin\User\AdminUser|showAdminRequestNewPassword
+        method: GET
+
+    adminShowRenewPassword:
+        path: /admin/renew-password
+        module: Admin\User\AdminUser
+        action: showAdminRenewPassword
+        name: Admin\User\AdminUser|showAdminRenewPassword
+        method: GET
+
+    adminDisconnect:
+        path: /admin/logout
+        module: Admin\User\AdminUser
+        action: logoutUser
+        name: Admin\User\AdminUser|logoutUser
+        method: GET
+
     postCommentPOSTParams:
         path: /comment-post/:id
         module: Blog\Post\Post
@@ -60,6 +95,34 @@ routing:
         module: Home\Home
         action: isCalled
         name: Home\Home|isCalled
+        method: POST
+
+    adminRegister:
+        path: /admin/register
+        module: Admin\User\AdminUser
+        action: registerUser
+        name: Admin\User\AdminUser|registerUser
+        method: POST
+
+    adminConnect:
+        path: /admin/login
+        module: Admin\User\AdminUser
+        action: loginUser
+        name: Admin\User\AdminUser|loginUser
+        method: POST
+
+    adminRequestNewPassword:
+        path: /admin/request-new-password
+        module: Admin\User\AdminUser
+        action: requestNewPassword
+        name: Admin\User\AdminUser|requestNewPassword
+        method: POST
+
+    adminRenewPassword:
+        path: /admin/renew-password
+        module: Admin\User\AdminUser
+        action: renewPassword
+        name: Admin\User\AdminUser|renewPassword
         method: POST
 
     adminHomeDeleteContact:

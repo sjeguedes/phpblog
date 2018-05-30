@@ -1,6 +1,6 @@
 <?php
 namespace Core\Form;
-use Core\Config\AppConfig;
+use Core\Routing\AppRouter;
 
 /**
  * Create a class to use a captcha in forms
@@ -11,6 +11,10 @@ class AppCaptcha
 	 * @var object: captcha to use
 	 */
 	private $captcha;
+    /**
+     * @var AppRouter: an instance of AppRouter
+     */
+    private $router;
 	/**
 	 * @var object: config to use
 	 */
@@ -18,13 +22,15 @@ class AppCaptcha
 
 	/**
 	 * Constructor
+     * @param object $router: an instance of AppRouter
 	 * @param object $captcha: an instance of one type of captcha object
 	 * @return void
 	 */
-	public function __construct($captcha)
+	public function __construct($captcha, AppRouter $router)
     {
         $this->captcha = $captcha;
-        $this->config = AppConfig::getInstance();
+        $this->router = $router;
+        $this->config = $router->getConfig();
     }
 
     /**
@@ -41,7 +47,7 @@ class AppCaptcha
             case 'AppNoSpamTools':
                 if (isset($arguments['customized'])) {
                     return call_user_func_array([$this->captcha, $arguments['customized'][0]], isset($arguments['customized'][1]) ? $arguments['customized'][1] : []);
-                } elseif ((is_array($arguments))) {
+                } elseif ((is_array($arguments))) { // Only arguments
                     return call_user_func_array([$this, 'validateAppNoSpamTools'], $arguments);
                 }
             break;
@@ -96,6 +102,7 @@ class AppCaptcha
 
     /**
      * Validate customized no spam tools "captcha"
+     * Important: don't forget to add "form-nospam" CSS class on form tag, to use custom style
      * @param array $result: an array which contains form inputs values, errors with messages
      * @param string $errorIndex: name of errors index related to submitted form
      * @return array: $result is updated with captcha form validation
@@ -104,7 +111,6 @@ class AppCaptcha
     {
         $formIdentifier = $this->captcha->getFormIdentifier();
         $usedTools = $this->captcha->getNoSpamToolsUsed();
-
         if ($usedTools[$formIdentifier . 'hpi']) { // Honeypot
             // Test if honeypot is an empty string
             if (isset($_REQUEST[$formIdentifier . 'hpi']) && $_REQUEST[$formIdentifier . 'hpi'] == '') {
@@ -132,7 +138,6 @@ class AppCaptcha
             }
         }
         // Other tests? Declare them and do stuff here!
-
         // Error message
         if (!$result[$formIdentifier . 'noSpam']) {
             $result[$errorIndex][$formIdentifier . 'noSpam'] = 'Spam bot behaviour seems to be detected!<br>Form can not be validated.<br>Please confirm you are a human.';

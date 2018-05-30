@@ -1,9 +1,6 @@
 <?php
 namespace App\Controllers;
-use Core\AppPage;
-use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
-use Core\Config\AppConfig;
 
 /**
  * Create a parent controller to use in each controller
@@ -11,6 +8,14 @@ use Core\Config\AppConfig;
 abstract class BaseController
 {
 	/**
+     * @var AppRouter instance
+     */
+    protected $router;
+    /**
+     * @var AppContainer instance
+     */
+    protected $container;
+    /**
 	 * @var AppPage instance
 	 */
 	protected $page;
@@ -19,34 +24,39 @@ abstract class BaseController
 	 */
 	protected $httpResponse;
 	/**
-	 * @var AppRouter instance
-	 */
-	protected $router;
-	/**
 	 * @var AppConfig instance
 	 */
 	protected $config;
+    /**
+     * @var AppSession instance
+     */
+    protected $session;
 	/**
 	 * @var object: an instance of current model called by a particular controller
 	 */
 	protected $currentModel;
 
+    /**
+     * @var boolean: true if session id is regenerated, or false
+     */
+    protected $isSessionIdRegenerated;
+
 	/**
 	 * Constructor
-	 * @param AppPage $page: an instance of AppPage
-	 * @param AppHTTPResponse $httpResponse: an instance of AppHTTPResponse
 	 * @param AppRouter $router: an instance of AppRouter
-	 * @param AppConfig $config: an instance of AppConfig
 	 * @return void
 	 */
-	public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
+	public function __construct(AppRouter $router)
 	{
-		$this->page = $page;
-		$this->httpResponse = $httpResponse;
-		$this->router = $router;
-		$this->config = $config;
-
-		session_start();
+        // Initialize router
+        $this->router = $router;
+        // Initialize a service DIC
+        $this->container = $this->router->getContainer();
+        $this->page = $this->router->getPage();
+        $this->httpResponse = $this->router->getHTTPResponse();
+        $this->config = $this->router->getConfig();
+        $this->session = $this->router->getSession();
+        $this->session::start(true);
 	}
 
 	/**
@@ -58,27 +68,26 @@ abstract class BaseController
 	public function checkAction($action)
 	{
 	    try {
-			if(is_callable([$this, $action])) {
+			if (is_callable([$this, $action])) {
 				return true;
-			}
-			else {
+			} else {
 				throw new \RuntimeException("Technical error: sorry, we cannot find a content for your request. [Debug trace: Action called doesn't exist!]");
 			}
 		}
-		catch(\RuntimeException $e) {
+		catch (\RuntimeException $e) {
 			return $e->getMessage();
 		}
 	}
 
 	/**
-	 * Get the model for a particular controller
+	 * Get model for a particular controller
 	 * @param string $className: name of current class
 	 * @return object: an instance of current model
 	 */
-	public function getCurrentModel($className)
+	protected function getCurrentModel($className)
 	{
 		$className = str_replace('Controller', 'Model', $className);
-		$currentModel = new $className($this->config);
+		$currentModel = new $className($this->router);
 		return $currentModel;
 	}
 }

@@ -1,10 +1,7 @@
 <?php
 namespace App\Controllers\Admin\Home;
 use App\Controllers\Admin\AdminController;
-use Core\AppPage;
-use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
-use Core\Config\AppConfig;
 use Core\Service\AppContainer;
 
 /**
@@ -59,18 +56,15 @@ class AdminHomeController extends AdminController
 
     /**
 	 * Constructor
-	 * @param AppPage $page
-	 * @param AppHTTPResponse $httpResponse
 	 * @param AppRouter $router
-	 * @param AppConfig $config
 	 * @return void
 	 */
-	public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router,  AppConfig $config)
+	public function __construct(AppRouter $router)
 	{
-		parent::__construct($page, $httpResponse, $router, $config);
+		parent::__construct($router);
 		$this->currentModel = $this->getCurrentModel(__CLASS__);
         // Initialize home admin forms validator
-        $this->adminHomeValidator = AppContainer::getFormValidator()[2];
+        $this->adminHomeValidator = $this->container::getFormValidator()[2];
         // Define used parameters to avoid CSRF:
         // Contact deleting token
         $this->cdTokenIndex = $this->adminHomeValidator->generateTokenIndex('cd_check');
@@ -155,7 +149,8 @@ class AdminHomeController extends AdminController
             // Error messages notice (only updated in actions)
             'errors' => false,
             // Update success state for each type of form after success redirection
-            'success' => isset($_SESSION['haf_success']) ? $_SESSION['haf_success'] : false
+            'success' => isset($_SESSION['haf_success']) ? $_SESSION['haf_success'] : false,
+            'loginSuccess' => isset($_SESSION['lif_success']) ? $_SESSION['lif_success'] : false
         ];
     }
 
@@ -194,6 +189,12 @@ class AdminHomeController extends AdminController
         if ($this->isActionSuccess()) {
             // Do not store a success state anymore!
             unset($_SESSION['haf_success']);
+        }
+        // Is it already a succcess state for admin login form?
+        // Enable authentication success message box, once a time, when user is logged in.
+        if (isset($_SESSION['lif_success'])) {
+            // Do not store a success state anymore!
+            unset($_SESSION['lif_success']);
         }
 	}
 
@@ -409,7 +410,6 @@ class AdminHomeController extends AdminController
                 unset($_SESSION[$tokenPrefix . 'check']);
                 unset($_SESSION[$tokenPrefix . 'token']);
                 // Regenerate token to be updated in forms
-                session_regenerate_id(true);
                 $this->$tokenIndex = $this->adminHomeValidator->generateTokenIndex($tokenPrefix . 'check');
                 $this->$tokenValue = $this->adminHomeValidator->generateTokenValue($tokenPrefix . 'token');
                 // Initialize success state
@@ -421,6 +421,7 @@ class AdminHomeController extends AdminController
                 ];
                 // Redirect to admin home action (to reset submitted form)
                 $this->httpResponse->addHeader('Location: /admin');
+                exit();
             }
         }
         // Update error notice messages and form values

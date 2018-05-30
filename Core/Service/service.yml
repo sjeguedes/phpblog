@@ -1,38 +1,77 @@
 service:
-  formValidator:
-    -
-      name: home.contactForm
-      formIdentifier: cf_
-      formDatasRequest: POST
-    -
-      name: post.commentForm
-      formIdentifier: pcf_
-      formDatasRequest: POST
-    -
-      name: home.adminForm
-      formIdentifier: haf_
-      formDatasRequest: POST
-  mailer:
-    -
-      name: home.contactForm
-      type: PHPMailer
-      use: contactForm
-      sendingMethod: smtp
-  captcha:
-    -
-      name: home.contactForm
-      type: ReCaptcha
-    -
-      name: post.commentForm
-      type: AppNoSpamTools
-      formIdentifier: pcf_
-      tools:
+    formValidator:
         -
-          callable: createHoneyPotInput
-          arguments: [false]
+            name: home.contactForm
+            formIdentifier: cf_
+            formDatasRequest: POST
         -
-          callable: createTimeLimitInput
-          arguments: [false]
+            name: post.commentForm
+            formIdentifier: pcf_
+            formDatasRequest: POST
         -
-          callable: createHumanSwitchInput
-          arguments: [false]
+            name: home.adminForm
+            formIdentifier: haf_
+            formDatasRequest: POST
+        -
+            name: user.registerForm
+            formIdentifier: ref_
+            formDatasRequest: POST
+        -
+            name: user.loginForm
+            formIdentifier: lif_
+            formDatasRequest: POST
+        -
+            name: user.forgetPasswordForm
+            formIdentifier: fpf_
+            formDatasRequest: POST
+        -
+            name: user.renewPasswordForm
+            formIdentifier: rpf_
+            formDatasRequest: POST
+    mailer:
+        -
+            name: home.contactForm
+            type: PHPMailer
+            use: contactForm
+            sendingMethod: smtp
+    captcha:
+        -
+            name: home.contactForm
+            type: ReCaptcha
+        -
+            name: post.commentForm
+            type: AppNoSpamTools
+            formIdentifier: pcf_
+            tools:
+                -
+                    callable: createHoneyPotInput
+                    arguments: [false]
+                -
+                    callable: createTimeLimitInput
+                    arguments: [false]
+                -
+                    callable: createHumanSwitchInput
+                    arguments: [false, 'Are you a human?']
+        -
+            name: user.registerForm
+            type: ReCaptcha
+        -
+            name: user.loginForm
+            type: ReCaptcha
+        -
+            name: user.requestNewPasswordForm
+            type: AppNoSpamTools
+            formIdentifier: fpf_
+            tools:
+                -
+                    callable: createHoneyPotInput
+                    arguments: [false]
+                -
+                    callable: createTimeLimitInput
+                    arguments: [false]
+                -
+                    callable: createHumanSwitchInput
+                    arguments: [false, 'Do you confirm your request?']
+        -
+            name: user.renewPasswordForm
+            type: ReCaptcha

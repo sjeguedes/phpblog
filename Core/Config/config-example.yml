@@ -1,6 +1,22 @@
 config:
-    domain: www.example.com (or local virtual host)
+    domain: https://www.example.com (or local virtual host)
+    websiteName: your website name
+    https: true or false (your type of protocol)
     appDebug: true or false (show debug details for exceptions)
+    home:
+        profileTitleDesc: profile title description
+        profileIntro: profile intro
+        profileImage: profile image name
+        profileImageDesc: profile image description
+        profileImageLabel: profile image label
+        onlineCVResume: online CV resume absolute url
+        pdfCVResume: pdf file cv resume name
+    footer:
+        socialLinks:
+            linkedInProfile: profile absolute url
+            githubProfile: profile absolute url
+            stackoverflowProfile: profile absolute url
+            viadeoProfile: profile absolute url
     database:
         dbHost: your_db_host (local or remote server address)
         dbName: your_db_name
@@ -8,6 +24,7 @@ config:
         dbPwd: your_db_pwd
     posts:
         postPerPage: 5 (number - post quantity to show per page for posts list)
+        commentPerSlide: 5 (number - comment quantity to show per slide item for single post)
     admin:
         home:
             contactPerSlide: 5 (number - contact quantity to show per slide item)
@@ -33,4 +50,5 @@ config:
         SMTPSecure: tls or ssl
         SMTPUserName: your_mail_for_stmp_authentication (SMTPAuth set to true)
         SMTPPwd: your_password_for_stmp_authentication (SMTPAuth set to true)
-        hostedImagesAbsoluteURL: absolute url to load images in html message (https://www.example.com/assets/images/)
+    mailing:
+        hostedImagesAbsoluteURL: absolute url to load images in html emails in general (https://www.example.com/assets/images/)
