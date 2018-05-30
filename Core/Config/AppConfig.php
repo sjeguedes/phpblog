@@ -1,24 +1,22 @@
 <?php
 namespace Core\Config;
 use Core\AppHTTPResponse;
-
 // Symfony Yaml parser Component
-require_once __DIR__ . '/../../Libs/vendor/autoload.php';
 use Symfony\Component\Yaml\Yaml;
 
 class AppConfig
 {
 	private static $_instance;
+	
+	public static $_params; // Stores config params
+	public static $_appDebug; // Debug mode to show details of exception for instance
+	public static $_postPerPage; // Post Quantity to show per page
+	public static $_dbHost;
+	public static $_dbName;
+	public static $_dbUser;
+	public static $_dbPwd;
+
 	private $httpResponse;
-
-	// TODO : Create config.yml file to manage configuration
-	public const APP_DEBUG = true; // Debug mode to show details of exception for instance
-	public const POST_PER_PAGE = 1; // Post Quantity to show per page
-
-	public const DB_HOST = 'localhost';
-	public const DB_NAME = 'phpblog';
-	public const DB_USER = 'root';
-	public const DB_PWD = '';
 
 	public static function getInstance()
     {
@@ -30,18 +28,31 @@ class AppConfig
 
 	private function __construct()
 	{
-		$this->httpResponse = new AppHTTPResponse;
+		self::$_params = $this->getConfigParams();
+		self::$_appDebug = self::$_params['appDebug'];
+		self::$_postPerPage = self::$_params['posts']['postPerPage']; 
+		self::$_dbHost = self::$_params['database']['dbHost'];
+		self::$_dbName = self::$_params['database']['dbName'];
+		self::$_dbUser = self::$_params['database']['dbUser'];
+		self::$_dbPwd = self::$_params['database']['dbPwd'];
+		$this->httpResponse = new AppHTTPResponse();
 	}
 
 	protected function __clone()
 	{ 
 	}
 
-	// debug
+	private function getConfigParams()
+	{
+		// Get params from yaml file
+		$yaml = self::parseYAMLFile(__DIR__ . '/config.yml');
+		return $yaml['config'];
+	}
+
+	// Debug
 	public static function isDebug($string)
 	{
-		//var_dump('isDebug', 'APP_DEBUG', self::APP_DEBUG);
-		if(!self::APP_DEBUG) {
+		if(!self::$_appDebug) {
 			$string = preg_replace('/\[Debug trace:.*\]$/', '', $string);
 		}
 		return $string;
@@ -71,5 +82,17 @@ class AppConfig
     		$errorMessage = printf("Unable to dump datas - %s", $e->getMessage());
     		$this->httpResponse->set404ErrorResponse(self::isDebug('Technical error [Debug trace: ' . $errorMessage . ']'));
 		}
+	}
+
+	public static function renderDebug($element, $info = null) {
+		return '<div class="alert alert-warning" role="alert" style="position:relative">
+			<p class="h6">' . $info . '</p>
+            <pre>' . print_r($element, true) . '</pre>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"style="position:absolute;top:10px;right:10px">
+                <span aria-hidden="true">
+                    <i class="now-ui-icons ui-1_simple-remove"></i>
+                </span>
+            </button>
+        </div>';
 	}
 }

@@ -14,10 +14,10 @@
 					<div class="post-header">
 						<ul class="post-header-infos">
 							<li>
-								{% if post[0].temporaryParams['author'] %} <i class="fa fa-user">&nbsp;</i>by {{ post[0].temporaryParams['author'].pseudo|escape }} {% endif %} 
+								{% if post[0].temporaryParams['author'] %} <i class="fa fa-user">&nbsp;</i>by {{ post[0].temporaryParams['author'].pseudo|escape }} {% endif %}
 								<i class="fa fa-calendar">&nbsp;</i>Published on {{ post[0].creationDate }}&nbsp;-&nbsp;Updated on {{ post[0].updateDate }}
 							</li>
-							<!--<li> 
+							<!--<li>
 		                    	<i class="fa fa-comment"></i>[number] of Comments&nbsp;|&nbsp;
 		                    	<i class="fa fa-tag"></i>Tags:&nbsp;
 		                    	<span class="label label-info">News</span>
@@ -37,4 +37,3 @@
 	</div>
 </div>
 {% endblock %}
-

@@ -1,36 +1,35 @@
 <?php
 namespace Core\Routing;
+use Core\AppPage;
+use Core\AppHTTPResponse;
+use Core\Routing\AppRouter;
+use Core\Config\AppConfig;
 
 /**
  * Define a route used by router
- * Enable access to url matching route
+ * Enable access to URL matching route
  */
 class AppRoute
 {
 	/**
-	 * $path is a path to check
-	 * @var string
+	 * @var string: a path which may contain parameters to check
 	 */
 	private $path;
 	/**
-	 * $matches stores matching value(s) in url
-	 * @var array
-	 */
-	/**
-	 * $name is used to call a route by a name which identify controller and action
-	 * @var string
+	 * @var string: used to call a route by name which identifies controller and action
 	 */
 	private $name;
 	/**
+	 * @var array: store matching value(s) in URL
+	 */
 	private $matches = [];
 	/**
-	 * $params stores params used in route with attached regex to match url
-	 * @var array
+	 * @var array: store parameters used in route with corresponding regex to match URL
 	 */
 	private $params = [];
 
 	/**
-	 * Initialise $path and $name
+	 * Initialize $path and $name
 	 * @param string $path: path to check
 	 * @param string $name: name given to route
 	 * @return void
@@ -41,9 +40,8 @@ class AppRoute
 		$this->name = $name;
 	}
 
-
 	/**
-	 * Try to match url with defined path
+	 * Try to match URL with defined path
 	 * @param  string $url: URL we want to access
 	 * @return boolean 
 	 */
@@ -51,9 +49,8 @@ class AppRoute
 	{
 		$url = trim($url, '/');
 		$path = trim($this->path, '/');
-		$path = preg_replace_callback('#:([\w]+)#', [$this, 'matchParameter'] , $path);
+		$path = preg_replace_callback('/\:([\w]+)/', [$this, 'matchParameter'] , $path);
 		$regex = "#^$path$#i";
-		//var_dump('$regex final', $regex);
 
 		// $url doesn't match
 		if(!preg_match($regex, $url, $matches))
@@ -63,7 +60,7 @@ class AppRoute
 		// Delete first value $matches[0] not to keep complete url
 		array_shift($matches);
 
-		// Initialise array
+		// Initialize array
 		$this->matches = $matches;
 		return true;
 	}
@@ -101,39 +98,40 @@ class AppRoute
 	}
 
 	/**
-	 * Stores parameters we want to match
-	 * @param  string $param: defined param to find
+	 * Store parameters to match
+	 * @param  string $param: defined parameter to find
 	 * @param  string $regex: pattern to match this parameter
 	 * @return void
 	 */
 	private function useParameter($param, $regex)
 	{
-		// Escape "()" to prevent these groups from being matched
+		// Escapes "()" to prevent these groups from being matched
 		$paramRegex = str_replace('(','(?:', $regex);
 		$this->params[$param] = $paramRegex;
 	}
-
+	
 	/**
-	 * Call and execute a Closure or controller method with its arguments
-	 * @return object controller method is executed
+	 * Call and execute controller action method with its arguments
+	 * @param AppPage $page instance 
+	 * @param AppHTTPResponse $httpResponse instance
+	 * @param AppRouter $router instance
+	 * @param AppConfig $config instance
+	 * @return string|callable: error message or controller action method is executed
 	 */
-	public function getControllerAction($httpResponse, $router)
+	public function getControllerAction(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
 	{
 		// We use parameters as a string to call and execute a controller method
 		$explode = explode('|', $this->name);
 		$controllerPath = $explode[0];
-		//var_dump('App\Controllers\\' . $controllerPath . 'controller');
 		$controllerClass = 'App\Controllers\\' . $controllerPath . 'controller';
 
 		try {
 			if(class_exists($controllerClass)) {
-				$controller = new $controllerClass($httpResponse, $router);
+				$controller = new $controllerClass($page, $httpResponse, $router, $config);
 				$action = $explode[1];
 
 				// is this action callable? If true, it exists : call it!
 				if($controller->checkAction($action) === true) {
-					// var_dump('$this->matches', $this->matches);
-					// var_dump('$action', $action);
 					return call_user_func_array([$controller, $action], [$this->matches]);
 				}
 				else {
@@ -143,16 +141,21 @@ class AppRoute
 			}
 			else {
 				// Controller called doesn't exist
-				$controllerClass = preg_replace('/(.*)\\\\(.*)$/', '$2', $controllerClass); // A literal backslash needs to be escaped twice: once for the string, and once for the regex engine
+				$controllerClass = preg_replace('/(.*)\\\\(.*)$/', '$2', $controllerClass); // a literal backslash needs to be escaped twice: once for the string, and once for the regex engine
 				throw new \RuntimeException('Controller called (' . $controllerClass . ') doesn\'t exist!');
 			}
 		}
 		catch(\RuntimeException $e) {
-			$errorMessage = 'Technical error - Sorry, we cannot find a content for your request. [Debug trace: ' . get_class($e) . ' - ' . $e->getMessage() . ']';
+			$errorMessage = 'Technical error - Sorry, something wrong happened. [Debug trace: ' . get_class($e) . ' - ' . $e->getMessage() . ']';
 		}
 		return $errorMessage;		
 	}
 
+	/**
+	 * Retreive URL with parameter(s)
+	 * @param array|null $params 
+	 * @return string: generated URL
+	 */
 	public function generateURL($params = null)
 	{
 		$smartURL = $this->path;
@@ -163,5 +166,4 @@ class AppRoute
 		}
 		return $smartURL;
 	}
-
 }

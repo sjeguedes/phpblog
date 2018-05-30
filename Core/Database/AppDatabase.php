@@ -27,29 +27,11 @@ class AppDatabase
 
 	public static function getPDOWithMySQl()
 	{
-		return PDOFactory::getMySQLConnexion(self::$_config::DB_HOST, self::$_config::DB_NAME, self::$_config::DB_USER, self::$_config::DB_PWD);
+		return PDOFactory::getMySQLConnexion(self::$_config::$_dbHost, self::$_config::$_dbName, self::$_config::$_dbUser, self::$_config::$_dbPwd);
 	}
 
 	public static function getDatabase($database)
 	{
 		return $database;
 	}
-
 }
-
-
-
-		// $dbConnection = false;
-		// try {
-		// 	$this->dbConnector = $dbConnector::getDatabase(PDOFactory::getMysqlConnexion());
-		// 	//var_dump($this->dbConnector);
-		// 	$dbConnection = true;
-		// }
-	 //    catch(\RuntimeException $e) {
-	 //    	die($httpResponse->set404ErrorResponse($e->getMessage(), $router));
-	 //    }
-
-	 //    if($dbConnection === false) {
-	 //    	//Database connection issue
-	 //    	throw new \RuntimeException('Technical error [Debug trace: database connection failed!]');
-	 //    }

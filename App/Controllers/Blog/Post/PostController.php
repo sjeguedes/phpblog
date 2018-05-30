@@ -10,9 +10,9 @@ use Core\Config\AppConfig;
  */
 class PostController extends BaseController
 {
-	public function __construct(AppHTTPResponse $httpResponse, AppRouter $router)
+	public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router,  AppConfig $config)
 	{
-		parent::__construct(new AppPage(), $httpResponse, $router);
+		parent::__construct($page, $httpResponse, $router, $config);
 		$this->currentModel = $this->getCurrentModel(__CLASS__);
 	}
 
@@ -41,7 +41,7 @@ class PostController extends BaseController
 		}
 		else {
 			// Get posts datas for current page and get post Quantity to show per page
-			$postListOnPage = $this->currentModel->getListByPaging($currentPageId, $this->config::POST_PER_PAGE);
+			$postListOnPage = $this->currentModel->getListByPaging($currentPageId, $this->config::$_postPerPage);
 
 			// $currentPageId value is correct!
 			if($currentPageId <= $postListOnPage['pageQuantity']) {
