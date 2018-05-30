@@ -2,55 +2,44 @@
 namespace App\Models\Blog\Post;
 use App\Models\BaseModel;
 use Core\Database\AppDatabase;
+use Core\AppHTTPResponse;
+use Core\Routing\AppRouter;
 use Core\Config\AppConfig;
 use App\Models\Blog\Entity\Post;
 use App\Models\Admin\Entity\User;
 
-/**
- * Create a class for front-end posts queries
- */
+
 class PostModel extends BaseModel
 {
 	/**
-     * Constructor
-     * @param AppConfig $config: an instance of AppConfig
-     * @return void
-     */
-    public function __construct(AppConfig $config)
-    {
-        parent::__construct(AppDatabase::getInstance(), $config);
-    }
-
-	/**
-     * Get a single post with its id
-     * @param string $postId
-     * @return object: a Post entity instance
-     */
-    public function getSingleById($postId)
+	 * Constructor
+	 * @param object: HTTPResponse instance
+	 * @param object: AppRouter instance
+	 */
+	public function __construct(AppHTTPResponse $httpResponse, AppRouter $router)
 	{
-	    $postIsOnPage = $this->getPagingForSingle($postId);
+		parent::__construct(AppDatabase::getInstance(), $httpResponse, $router);
+	}
 
-	    $query = $this->dbConnector->prepare('SELECT *
+	public function getSingleById($postId)
+	{
+	    $postIsOnPage = $this->getPagingForSingle($postId); 
+
+	    $query = $this->dbConnector->prepare('SELECT *							 
 	    									  FROM posts
 	    									  WHERE post_id = :postId');
 	    $query->bindParam(':postId', $postId, \PDO::PARAM_INT);
 	    $query->execute();
 	    $datas = $query->fetch(\PDO::FETCH_ASSOC);
 	    $post = new Post($datas);
-        // Temporary parameter is created here:
 	    $post->pagingNumber = $postIsOnPage;
 	    return $post;
 	}
 
-    /**
-     * Get a single post with its slug
-     * @param string $postSlug
-     * @return object: a Post entity instance
-     */
 	public function getSingleBySlug($postSlug)
 	{
 	    // Do not trust $postSlug based on $_POST['title'] when a post is created or updated!
-	    $query = $this->dbConnector->prepare('SELECT *
+	    $query = $this->dbConnector->prepare('SELECT *							 
 	    									  FROM posts
 	    									  WHERE post_slug = :postSlug');
 	    $query->bindParam(':postSlug', $postSlug, \PDO::PARAM_STR);
@@ -62,12 +51,6 @@ class PostModel extends BaseModel
 	    return new Post($datas);
 	}
 
-    /**
-     * Get a single post with its author datas
-     * @param string $postId
-     * @param string|null $postSlug
-     * @return array: an array which contains a Post entity instance
-     */
 	public function getSingleWithAuthor($postId, $postSlug = null)
 	{
 		// Check if $postSlug exists in database
@@ -83,21 +66,17 @@ class PostModel extends BaseModel
 		$post = $this->getSingleById($postId);
 		// Get and store user who is also an author for current post
 		$author = $this->getAuthorByPostUserId($post->userId);
-        // Temporary parameter is created here:
 		$post->author = $author;
 		array_push($postWithAuthor, $post);
+		//var_dump('WITH AUTHOR', $postWithAuthor);
 		return $postWithAuthor;
 	}
 
-    /**
-     * Get all Post entities
-     * @return array: an array which contains all Post entities instances
-     */
 	public function getList()
 	{
 		$posts = [];
     	$query = $this->dbConnector->query('SELECT *
-    										FROM posts
+    										FROM posts	 
     										ORDER BY post_creationDate DESC');
 	    while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$posts[] = new Post($datas);
@@ -105,12 +84,6 @@ class PostModel extends BaseModel
     	return $posts;
 	}
 
-    /**
-     * Get posts for a particular paging number: result depends on post per page quantity.
-     * @param int $pageId
-     * @param int $postPerPage
-     * @return array: an array of needed parameters with list of posts on a particular page
-     */
 	public function getListByPaging($pageId, $postPerPage)
 	{
 		// Get first post row to show for group of posts which appears on selected page : must begin to 0 on first page ($pageId = 1)
@@ -121,59 +94,61 @@ class PostModel extends BaseModel
 
 		// SQL_CALC_FOUND_ROWS (MySQL 4+) also stores total number of rows (ignores LIMIT) with one query (to avoid secondary query with COUNT()!). OFFSET is more readable.
 		$query = $this->dbConnector->prepare('SELECT SQL_CALC_FOUND_ROWS *
-											  FROM posts
+											  FROM posts								  
 											  ORDER BY post_creationDate DESC
 											  LIMIT /*:start, :postPerPage*/:postPerPage OFFSET :start');
 		$query->bindParam(':start', $start, \PDO::PARAM_INT);
 		$query->bindParam(':postPerPage', $postPerPage, \PDO::PARAM_INT);
 		$query->execute();
 
+		// Get rank for all the posts: return an array of arrays (with post_id and rank)
+		//$postsRank = $this->getRankForAll();
+		//var_dump($postsRank);
+
 		// Compare post_id from retrieved posts to add rank property to corresponding Post instance
 		while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+			// for($i = 0; $i < count($postsRank) - 1; $i++) {
+			// 	if($postsRank[$i]['post_id'] == $datas['post_id']) {
+			// 		$datas['rank'] = $postsRank[$i]['rank'];
+			// 	}
+			// }
 	      	$postsOnpage[] = new Post($datas);
 	    }
 
 		// Get the same result like COUNT() function:
 		$query2 = $this->dbConnector->query('SELECT FOUND_ROWS()');
 		// Get total number of posts in database
-		$countedPosts = $query2->fetchColumn();
+		$countedPosts = $query2->fetchColumn(); 
 		// Get total number of pages for paging
 		$pagesQuantity = ceil($countedPosts / $postPerPage);
 
+	    //var_dump('$pagesQuantity:', $pagesQuantity, '$postsOnpage', $postsOnpage);
     	return ['currentPage' => $pageId, 'pageQuantity' => $pagesQuantity, 'postsOnPage' => $postsOnpage];
 	}
 
-    /**
-     * Get paging number for a particular post with its id
-     * @param string $postId
-     * @return int: paging number to retrieve
-     */
 	public function getPagingForSingle($postId)
 	{
 		$result = $this->getRankForSingle($postId);
 		$postRank = intval($result[0]);
 		$postQuantity = intval($result[1]);
-		$postPerPage = $this->config::$_postPerPage;
+		$postPerPage = $this->config::POST_PER_PAGE;
 		$paging = ceil($postQuantity / $postPerPage);
 
 		$interval = [];
 		$start = 0;
-
+		//var_dump('$postRank', $postRank, '$postQuantity', $postQuantity);
 		for($i = 1; $i <= $paging; $i++) {
+			//var_dump('s', $start, 's+p', $start + $postPerPage);
 			if($start <= $postRank && $postRank < $start + $postPerPage) {
 				$singleIsOnPage = $i;
 				break;
 			}
 			$start = $start + $postPerPage;
 		}
+		//var_dump('getPagingForSingle', $singleIsOnPage);
 		return $singleIsOnPage;
 	}
 
-    /**
-     * Get rank for a particular post
-     * @param string $postId
-     * @return array: an array which contains retrieved post rank, and total quantity of posts in database
-     */
 	public function getRankForSingle($postId)
 	{
 		$postsRank = $this->getRankForAll();
@@ -187,16 +162,12 @@ class PostModel extends BaseModel
 		return [$singleRank, $postsRank['total']];
 	}
 
-    /**
-     * Get rank for each post
-     * @return array: an array which contains post id and rank for each post and total quantity of posts in database
-     */
 	public function getRankForAll()
 	{
 		$postsRank = [];
 		$i = 0;
-    	$query = $this->dbConnector->query('SELECT SQL_CALC_FOUND_ROWS p.post_id, (@curRank := @curRank + 1) AS rank
-    										FROM posts p, (SELECT @curRank := -1) r
+    	$query = $this->dbConnector->query('SELECT SQL_CALC_FOUND_ROWS p.post_id, (@curRank := @curRank + 1) AS rank  
+    										FROM posts p, (SELECT @curRank := -1) r 	 
     										ORDER BY p.post_creationDate DESC');
 	    while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$postsRank[$i]['post_id'] = $datas['post_id'];
@@ -207,20 +178,15 @@ class PostModel extends BaseModel
 	    // Get the same result like COUNT() function:
 		$query2 = $this->dbConnector->query('SELECT FOUND_ROWS()');
 		// Get total number of posts in database
-		$countedPosts = $query2->fetchColumn();
+		$countedPosts = $query2->fetchColumn(); 
 		$postsRank['total'] = $countedPosts;
     	return $postsRank;
 	}
 
-    /**
-     * Get author infos with its post user id
-     * @param string $postUserId
-     * @return object: a User entity instance
-     */
 	public function getAuthorByPostUserId($postUserId)
 	{
 	    $query = $this->dbConnector->prepare('SELECT u.user_id, u.user_firstname, u.user_name, u.user_pseudo, u.user_email,
-	    									  u.user_password, u.user_isActivated, u.user_userTypeId
+	    									  u.user_password, u.user_isActivated, u.user_userTypeId			 
 	    									  FROM posts p
 	    									  INNER JOIN users u ON (p.post_userId = u.user_id)
 	    									  WHERE p.post_userId = :postUserId');
@@ -230,10 +196,6 @@ class PostModel extends BaseModel
 	    return new User($datas);
 	}
 
-    /**
-     * Get all post with their author infos
-     * @return array: an array which contains all Post entities with their author infos
-     */
 	public function getListWithAuthor()
 	{
 		// Will associate author datas for each post
@@ -241,7 +203,7 @@ class PostModel extends BaseModel
 		$posts = $this->getList();
 		foreach ($posts as $post) {
 			$author = $this->getAuthorByPostUserId($post->userId);
-			// Temporary parameter: get and store user who is also an author for each post
+			// Get and store user who is also an author for each post
 			$post->author = $author;
 			array_push($postsWithAuthor, $post);
 		}

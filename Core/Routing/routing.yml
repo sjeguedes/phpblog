@@ -1,19 +1,19 @@
-routing:
-    homeGETParams:
+routes:
+    home:
         path: /
-        module: Home\Home
-        action: isCalled
-        name: Home\Home|isCalled
+        module: Home\Home 
+        action: showHome
+        name: Home\Home|showHome
         method: GET
 
-    homePOSTParams:
-        path: /
+    homeContact:
+        path: /home/contact
         module: Home\Home
-        action: isCalled
-        name: Home\Home|isCalled
+        action: sendContactMessage
+        name: Home\Home|sendContactMessage
         method: POST
 
-    postsList:
+    postslist:
         path: /posts
         module: Blog\Post\Post
         action: showList
@@ -29,7 +29,7 @@ routing:
 
     postWithSlugAndId:
         path: /post/:slug-:id
-        module: Blog\Post\Post
+        module: Blog\Post\Post 
         action: showSingle
         name: Blog\Post\Post|showSingle
         method: GET
@@ -44,12 +44,12 @@ routing:
     adminHome:
         path: /admin
         module: Admin\AdminHome
-        action: showAdminHome
-        name: Admin\AdminHome|showAdminHome
+        action: showHome
+        name: Admin\AdminHome|showHome
         method: GET
 
     adminCreatePost:
-        path: /admin/add-post
+        path: /admin/create-post
         module: Admin\Post\AdminPost
         action: addPost
         name: Admin\Post\AdminPost|addPost

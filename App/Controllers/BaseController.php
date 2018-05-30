@@ -5,58 +5,25 @@ use Core\AppHTTPResponse;
 use Core\Routing\AppRouter;
 use Core\Config\AppConfig;
 
-/**
- * Create a parent controller to use in each controller
- */
-abstract class BaseController
+abstract class BaseController 
 {
-	/**
-	 * @var AppPage instance
-	 */
 	protected $page;
-	/**
-	 * @var AppHTTPResponse instance
-	 */
 	protected $httpResponse;
-	/**
-	 * @var AppRouter instance
-	 */
 	protected $router;
-	/**
-	 * @var AppConfig instance
-	 */
-	protected $config;
-	/**
-	 * @var object: an instance of current model called by a particular controller
-	 */
 	protected $currentModel;
+	protected $config;
 
-	/**
-	 * Constructor
-	 * @param AppPage $page: an instance of AppPage
-	 * @param AppHTTPResponse $httpResponse: an instance of AppHTTPResponse
-	 * @param AppRouter $router: an instance of AppRouter
-	 * @param AppConfig $config: an instance of AppConfig
-	 * @return void
-	 */
-	public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router, AppConfig $config)
+	public function __construct(AppPage $page, AppHTTPResponse $httpResponse, AppRouter $router)   
 	{
 		$this->page = $page;
 		$this->httpResponse = $httpResponse;
 		$this->router = $router;
-		$this->config = $config;
-
-		session_start();
+		$this->config = AppConfig::getInstance();
 	}
 
-	/**
-	 * Check if called method exists
-	 * @param callable $action
-	 * @throws exception
-	 * @return return boolean|string
-	 */
-	public function checkAction($action)
+	public function checkAction($action) 
 	{
+	    //var_dump(is_callable([$this, $action]));
 	    try {
 			if(is_callable([$this, $action])) {
 				return true;
@@ -70,15 +37,9 @@ abstract class BaseController
 		}
 	}
 
-	/**
-	 * Get the model for a particular controller
-	 * @param string $className: name of current class
-	 * @return object: an instance of current model
-	 */
-	public function getCurrentModel($className)
-	{
+	public function getCurrentModel($className) {
 		$className = str_replace('Controller', 'Model', $className);
-		$currentModel = new $className($this->config);
+		$currentModel = new $className($this->httpResponse, $this->router);
 		return $currentModel;
 	}
 }

@@ -4,46 +4,61 @@ use Core\Database\AppDatabase;
 use Core\Database\PDOFactory;
 use Core\Config\AppConfig;
 
-/**
- * Create a parent model to use in each model
- */
-abstract class BaseModel
+abstract class BaseModel 
 {
-    /**
-     * @var AppDatabase instance
-     */
-    protected $dbConnector;
-    /**
-     * @var AppConfig instance
-     */
-    protected $config;
+	protected $dbConnector;
+	protected $config;
 
-    /**
-     * Constructor
-     * @param AppDatabase $dbConnector: an instance of AppDatabase
-     * @param AppConfig $config: an instance of AppConfig
-     * @return void
-     */
-    public function __construct(AppDatabase $dbConnector, AppConfig $config)
-    {
-        $this->dbConnector = $dbConnector::getPDOWithMySQl();
-        $this->config = $config;
-    }
+	/**
+	 * Constructor
+	 * @param AppDatabase $dbConnector: AppDatabase instance
+	 * @param HTTPResponse instances
+	 * @param AppRouter instances
+	 */
+	public function __construct(AppDatabase $dbConnector, $httpResponse, $router)   
+	{	
+		$this->dbConnector = $dbConnector::getPDOWithMySQl();
+		$this->config = AppConfig::getInstance();
+	}
 
-    // Common queries
+	// Helpers: insert escaped datas in database
 
-    /**
-     * Select all datas in a particular database table
-     * @param string $table: table name
-     * @return null|array: an array of datas from the database
-     */
-    public function selectAll($table)
-    {
-        if ($this->dbConnector !== null) {
-            $query = $this->dbConnector->query('SELECT * FROM ' . $table);
-            return $query->fetchAll(\PDO::FETCH_ASSOC);
-        } else {
-            return null;
-        }
-    }
+	public function avoidSQLInjection() {
+		if(ctype_digit($string)) { // string is an int
+			$string = intval($string);
+		}
+		else { // other types: avoid SQL injection
+			$string = mysql_real_escape_string($string);
+			$string = addcslashes($string, '%_');
+		}
+		return $string;
+	}
+
+	// Helpers: show escaped datas on website
+
+	public function avoidXSS($string)
+	{ 
+		return nl2br(htmlentities($string), ENT_QUOTES); // avoid XSS on rich text or tag attribute
+	}
+
+	public function escapeHTML($string)
+	{ 
+		return trim(strip_tags($string)); // simple text
+	}
+
+	public function escapeTagAttribute($string)
+	{ 
+		return addslashes(trim(strip_tags($string))); // clean tag attribute
+	}
+
+	// Common queries
+
+	public function selectAll($table)
+	{
+		if($this->dbConnector !== null) {
+			$query = $this->dbConnector->query('SELECT * FROM ' . $table);
+			//var_dump($query); 
+			return $query->fetchAll(\PDO::FETCH_ASSOC);
+		}
+	}
 }
