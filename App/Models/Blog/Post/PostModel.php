@@ -5,6 +5,7 @@ use Core\Database\AppDatabase;
 use Core\Config\AppConfig;
 use App\Models\Blog\Entity\Post;
 use App\Models\Admin\Entity\User;
+use App\Models\Admin\Entity\Comment;
 
 /**
  * Create a class for front-end posts queries
@@ -21,25 +22,46 @@ class PostModel extends BaseModel
         parent::__construct(AppDatabase::getInstance(), $config);
     }
 
+    /**
+     * Get a post slug with its id
+     * @param string $postId
+     * @return return string: desired slug
+     */
+    public function getSlug($postId)
+    {
+        $query = $this->dbConnector->prepare('SELECT post_slug
+                                              FROM posts
+                                              WHERE post_id = ?
+                                              LIMIT 1');
+        $query->bindParam(1, $postId, \PDO::PARAM_INT);
+        $query->execute();
+        $data = $query->fetch(\PDO::FETCH_ASSOC);
+        return $data['post_slug'];
+    }
+
 	/**
      * Get a single post with its id
      * @param string $postId
-     * @return object: a Post entity instance
+     * @return object|boolean: a Post entity instance or false
      */
     public function getSingleById($postId)
 	{
-	    $postIsOnPage = $this->getPagingForSingle($postId);
-
 	    $query = $this->dbConnector->prepare('SELECT *
 	    									  FROM posts
 	    									  WHERE post_id = :postId');
 	    $query->bindParam(':postId', $postId, \PDO::PARAM_INT);
 	    $query->execute();
 	    $datas = $query->fetch(\PDO::FETCH_ASSOC);
-	    $post = new Post($datas);
-        // Temporary parameter is created here:
-	    $post->pagingNumber = $postIsOnPage;
-	    return $post;
+        // Is there a result?
+        if ($datas != false) {
+            $post = new Post($datas);
+            $postIsOnPage = $this->getPagingForSingle($postId);
+            // Temporary parameter is created here:
+            $post->pagingNumber = $postIsOnPage;
+	       return $post;
+        } else {
+            return false;
+        }
 	}
 
     /**
@@ -77,7 +99,6 @@ class PostModel extends BaseModel
 				return false;
 			}
 		}
-
 		// Will associate author datas for each post
 		$postWithAuthor = [];
 		$post = $this->getSingleById($postId);
@@ -115,10 +136,8 @@ class PostModel extends BaseModel
 	{
 		// Get first post row to show for group of posts which appears on selected page : must begin to 0 on first page ($pageId = 1)
 		$start = ($pageId - 1) * $postPerPage;
-
 		$i = 0;
 		$postsOnpage = [];
-
 		// SQL_CALC_FOUND_ROWS (MySQL 4+) also stores total number of rows (ignores LIMIT) with one query (to avoid secondary query with COUNT()!). OFFSET is more readable.
 		$query = $this->dbConnector->prepare('SELECT SQL_CALC_FOUND_ROWS *
 											  FROM posts
@@ -127,19 +146,16 @@ class PostModel extends BaseModel
 		$query->bindParam(':start', $start, \PDO::PARAM_INT);
 		$query->bindParam(':postPerPage', $postPerPage, \PDO::PARAM_INT);
 		$query->execute();
-
 		// Compare post_id from retrieved posts to add rank property to corresponding Post instance
 		while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$postsOnpage[] = new Post($datas);
 	    }
-
 		// Get the same result like COUNT() function:
 		$query2 = $this->dbConnector->query('SELECT FOUND_ROWS()');
 		// Get total number of posts in database
 		$countedPosts = $query2->fetchColumn();
 		// Get total number of pages for paging
 		$pagesQuantity = ceil($countedPosts / $postPerPage);
-
     	return ['currentPage' => $pageId, 'pageQuantity' => $pagesQuantity, 'postsOnPage' => $postsOnpage];
 	}
 
@@ -153,12 +169,10 @@ class PostModel extends BaseModel
 		$result = $this->getRankForSingle($postId);
 		$postRank = intval($result[0]);
 		$postQuantity = intval($result[1]);
-		$postPerPage = $this->config::$_postPerPage;
+		$postPerPage = $this->config::getParam('posts.postPerPage');
 		$paging = ceil($postQuantity / $postPerPage);
-
 		$interval = [];
 		$start = 0;
-
 		for($i = 1; $i <= $paging; $i++) {
 			if($start <= $postRank && $postRank < $start + $postPerPage) {
 				$singleIsOnPage = $i;
@@ -177,7 +191,6 @@ class PostModel extends BaseModel
 	public function getRankForSingle($postId)
 	{
 		$postsRank = $this->getRankForAll();
-
 		for($i = 0; $i < count($postsRank) - 1; $i++) {
 			if($postsRank[$i]['post_id'] == $postId) {
 				$singleRank = $postsRank[$i]['rank'];
@@ -203,7 +216,6 @@ class PostModel extends BaseModel
 	       	$postsRank[$i]['rank'] = $datas['rank'];
 	       	$i++;
 	    }
-
 	    // Get the same result like COUNT() function:
 		$query2 = $this->dbConnector->query('SELECT FOUND_ROWS()');
 		// Get total number of posts in database
@@ -247,4 +259,76 @@ class PostModel extends BaseModel
 		}
 		return $postsWithAuthor;
 	}
+
+    /**
+     * Insert a Comment entity in database
+     * @param array $commentDatas: an array of post comment datas
+     * @return void
+     */
+    public function insertComment($commentDatas)
+    {
+        // Secure query
+        $query = $this->dbConnector->prepare('INSERT INTO comments
+                                              (comment_creationDate, comment_nickName, comment_email, comment_title, comment_content, comment_postId)
+                                              VALUES (NOW(), ?, ?, ?, ?, ?)');
+        $query->bindParam(1, $nickName);
+        $query->bindParam(2, $email);
+        $query->bindParam(3, $title);
+        $query->bindParam(4, $content);
+        $query->bindParam(5, $postId);
+
+        // Insertion
+        $nickName = $commentDatas['pcf_nickName'];
+        $email = $commentDatas['pcf_email'];
+        $title = $commentDatas['pcf_title'];
+        $content = $commentDatas['pcf_content'];
+        // Post id was checked before by controller!
+        $postId = $commentDatas['pcf_postId'];
+        $query->execute();
+    }
+
+    /**
+     * Get a single comment with its id
+     * @param string $commentId
+     * @return object|boolean: a Comment entity instance or false
+     */
+    public function getCommentById($commentId)
+    {
+        $query = $this->dbConnector->prepare('SELECT *
+                                              FROM comments
+                                              WHERE comment_id = :commentId');
+        $query->bindParam(':commentId', $commentId, \PDO::PARAM_INT);
+        $query->execute();
+        $datas = $query->fetch(\PDO::FETCH_ASSOC);
+        // Is there a result?
+        if ($datas != false) {
+            $comment = new Comment($datas);
+            return $comment;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Get all Comment entities for a particular post
+     * @param string $postId
+     * @return array|boolean: an array which contains all Comment entities instances or false
+     */
+    public function getCommentListForSingle($postId)
+    {
+        $comments = [];
+        $query = $this->dbConnector->prepare('SELECT *
+                                              FROM comments
+                                              WHERE comment_postId = ?
+                                              ORDER BY comment_creationDate DESC');
+        $query->bindParam(1, $postId, \PDO::PARAM_INT);
+        $query->execute();
+        while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+            $comments[] = new Comment($datas);
+        }
+        if(!isset($comments)) {
+            return false;
+        }
+        return $comments;
+    }
 }

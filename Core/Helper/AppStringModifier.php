@@ -1,8 +1,9 @@
 <?php
 namespace Core\Helper;
+use Core\AppHTTPResponse;
 
 /**
- * Class to format a string
+ * Format a string with helpers
  */
 class AppStringModifier
 {
@@ -11,10 +12,10 @@ class AppStringModifier
 	 */
 	private static $_instance;
 
-	/**
-	 * Singleton
-	 * @return object AppStringModifier
-	 */
+     /**
+     * Instanciate a unique AppStringModifier object (Singleton)
+     * @return AppStringModifier: a unique instance of AppStringModifier
+     */
 	public static function getInstance()
     {
         if (is_null(self::$_instance)) {
@@ -32,8 +33,17 @@ class AppStringModifier
     }
 
     /**
+    * Magic method __clone
+    * @return void
+    */
+    public function __clone()
+    {
+        self::$_httpResponse->set404ErrorResponse(self::isDebug('Technical error [Debug trace: Don\'t try to clone singleton ' . __CLASS__ . '!]'));
+    }
+
+    /**
      * Use trim() function
-     * @param string $string 
+     * @param string $string
      * @return string
      */
     public static function trimStr($string)
@@ -43,7 +53,7 @@ class AppStringModifier
 
     /**
      * Use strtolower() function
-     * @param string $string 
+     * @param string $string
      * @return string
      */
     public static function strtolowerStr($string)
@@ -53,7 +63,7 @@ class AppStringModifier
 
     /**
      * Use strtoupper() function
-     * @param string $string 
+     * @param string $string
      * @return string
      */
     public static function strtoupperStr($string)
@@ -63,7 +73,7 @@ class AppStringModifier
 
     /**
      * Use ucfirst() function
-     * @param string $string 
+     * @param string $string
      * @return string
      */
     public static function ucfirstStr($string)
@@ -73,7 +83,7 @@ class AppStringModifier
 
     /**
      * Use ucwords() function
-     * @param string $string 
+     * @param string $string
      * @return string
      */
     public static function ucwordsStr($string)

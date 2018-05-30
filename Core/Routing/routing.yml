@@ -6,13 +6,6 @@ routing:
         name: Home\Home|isCalled
         method: GET
 
-    homePOSTParams:
-        path: /
-        module: Home\Home
-        action: isCalled
-        name: Home\Home|isCalled
-        method: POST
-
     postsList:
         path: /posts
         module: Blog\Post\Post
@@ -41,12 +34,68 @@ routing:
         name: Blog\Post\Post|showListWithPaging
         method: GET
 
+    postCommentGETParams:
+        path: /comment-post/:id
+        module: Blog\Post\Post
+        action: showSingle
+        name: Blog\Post\Post|showSingle
+        method: GET
+
     adminHome:
         path: /admin
-        module: Admin\AdminHome
+        module: Admin\Home\AdminHome
         action: showAdminHome
-        name: Admin\AdminHome|showAdminHome
+        name: Admin\Home\AdminHome|showAdminHome
         method: GET
+
+    postCommentPOSTParams:
+        path: /comment-post/:id
+        module: Blog\Post\Post
+        action: commentPost
+        name: Blog\Post\Post|commentPost
+        method: POST
+
+    homePOSTParams:
+        path: /
+        module: Home\Home
+        action: isCalled
+        name: Home\Home|isCalled
+        method: POST
+
+    adminHomeDeleteContact:
+        path: /admin/delete-contact/:id
+        module: Admin\Home\AdminHome
+        action: deleteContact
+        name: Admin\Home\AdminHome|deleteContact
+        method: POST
+
+    adminHomeDeleteComment:
+        path: /admin/delete-comment/:id
+        module: Admin\Home\AdminHome
+        action: deleteComment
+        name: Admin\Home\AdminHome|deleteComment
+        method: POST
+
+    adminHomeValidateComment:
+        path: /admin/validate-comment/:id
+        module: Admin\Home\AdminHome
+        action: validateComment
+        name: Admin\Home\AdminHome|validateComment
+        method: POST
+
+    adminHomePublishComment:
+        path: /admin/publish-comment/:id
+        module: Admin\Home\AdminHome
+        action: publishComment
+        name: Admin\Home\AdminHome|publishComment
+        method: POST
+
+    adminHomeUnpublishComment:
+        path: /admin/unpublish-comment/:id
+        module: Admin\Home\AdminHome
+        action: unpublishComment
+        name: Admin\Home\AdminHome|unpublishComment
+        method: POST
 
     adminCreatePost:
         path: /admin/add-post

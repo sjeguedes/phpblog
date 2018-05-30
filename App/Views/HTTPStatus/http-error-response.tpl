@@ -3,9 +3,9 @@
 {# <div class="container"> #}
     <div class="row">
         <div class="col-md-8 ml-auto mr-auto text-center">
-		    <h1>404 Error response</h1>
+		    <h1>{% if status != 0  %}<strong>{{ status }}</strong> {% endif %}HTTP error response</h1>
 		    <p class="important">
-		        Exception thrown: {{ message }}<br>
+		        {{ message|raw }}<br>
 		        <a class="normal-link" href="{{ homeURL }}" title="Back to home"><i class="now-ui-icons arrows-1_minimal-left"></i>&nbsp;Back to home</a>
 		    </p>
 		</div>

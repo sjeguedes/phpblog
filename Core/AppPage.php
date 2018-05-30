@@ -5,7 +5,7 @@ namespace Core;
  * Load template engine to show front-end and set its parameters:
  * Example: here Twig template engine is used
  */
-class AppPage 
+class AppPage
 {
 	/**
 	 * @var Twig_Loader_Filesystem instance
@@ -24,11 +24,14 @@ class AppPage
 	 * Constructor
 	 * @return void
 	 */
-	public function __construct()   
+	public function __construct()
 	{
 		// TODO: call DIC to instantiate objects!
 		$this->templateEngineLoader = new \Twig_Loader_Filesystem(__DIR__ . '/../App/Views');
     	$this->templateEngineEnv = new \Twig_Environment($this->templateEngineLoader, self::$_envParams);
+        // Add template_from_string function
+        $this->templateEngineEnv->addExtension(new \Twig_Extension_StringLoader());
+        // Set environment parameters
     	self::setTemplateEngineEnv();
 	}
 
@@ -46,7 +49,7 @@ class AppPage
 	/**
 	 * Render Entirely a particular Twig template
 	 * @param string $view: path for template to load
-	 * @param array $vars: parameters to use in template 
+	 * @param array $vars: parameters to use in template
 	 * @return string: HTML content type
 	 */
 	public function renderTemplate($view, $vars = [])
@@ -58,8 +61,8 @@ class AppPage
 	/**
 	 * Render only a part of a particular Twig template
 	 * @param string $view: path for template to load
-	 * @param string $blockName: block name in template 
-	 * @param array $vars: parameters to use in template 
+	 * @param string $blockName: block name in template
+	 * @param array $vars: parameters to use in template
 	 * @return string: HTML content type
 	 */
 	public function renderBlock($view, $blockName, $vars = [])

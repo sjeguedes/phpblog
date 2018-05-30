@@ -8,7 +8,7 @@ use Core\Config\AppConfig;
 use Core\Service\AppContainer;
 
 /**
- * Manage Homepage appearence and its actions
+ * Manage Homepage appearence and its actions on front-end
  */
 class HomeController extends BaseController
 {
@@ -72,23 +72,20 @@ class HomeController extends BaseController
      */
     public function isCalled()
     {
-        if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
             // Detect AJAX request to return token as JSON string for JS validation
-            if(isset($_GET['cf_call']) && $_GET['cf_call'] == 'check-ajax') {
+            if (isset($_GET['cf_call']) && $_GET['cf_call'] == 'check-ajax') {
                 $this->getCurrentToken();
-            }
             // Detect AJAX contact form submission
-            elseif(isset($_POST['cf_call']) && $_POST['cf_call'] == 'contact-ajax') {
+            } elseif (isset($_POST['cf_call']) && $_POST['cf_call'] == 'contact-ajax') {
                 $this->showContact();
             }
-        }
-        else {
+        } else {
             // Detect only server side contact form submission
-            if(isset($_POST['cf_call']) && $_POST['cf_call'] == 'contact') {
+            if (isset($_POST['cf_call']) && $_POST['cf_call'] == 'contact') {
                 $this->showContact();
-            }
             // Execute showHome entirely
-            elseif(isset($_GET['url']) && count($_GET) == 1) {
+            } elseif(isset($_GET['url']) && count($_GET) == 1) {
                 $this->showHome();
             }
         }
@@ -98,11 +95,10 @@ class HomeController extends BaseController
      * Check if there is already a success state for contact form
      * @return boolean
      */
-    public function isContactSuccess() {
-        if(isset($_SESSION['cf_success'])) {
+    private function isContactSuccess() {
+        if (isset($_SESSION['cf_success'])) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -111,7 +107,7 @@ class HomeController extends BaseController
      * Show homepage with normal routing, call twig template and initialize contact form parameters
      * @return void
      */
-    public function showHome()
+    private function showHome()
     {
         // Show normal home view
         $jsArray = [
@@ -125,14 +121,13 @@ class HomeController extends BaseController
                 'src' => '/assets/js/sendContactMessage.js'
             ],
         ];
-
         $varsArray = [
-            'ajaxModeForContactForm' => $this->config::$_params['contactForm']['ajaxMode'] ? 1 : 0,
+            'ajaxModeForContactForm' => $this->config::getParam('contactForm.ajaxMode') ? 1 : 0,
             'JS' => $jsArray,
             'metaTitle' => 'Blog made with OOP in PHP code',
             'metaDescription' => 'This blog aims at showing and manage articles.',
             'imgBannerCSSClass' => 'home',
-            'siteKey' => $this->config::$_params['googleRecaptcha']['siteKey'],
+            'siteKey' => $this->config::getParam('googleRecaptcha.siteKey'),
             'cfTokenIndex' => $this->cfTokenIndex,
             'cfTokenValue' => $this->cfTokenValue,
             'submit' => 0,
@@ -140,10 +135,9 @@ class HomeController extends BaseController
             'sending' => 0
         ];
         echo $this->page->renderTemplate('Home/home-index.tpl', $varsArray);
-
         // Is it already a succcess state?
         // this happens after no AJAX mode success redirection
-        if($this->isContactSuccess()) {
+        if ($this->isContactSuccess()) {
             unset($_SESSION['cf_success']);
         }
     }
@@ -153,16 +147,14 @@ class HomeController extends BaseController
      * and call form validation
      * @return void
      */
-    public function showContact()
+    private function showContact()
     {
         // Store result from form validation
         $checkedForm = $this->validateContactForm();
-
         // Ajax mode is not used!
-        if(!$this->config::$_params['contactForm']['ajaxMode']) {
-
+        if (!$this->config::getParam('contactForm.ajaxMode')) {
             // Success state is not returned.
-            if(!$this->isContactSuccess()) {
+            if (!$this->isContactSuccess()) {
                 $jsArray = [
                     0 => [
                         'placement' => 'bottom',
@@ -174,19 +166,17 @@ class HomeController extends BaseController
                         'src' => '/assets/js/sendContactMessage.js'
                     ],
                 ];
-
                 $varsArray = [
-                    'ajaxModeForContactForm' => $this->config::$_params['contactForm']['ajaxMode'] ? 1 : 0,
+                    'ajaxModeForContactForm' => $this->config::getParam('contactForm.ajaxMode') ? 1 : 0,
                     'JS' => $jsArray,
                     'metaTitle' => 'Blog made with OOP in PHP code',
                     'metaDescription' => 'This blog aims at showing and manage articles.',
-                    'metaRobots' => 'noindex, nofollow',
                     'imgBannerCSSClass' => 'home',
                     'familyName' => isset($checkedForm['cf_familyName']) ? $checkedForm['cf_familyName'] : '',
                     'firstName' => isset($checkedForm['cf_firstName']) ? $checkedForm['cf_firstName'] : '',
                     'email' => isset($checkedForm['cf_email']) ? $checkedForm['cf_email'] : '',
                     'message' => isset($checkedForm['cf_message']) ? $checkedForm['cf_message'] : '',
-                    'siteKey' => $this->config::$_params['googleRecaptcha']['siteKey'],
+                    'siteKey' => $this->config::getParam('googleRecaptcha.siteKey'),
                     'cfTokenIndex' => $this->cfTokenIndex,
                     'cfTokenValue' => $this->cfTokenValue,
                     'submit' => isset($_SESSION['cf_success']) && $_SESSION['cf_success'] ? 1 : 0,
@@ -194,24 +184,22 @@ class HomeController extends BaseController
                     'success' => isset($_SESSION['cf_success']) && $_SESSION['cf_success'] ? true : false,
                     'sending' => isset($checkedForm['cf_notSent']) && $checkedForm['cf_notSent'] ? 1 : 0
                 ];
-
                 // Render the entire page
                 echo $this->page->renderTemplate('Home/home-index.tpl', $varsArray);
-            }
             // Success state is returned: avoid previous $_POST with a redirection.
-            else {
+            } else {
                 $this->httpResponse->addHeader('Location: /');
             }
         }
         // Ajax mode
         else {
             $varsArray = [
-                'ajaxModeForContactForm' => $this->config::$_params['contactForm']['ajaxMode'] ? 1 : 0,
+                'ajaxModeForContactForm' => $this->config::getParam('contactForm.ajaxMode') ? 1 : 0,
                 'familyName' => isset($checkedForm['cf_familyName']) ? $checkedForm['cf_familyName'] : '',
                 'firstName' => isset($checkedForm['cf_firstName']) ? $checkedForm['cf_firstName'] : '',
                 'email' => isset($checkedForm['cf_email']) ? $checkedForm['cf_email'] : '',
                 'message' => isset($checkedForm['cf_message']) ? $checkedForm['cf_message'] : '',
-                'siteKey' => $this->config::$_params['googleRecaptcha']['siteKey'],
+                'siteKey' => $this->config::getParam('googleRecaptcha.siteKey'),
                 'cfTokenIndex' => $this->cfTokenIndex,
                 'cfTokenValue' => $this->cfTokenValue,
                 'submit' => isset($_SESSION['cf_success']) && $_SESSION['cf_success'] ? 1 : 0,
@@ -225,7 +213,7 @@ class HomeController extends BaseController
             echo $this->page->renderBlock('Home/home-contact-form.tpl', 'contactForm',  $varsArray);
 
             // Is it already a succcess state?
-            if($this->isContactSuccess()) {
+            if ($this->isContactSuccess()) {
                 unset($_SESSION['cf_success']);
             }
         }
@@ -235,7 +223,7 @@ class HomeController extends BaseController
      * echo a current token JSON string for contact form
      * @return void
      */
-    public function getCurrentToken() {
+    private function getCurrentToken() {
         $this->httpResponse->addHeader('Content-Type:application/json; charset=utf-8');
         echo json_encode(['key' => $this->cfTokenIndex,'value' => $this->cfTokenValue]);
     }
@@ -253,8 +241,8 @@ class HomeController extends BaseController
             2 => ['name' => 'email', 'filter' => 'email', 'modifiers' => ['trimStr']],
             3 => ['name' => 'message', 'filter' => 'alphanum', 'modifiers' => ['trimStr', 'ucfirstStr']]
         ];
-        // Filter $_POST datas
-        $filteredValues = $this->contactFormValidator->filterDatas($datas);
+        // Filter user inputs in $_POST datas
+        $this->contactFormValidator->filterDatas($datas);
         // Family name
         $this->contactFormValidator->validateRequired('familyName', 'family name');
         // First name
@@ -269,10 +257,8 @@ class HomeController extends BaseController
         $result = $this->contactFormValidator->getResult();
         // Update validation result with Google recaptcha antispam validation
         $result = $this->contactFormCaptcha->call([$_POST['g-recaptcha-response'], $result, 'cf_errors']);
-
         // Submit: contact form is correctly filled.
-        if(isset($result) && empty($result['cf_errors']) && isset($result['g-recaptcha-response']) && $result['g-recaptcha-response'] && isset($result['cf_check']) && $result['cf_check']) {
-
+        if (isset($result) && empty($result['cf_errors']) && isset($result['g-recaptcha-response']) && $result['g-recaptcha-response'] && isset($result['cf_check']) && $result['cf_check']) {
             // Insert Contact entity in database to keep it
             try {
                 $this->currentModel->insertContact($result);
@@ -280,7 +266,6 @@ class HomeController extends BaseController
             } catch (\PDOException $e) {
                 $this->insertionInfos = '<span style="color:#ffffff;background-color:#ff3636;padding:5px">Error warning - Contact entity was unsaved in database:</span><br><br><span style="color:#ffffff;background-color:#ff3636;padding:5px">' . $e->getMessage() . '</span>';
             }
-
             // Is message sent?
             $datas = [
                 'firstName' => $result['cf_firstName'],
@@ -290,29 +275,25 @@ class HomeController extends BaseController
             ];
             $isMailSent = $this->contactFormMailer->call([$datas, $this->insertionInfos, $this->sendingInfos]);
             // Email was sent.
-            if($isMailSent) {
+            if ($isMailSent) {
                 // Reset the form
                 $result = [];
-
                 // Delete current token
                 unset($_SESSION['cf_check']);
                 unset($_SESSION['cf_token']);
-
                 // Regenerate token to be updated in form
                 session_regenerate_id(true);
                 $this->cfTokenIndex = $this->contactFormValidator->generateTokenIndex('cf_check');
                 $this->cfTokenValue = $this->contactFormValidator->generateTokenValue('cf_token');
-
                 // Show success message
                 $_SESSION['cf_success'] = true;
-            }
             // Email was not sent!
-            else {
+            } else {
                 // Feed "data-not-sent" attribute on contact form.
                 $result['cf_notSent'] = true;
                 // Warn user if sending failed.
                 $result['cf_errors']['cf_sending'] = 'Sorry, a technical error happened.<br>Your message was not sent.';
-                if($this->config::$_appDebug && !empty($this->sendingInfos['error'])) {
+                if ($this->config::getParam('appDebug') && !empty($this->sendingInfos['error'])) {
                     // Show more details in case of debug mode
                     $result['cf_errors']['cf_sending'] .= '<br>' . $this->sendingInfos['error'];
                 }

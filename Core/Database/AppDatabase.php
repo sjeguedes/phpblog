@@ -2,13 +2,31 @@
 namespace Core\Database;
 use Core\Database\PDOFactory;
 use Core\Config\AppConfig;
+use Core\AppHTTPResponse;
 
+/**
+ * Manage a database connection with a PDOFactory
+ */
 class AppDatabase
 {
-	private static $_instance;
+	/**
+     * @var object: a unique instance of AppDatabase
+     */
+    private static $_instance;
+    /**
+     * @var object: an instance of AppConfig
+     */
 	private static $_config;
+    /**
+     * @var object: an instance of AppHTTPResponse
+     */
+    private static $_httpResponse;
 
-	public static function getInstance()
+	/**
+     * Instanciate a unique AppDatabase object (Singleton)
+     * @return AppDatabase: a unique instance of AppDatabase
+     */
+    public static function getInstance()
     {
         if (is_null(self::$_instance)) {
             self::$_instance = new AppDatabase();
@@ -16,22 +34,40 @@ class AppDatabase
         return self::$_instance;
     }
 
-	private function __construct()
+	/**
+     * Constructor
+     * @return void
+     */
+    private function __construct()
 	{
 		self::$_config = AppConfig::getInstance();
+        self::$_httpResponse = new AppHTTPResponse();
 	}
 
-	protected function __clone()
-	{ 
-	}
+    /**
+    * Magic method __clone
+    * @return void
+    */
+    public function __clone()
+    {
+        self::$_httpResponse->set404ErrorResponse(self::isDebug('Technical error [Debug trace: Don\'t try to clone singleton ' . __CLASS__ . '!]'));
+    }
 
-	public static function getPDOWithMySQl()
+	/**
+     * Get a MySQL connection with PDO
+     * @return PDO: an instance of PDO with MySQL connector
+     */
+    public static function getPDOWithMySQl()
 	{
-		return PDOFactory::getMySQLConnexion(self::$_config::$_dbHost, self::$_config::$_dbName, self::$_config::$_dbUser, self::$_config::$_dbPwd);
+		return PDOFactory::getMySQLConnection(self::$_config::getParam('database.dbHost'), self::$_config::getParam('database.dbName'), self::$_config::getParam('database.dbUser'), self::$_config::getParam('database.dbPwd)'));
 	}
 
-	public static function getDatabase($database)
-	{
-		return $database;
-	}
+	/**
+     * Get a PostgreSQL connection with PDO
+     * @return PDO: an instance of PDO with PostgreSQL connector
+     */
+    public static function getPDOWithPostgreSQL()
+    {
+        return PDOFactory::getPostgreSQLConnection(self::$_config::getParam('database.dbHost'), self::$_config::getParam('database.dbName'), self::$_config::getParam('database.dbUser'), self::$_config::getParam('database.dbPwd)'));
+    }
 }

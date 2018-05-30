@@ -19,23 +19,28 @@
     <!-- CSS Files -->
     <link href="/assets/css/bootstrap.min.css" rel="stylesheet" />
     <link href="/assets/css/now-ui-kit.css?v=1.1.0" rel="stylesheet" />
+{% if CSS is defined %}
+{% for item in CSS %}
+    <!-- CSS for plugin: {{ item['pluginName'] }} -->
+    <link href="{{ item['src'] }}" rel="stylesheet" />
+{% endfor %}
+{% endif %}
     <!-- Custom CSS -->
     <link href="/assets/css/phpblog.css?v=1.0" rel="stylesheet" />
-    
-    {% spaceless %}
-    {% if JS is defined %}
-    <!-- JS in head -->
-        {% for item in JS %}
-            {% if item['placement'] == 'top' %}
+
+{% if JS is defined %}
+{% for item in JS %}
+{% if item['placement'] == 'top' %}
+    <!-- JS in head: {% if item['pluginName'] is defined %}{{ item['pluginName'] }}{% else %}{{ item['src'] }}{% endif %} -->
     <script src="{{ item['src'] }}"{{ item['attributes'] ? ' '~item['attributes'] : '' }}></script>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
-    {% endspaceless %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
 </head>
 
 <body class="landing-page sidebar-collapse">
-    <!-- Javascript desabled -->
+    <!-- Javascript disabled -->
     <noscript>
         <div class="no-js-box">
             <p class="alert alert-warning text-center" role="alert">
@@ -44,7 +49,7 @@
             </p>
         </div>
     </noscript>
-    <!-- End javascript desabled -->
+    <!-- End Javascript disabled -->
     {{ include('navigation.tpl') }}
     <div class="wrapper">
         {{ include('header.tpl') }}
@@ -53,7 +58,7 @@
             {% block content %}{% endblock %}
         </div>
         {{ include('footer.tpl') }}
-    </div> 
+    </div>
 </body>
 
 <!--   Core JS Files   -->
@@ -65,15 +70,13 @@
 <script src="/assets/js/plugins/bootstrap-datepicker.js" type="text/javascript"></script>
 <script src="/assets/js/now-ui-kit.js?v=1.1.0" type="text/javascript"></script>
 
-{% spaceless %}
 {% if JS is defined %}
-<!-- JS at the end -->
-    {% for item in JS %}
-        {% if item['placement'] == 'bottom' %}
+{% for item in JS %}
+{% if item['placement'] == 'bottom' %}
+<!-- JS in head: {% if item['pluginName'] is defined %}{{ item['pluginName'] }}{% else %}{{ item['src'] }}{% endif %} -->
 <script src="{{ item['src'] }}"{{ item['attributes'] ? ' '~item['attributes'] : '' }}></script>
-        {% endif %}
-    {% endfor %}
 {% endif %}
-{% endspaceless %}
+{% endfor %}
+{% endif %}
 
 </html>

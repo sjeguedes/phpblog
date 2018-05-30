@@ -4,15 +4,35 @@ service:
       name: home.contactForm
       formIdentifier: cf_
       formDatasRequest: POST
+    -
+      name: post.commentForm
+      formIdentifier: pcf_
+      formDatasRequest: POST
+    -
+      name: home.adminForm
+      formIdentifier: haf_
+      formDatasRequest: POST
   mailer:
-    - 
+    -
       name: home.contactForm
       type: PHPMailer
       use: contactForm
       sendingMethod: smtp
   captcha:
-    - 
+    -
       name: home.contactForm
       type: ReCaptcha
-
-
+    -
+      name: post.commentForm
+      type: AppNoSpamTools
+      formIdentifier: pcf_
+      tools:
+        -
+          callable: createHoneyPotInput
+          arguments: [false]
+        -
+          callable: createTimeLimitInput
+          arguments: [false]
+        -
+          callable: createHumanSwitchInput
+          arguments: [false]
