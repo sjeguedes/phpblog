@@ -2,7 +2,8 @@
 namespace App\Models\Blog\Post;
 use App\Models\BaseModel;
 use Core\Routing\AppRouter;
-use App\Models\Blog\Entity\Post;
+use App\Models\Admin\Entity\Post;
+use App\Models\Admin\Entity\Image;
 use App\Models\Admin\Entity\User;
 use App\Models\Admin\Entity\Comment;
 
@@ -54,19 +55,23 @@ class PostModel extends BaseModel
         // Is there a result?
         if ($datas != false) {
             $post = new Post($datas);
-            $postIsOnPage = $this->getPagingForSingle($postId);
-            // Temporary parameter is created here:
-            $post->pagingNumber = $postIsOnPage;
-	       return $post;
-        } else {
-            return false;
+            // Get paging number only for published posts
+            if ($post->isPublished == 1) {
+                $postIsOnPage = $this->getPagingForSingle($postId);
+                if ($postIsOnPage != false) {
+                    // Temporary param "pagingNumber" is created here:
+                    $post->pagingNumber = $postIsOnPage;
+                }
+            }
+            return $post;
         }
+        return false;
 	}
 
     /**
      * Get a single post with its slug
      * @param string $postSlug
-     * @return object: a Post entity instance
+     * @return object\boolean: a Post entity instance or false
      */
 	public function getSingleBySlug($postSlug)
 	{
@@ -77,10 +82,11 @@ class PostModel extends BaseModel
 	    $query->bindParam(':postSlug', $postSlug, \PDO::PARAM_STR);
 	    $query->execute();
 	    $datas = $query->fetch(\PDO::FETCH_ASSOC);
-	    if(!$datas) {
-	    	return false;
-	    }
-	    return new Post($datas);
+	    if ($datas != false) {
+            return new Post($datas);
+	    } else {
+            return false;
+        }
 	}
 
     /**
@@ -92,9 +98,9 @@ class PostModel extends BaseModel
 	public function getSingleWithAuthor($postId, $postSlug = null)
 	{
 		// Check if $postSlug exists in database
-		if(!is_null($postSlug)) {
+		if (!is_null($postSlug)) {
 			$isSlug = $this->getSingleBySlug($postSlug);
-			if(!$isSlug) {
+			if (!$isSlug) {
 				return false;
 			}
 		}
@@ -119,22 +125,41 @@ class PostModel extends BaseModel
 
     /**
      * Get all Post entities
+     * @param boolean $published: true (only published posts) or false (all status)
      * @return array: an array which contains all Post entities instances
      */
-	public function getList()
+	public function getList($published = true)
 	{
 		$posts = [];
-    	$query = $this->dbConnector->query('SELECT *
+        $published = $published ? 'WHERE post_isPublished = 1' : '';
+    	$query = $this->dbConnector->query("SELECT *
     										FROM posts
-    										ORDER BY post_creationDate DESC');
-	    while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+                                            $published
+                                            ORDER BY post_creationDate DESC");
+	    while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$posts[] = new Post($datas);
 	    }
     	return $posts;
 	}
 
     /**
-     * Get posts for a particular paging number: result depends on post per page quantity.
+     * Get all Image entities
+     * @return array: an array which contains all Image entities instances
+     */
+    public function getImageList()
+    {
+        $images = [];
+        $query = $this->dbConnector->query("SELECT *
+                                            FROM images
+                                            ORDER BY image_creationDate DESC");
+        while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+            $images[] = new Image($datas);
+        }
+        return $images;
+    }
+
+    /**
+     * Get published posts for a particular paging number: result depends on post per page quantity.
      * @param int $pageId
      * @param int $postPerPage
      * @return array: an array of needed parameters with list of posts on a particular page
@@ -143,18 +168,18 @@ class PostModel extends BaseModel
 	{
 		// Get first post row to show for group of posts which appears on selected page : must begin to 0 on first page ($pageId = 1)
 		$start = ($pageId - 1) * $postPerPage;
-		$i = 0;
 		$postsOnpage = [];
 		// SQL_CALC_FOUND_ROWS (MySQL 4+) also stores total number of rows (ignores LIMIT) with one query (to avoid secondary query with COUNT()!). OFFSET is more readable.
 		$query = $this->dbConnector->prepare('SELECT SQL_CALC_FOUND_ROWS *
 											  FROM posts
+                                              WHERE post_isPublished = 1
 											  ORDER BY post_creationDate DESC
 											  LIMIT /*:start, :postPerPage*/:postPerPage OFFSET :start');
 		$query->bindParam(':start', $start, \PDO::PARAM_INT);
 		$query->bindParam(':postPerPage', $postPerPage, \PDO::PARAM_INT);
 		$query->execute();
 		// Compare post_id from retrieved posts to add rank property to corresponding Post instance
-		while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+		while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$postsOnpage[] = new Post($datas);
 	    }
 		// Get the same result like COUNT() function:
@@ -180,8 +205,8 @@ class PostModel extends BaseModel
 		$paging = ceil($postQuantity / $postPerPage);
 		$interval = [];
 		$start = 0;
-		for($i = 1; $i <= $paging; $i++) {
-			if($start <= $postRank && $postRank < $start + $postPerPage) {
+		for ($i = 1; $i <= $paging; $i++) {
+			if ($start <= $postRank && $postRank < $start + $postPerPage) {
 				$singleIsOnPage = $i;
 				break;
 			}
@@ -197,28 +222,31 @@ class PostModel extends BaseModel
      */
 	public function getRankForSingle($postId)
 	{
-		$postsRank = $this->getRankForAll();
-		for($i = 0; $i < count($postsRank) - 1; $i++) {
-			if($postsRank[$i]['post_id'] == $postId) {
+		$postsRank = $this->getRankForAll(); // no arguments means true: get rank only for all published posts
+		for ($i = 0; $i < count($postsRank) - 1; $i++) {
+			if ($postsRank[$i]['post_id'] == $postId) {
 				$singleRank = $postsRank[$i]['rank'];
 				break;
-			}
+            }
 		}
-		return [$singleRank, $postsRank['total']];
+        return [$singleRank, $postsRank['total']];
 	}
 
     /**
      * Get rank for each post
+     * @param boolean $published: true (only published posts) or false (all status)
      * @return array: an array which contains post id and rank for each post and total quantity of posts in database
      */
-	public function getRankForAll()
+	public function getRankForAll($published = true)
 	{
 		$postsRank = [];
 		$i = 0;
-    	$query = $this->dbConnector->query('SELECT SQL_CALC_FOUND_ROWS p.post_id, (@curRank := @curRank + 1) AS rank
+        $published = $published ? 'WHERE post_isPublished = 1' : '';
+    	$query = $this->dbConnector->query("SELECT SQL_CALC_FOUND_ROWS p.post_id, (@curRank := @curRank + 1) AS rank
     										FROM posts p, (SELECT @curRank := -1) r
-    										ORDER BY p.post_creationDate DESC');
-	    while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+                                            $published
+    										ORDER BY p.post_creationDate DESC");
+	    while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
 	      	$postsRank[$i]['post_id'] = $datas['post_id'];
 	       	$postsRank[$i]['rank'] = $datas['rank'];
 	       	$i++;
@@ -232,7 +260,29 @@ class PostModel extends BaseModel
 	}
 
     /**
-     * Get author infos with its post user id
+     * Get an author with its user id
+     * @param string $userId
+     * @return object|boolean: a User entity instance or false
+     */
+    public function getAuthorById($userId)
+    {
+        $query = $this->dbConnector->prepare('SELECT *
+                                              FROM users
+                                              WHERE user_id = :userId');
+        $query->bindParam(':userId', $userId, \PDO::PARAM_INT);
+        $query->execute();
+        $datas = $query->fetch(\PDO::FETCH_ASSOC);
+        // Is there a result?
+        if ($datas != false) {
+            $user = new User($datas);
+            return $user;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Get author infos with a post user id
      * @param string $postUserId
      * @return object|boolean: a User entity instance, or false
      */
@@ -255,13 +305,14 @@ class PostModel extends BaseModel
 
     /**
      * Get all post with their author infos
+     * @param boolean $published: true (only published posts) or false (all status)
      * @return array: an array which contains all Post entities with their author infos
      */
-	public function getListWithAuthor()
+	public function getListWithAuthor($published = true)
 	{
 		// Will associate author datas for each post
 		$postsWithAuthor = [];
-		$posts = $this->getList();
+		$posts = $this->getList($published);
 		foreach ($posts as $post) {
 			$author = $this->getAuthorByPostUserId($post->userId);
 			// Temporary parameter: get and store user who is also an author for each post
@@ -320,6 +371,30 @@ class PostModel extends BaseModel
     }
 
     /**
+     * Get all Image entities for a particular post
+     * @param string $postId
+     * @return array|boolean: an array which contains all Image entities instances or false
+     */
+    public function getImageListForSingle($postId)
+    {
+        $images = [];
+        $query = $this->dbConnector->prepare('SELECT *
+                                              FROM images
+                                              WHERE image_postId = ?
+                                              ORDER BY image_creationDate DESC');
+        $query->bindParam(1, $postId, \PDO::PARAM_INT);
+        $query->execute();
+        while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+            $images[] = new Image($datas);
+        }
+        if (isset($images)) {
+            return $images;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Get all Comment entities for a particular post
      * @param string $postId
      * @return array|boolean: an array which contains all Comment entities instances or false
@@ -329,16 +404,17 @@ class PostModel extends BaseModel
         $comments = [];
         $query = $this->dbConnector->prepare('SELECT *
                                               FROM comments
-                                              WHERE comment_postId = ?
+                                              WHERE comment_postId = ? AND comment_isPublished = 1
                                               ORDER BY comment_creationDate DESC');
         $query->bindParam(1, $postId, \PDO::PARAM_INT);
         $query->execute();
-        while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+        while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
             $comments[] = new Comment($datas);
         }
-        if(!isset($comments)) {
+        if (isset($comments)) {
+            return $comments;
+        } else {
             return false;
         }
-        return $comments;
     }
 }

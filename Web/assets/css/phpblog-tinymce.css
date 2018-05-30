@@ -1,0 +1,21 @@
+.mce-tinymce {
+    /*border-radius: 0 5px 5px 0 !important;
+    border: 4px solid rgba(0, 0, 0, 0.5) !important;*/
+}
+
+.mce-panel {
+    background-color: #fff;
+    border-radius: 0 5px 5px 0;
+    border: 4px solid rgba(0, 0, 0, 0.5) !important;
+}
+
+.mce-content-body {
+    font-family: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.7571em;
+}
+
+.mce-btn button {
+    /* border-radius: 2rem;
+    border: 0 none;
+    box-shadow: none;*/
+}

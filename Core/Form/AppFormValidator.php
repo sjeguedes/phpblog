@@ -59,6 +59,24 @@ class AppFormValidator
     }
 
     /**
+     * Get form identifier
+     * @return string: identifier name
+     */
+    public function getFormIdentifier()
+    {
+        return $this->formIdentifier;
+    }
+
+    /**
+     * Get form helper
+     * @return object: AppStringModifier instance
+     */
+    public function getFormHelper()
+    {
+        return $this->helper;
+    }
+
+    /**
      * Get result datas
      * @return array: an array which contains filtered datas and error messages
      */
@@ -85,25 +103,31 @@ class AppFormValidator
             switch ($filterType) {
                 case 'alphanum':
                     $this->filteredDatas[$name] = filter_input($inputType, $name, FILTER_CALLBACK, [
-                        'options' => function($data) use($validator, $modifiers) {
+                        'options' => function($data) use($validator, $modifiers, $name) {
                             $data = $validator->modifyData($data, $modifiers);
-                            return $data = filter_var($data, FILTER_SANITIZE_STRING);
+                            $data = filter_var($data, FILTER_SANITIZE_STRING);
+                            $this->result[$name] = $data;
+                            return $data;
                         }
                     ]);
                 break;
                 case 'email':
                     $this->filteredDatas[$name] = filter_input($inputType, $name, FILTER_CALLBACK, [
-                        'options' => function($data) use($validator, $modifiers) {
+                        'options' => function($data) use($validator, $modifiers, $name) {
                             $data = $validator->modifyData($data, $modifiers);
-                            return $data = filter_var($data, FILTER_SANITIZE_EMAIL);
+                            $data = filter_var($data, FILTER_SANITIZE_EMAIL);
+                            $this->result[$name] = $data;
+                            return $data;
                         }
                     ]);
                 break;
                 default:
                     $this->filteredDatas[$name] = filter_input($inputType, $name, FILTER_CALLBACK, [
-                        'options' => function($data) use($validator, $modifiers) {
+                        'options' => function($data) use($validator, $modifiers, $name) {
                             $data = $validator->modifyData($data, $modifiers);
-                            return $data = filter_var($data, FILTER_SANITIZE_STRING);
+                            $data = filter_var($data, FILTER_UNSAFE_RAW);
+                            $this->result[$name] = $data;
+                            return $data;
                         }
                     ]);
                 break;
@@ -137,7 +161,6 @@ class AppFormValidator
     public function validateRequired($name, $label, $errorMessage = true)
     {
         $name = $this->formIdentifier . $name;
-
         if (!$errorMessage) {
             return array_key_exists($name, $this->datas) && trim($this->datas[$name]) != '';
         } else {
@@ -255,14 +278,11 @@ class AppFormValidator
                     $this->result[$this->formIdentifier . 'check'] = true;
                 }
             } else {
-                // This error message is not used! 401 error page is activated to simplify response, look at condition below.
-                $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-token-notice">- Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)If you want to continue, you have to <a href="#" class="text-muted" onclick="window.location.reload(); return false;" title="Reload this page">reload this page</a> and start a new form.</span>';
+                // Wrong token value or wrong token dynamic index!
                 $this->result[$this->formIdentifier . 'check'] = false;
             }
         // Anything else happened.
         } else {
-            // This error message is not used! 401 error page is activated to simplify response, look at condition below.
-            $this->result[$this->errorIndex][$this->formIdentifier . 'check'] = '<span class="form-token-notice"> - Wrong token -<br>You are not allowed to use the form like this!<br>Please do not follow the dark side of the force... ;-)<br>If you want to continue, you have to <a href="#" class="text-muted" onclick="window.location.reload(); return false;" title="Reload this page">reload this page</a> and start a new form.</span>';
             $this->result[$this->formIdentifier . 'check'] = false;
         }
         // Wrong token (expired or invalid (hacked) token)
@@ -270,16 +290,309 @@ class AppFormValidator
             // Set 401 error page
             $this->setUnauthorizedFormSubmissionResponse();
         }
+
+    }
+
+    /**
+     * Validate an uploaded image
+     * @param string $name: field name in $_FILES
+     * @return string|boolean: path to temporary file name or false
+     */
+    public function validateImageUpload($name)
+    {
+        try {
+            $name = $this->formIdentifier . $name;
+            // File is not found.
+            if (!is_uploaded_file($_FILES[$name]['tmp_name'])) {
+                $this->result[$this->errorIndex][$name] = 'No file is selected.';
+            // File upload error
+            } elseif ($_FILES[$name]['error'] > 0) {
+                $this->result[$this->errorIndex][$name] = 'File can not be uploaded.';
+            // Invalid file name
+            } elseif (preg_match('#[\x00-\x1F\x7F-\x9F/\\\\]#', $_FILES[$name]['name'])) {
+                $this->result[$this->errorIndex][$name] = 'File name is not valid.';
+            } else {
+                // Max size
+                $maxSize = 350000; // octets
+                // User file input extension
+                $extension = strtolower(pathinfo($_FILES[$name]['name'], PATHINFO_EXTENSION));
+                // Allowed extensions
+                $validExtensions = ['jpg', 'jpeg', 'gif', 'png'];
+                // Allowed dimensions
+                $maxWidth = 480;
+                $maxHeight = 360;
+                // User input dimensions
+                $imageSizes = getimagesize($_FILES[$name]['tmp_name']);
+                // Size is to big.
+                if ($_FILES[$name]['size'] > $maxSize) {
+                    $this->result[$this->errorIndex][$name] = 'File size limit (0.350 Mo) is reached.';
+                // Extension is not allowed.
+                } elseif (!in_array($extension, $validExtensions)) {
+                    $this->result[$this->errorIndex][$name] = 'File type is unauthorized!<br>"jpg, jpeg, gif, png" extensions are allowed.';
+                // Dimensions which are too small are not allowed.
+                } elseif ($imageSizes[0] < $maxWidth || $imageSizes[1] < $maxHeight) {
+                    $this->result[$this->errorIndex][$name] = 'Image is too small!<br>Resizing format (width/height) is 480px/360px.';
+                // Store selected file in session
+                } else {
+                    // Update current file data
+                    if (isset($_SESSION['uploads'][$name]['tempFile'])) {
+                        unset($_SESSION['uploads'][$name]['tempFile']);
+                    }
+                    $_SESSION['uploads'][$name]['tempFile'] = $_FILES[$name];
+                    $this->result[$name] = $_SESSION['uploads'][$name]['tempFile'];
+                }
+            }
+            // File is already uploaded, so cancel error message after new submission try with empty $_FILES.
+            if (isset($_SESSION['uploads'][$name]['tempFile'])) {
+                // Unset error if it exists (not to show it in case of previous selected image) and prevent image to be saved again!
+                if (isset($this->result[$this->errorIndex][$name])) {
+                    unset($this->result[$this->errorIndex][$name]);
+                }
+                // Return current file
+                return $_SESSION['uploads'][$name]['tempFile'];
+            } else {
+                return false;
+            }
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Save an uploaded image
+     * @param string $name: field name
+     * @param boolean $temporary: generate a temporary file or not
+     * @return string|boolean: path to uploaded image or false
+     */
+    public function saveImageUpload($name, $temporary = false)
+    {
+        try {
+            $name = $this->formIdentifier . $name;
+            if ($temporary == false) {
+                if (!isset($_SESSION['uploads'][$name]['tempFile']['saved'])) {
+                    return false;
+                }
+                $fileName = $_SESSION['uploads'][$name]['tempFile']['saved'];
+                $newFileName = bin2hex(mcrypt_create_iv(10, MCRYPT_DEV_URANDOM));
+                // User file input extension
+                $extension = strtolower(pathinfo($_SESSION['uploads'][$name]['tempFile']['saved'], PATHINFO_EXTENSION));
+                $pathToUploadFolder = $_SERVER['DOCUMENT_ROOT'] . '/uploads/images';
+                // Create directory if it does not exist.
+                if (!is_dir($pathToUploadFolder)) {
+                    mkdir($_SERVER['DOCUMENT_ROOT'] . '/uploads/', 0755, true);
+                    mkdir($_SERVER['DOCUMENT_ROOT'] . '/uploads/images', 0755, true);
+                    // Not really a good practice to generate .htaccess for security reason
+                    $file = fopen($_SERVER['DOCUMENT_ROOT'] . '/uploads/images/.htaccess', 'a+');
+                    $content = '# Define allowed files' . PHP_EOL .
+                               'Order Allow,Deny' . PHP_EOL .
+                               'Deny from all' . PHP_EOL .
+                               '<FilesMatch "\.(jpe?g|gif|png)$">' . PHP_EOL .
+                               'Order Deny,Allow' . PHP_EOL .
+                               'Allow from all' . PHP_EOL .
+                               '</FilesMatch>';
+                    fwrite($file, $content);
+                    fclose($file);
+                    // Owner can read and write, others can only read.
+                    chmod($file, 0644);
+                }
+            // Temporary file
+            } else {
+                if (!isset($_SESSION['uploads'][$name]['tempFile']['tmp_name'])) {
+                    return false;
+                }
+                $fileName = $_SESSION['uploads'][$name]['tempFile']['tmp_name'];
+                $newFileName = bin2hex(mcrypt_create_iv(10, MCRYPT_DEV_URANDOM));
+                // User file input extension
+                $extension = strtolower(pathinfo($_SESSION['uploads'][$name]['tempFile']['name'], PATHINFO_EXTENSION));
+                $pathToUploadFolder = $_SERVER['DOCUMENT_ROOT'] . '/uploads/images/temp';
+                // Delete previous temporary files if they exist.
+                if (is_dir($pathToUploadFolder)) {
+                    $files = glob($pathToUploadFolder . '/*'); // get all file names
+                    foreach ($files as $file){ // iterate files
+                        if (is_file($file)) {
+                            @unlink($file); // delete file
+                        }
+                    }
+                // No directory, so create it!
+                } else {
+                    mkdir($_SERVER['DOCUMENT_ROOT'] . '/uploads/images/temp', 0755, true);
+                }
+            }
+            // Get authenticated user id
+            if ($temporary == false) {
+                $authenticatedUser = $this->router->getSession()::isUserAuthenticated();
+                $userFolder = 'ci-' . $authenticatedUser['userId'];
+                // Define folder
+                $folder = $pathToUploadFolder . '/' . $userFolder;
+                // Create particular user directory if it does not exist.
+                if (!is_dir($pathToUploadFolder. '/' . $userFolder)) {
+                    mkdir($pathToUploadFolder . '/' . $userFolder, 0755, true);
+                }
+            } else {
+                // Define folder
+                $folder = $pathToUploadFolder;
+            }
+            // New image path
+            $newImagePath = $folder . '/' . $newFileName . '.' . $extension;
+            // File already exists.
+            if (file_exists($folder . '/' . $newFileName . '.' . $extension)) {
+                $this->result[$this->errorIndex][$name] = 'File already exists.';
+                return false;
+            } elseif ($temporary == true && !move_uploaded_file($fileName, $newImagePath)) {
+                $this->result[$this->errorIndex][$name] = 'File can not be saved.';
+                return false;
+            } elseif ($temporary == false && !rename($fileName, $newImagePath)) {
+                $this->result[$this->errorIndex][$name] = 'File can not be moved.';
+                return false;
+            // Copy renamed file in chosen folder.
+            } else {
+                // Store path in success result for both temporary and final file
+                $this->result[$name] = $newImagePath;
+                // Final file
+                if ($temporary == false) {
+                    // Unlink previous references to files if files are already uploaded.
+                    $this->deleteUnattachedImage($name);
+                    $_SESSION['uploads'][$name]['lastCreated'][] = $newImagePath;
+                // Temporary file
+                } else {
+                    $_SESSION['uploads'][$name]['tempFile']['saved'] = $newImagePath;
+                }
+                return $newImagePath;
+            }
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Delete unattached images when trying to upload
+     * @param string $name: field name
+     * @return boolean: true in case of success or false
+     */
+    public function deleteUnattachedImage($name)
+    {
+        try {
+            $name = $this->formIdentifier . $name;
+            // Unlink previous references to files if files are already uploaded and resized without validation
+            if (isset($_SESSION['uploads'][$name]['lastCreated'])) {
+                foreach ($_SESSION['uploads'][$name]['lastCreated'] as $file) {
+                    @unlink($file);
+                }
+                unset($_SESSION['uploads'][$name]['lastCreated']);
+            }
+            return true;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Resize image with crop if it's necessary
+     * @param string $name: field name
+     * @param string $imagePath: path to image to resize
+     * @param integer $width: desired width
+     * @param integer $height: desired height
+     * @return string|boolean: resized image complete path or false
+     */
+    public function resizeImageWithCrop($name, $imagePath, $width, $height)
+    {
+        try {
+            $name = $this->formIdentifier . $name;
+            // Check MIME Type.
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mimeTypes = [
+                'jpeg' => 'image/jpeg',
+                'png' => 'image/png',
+                'gif' => 'image/gif',
+            ];
+            // Valid MIME type
+            if (false !== $ext = array_search( $finfo->file($imagePath), $mimeTypes, true)) {
+                $mimeType = $ext;
+                $imageFunction = 'image' . $mimeType; // can be imagejpeg, imagepng, imagegif
+            // Stop script and avoid resizing
+            } else {
+                 return false;
+            }
+            // Get image content
+            $image = file_get_contents($imagePath);
+            $image = imagecreatefromstring($image); // could be adpated directly if MIME type was known: imagecreatefromjpeg($image), ...
+            // Get image size
+            $currentWidth = @imagesx($image);
+            $currentHeight = @imagesy($image);
+            if (($currentWidth == $width) && ($currentHeight == $height)) {
+                return $image; // no resizing needed
+            }
+            // Try max width first...
+            $ratio = $width / $currentWidth;
+            $newWidth = $width;
+            $newHeight = $currentHeight * $ratio;
+            // If that created an image smaller than what we wanted, try the other way.
+            if ($newHeight < $height) {
+                $ratio = $height / $currentHeight;
+                $newHeight = $height;
+                $newWidth = $currentWidth * $ratio;
+            }
+            // Create new empty image
+            $image2 = imagecreatetruecolor($newWidth, $newHeight);
+            // Resize old image into new
+            imagecopyresampled($image2, $image, 0, 0, 0, 0, $newWidth, $newHeight, $currentWidth, $currentHeight);
+            // Check to see if cropping needs to happen
+            if (($newHeight != $height) || ($newWidth != $width)) {
+                // Create new empty image
+                $image3 = imagecreatetruecolor($width, $height);
+                if ($newHeight > $height) { // crop vertically
+                    $extra = $newHeight - $height;
+                    $x = 0; // source x
+                    $y = round($extra / 2); // source y
+                    // Resize old image into new
+                    imagecopyresampled($image3, $image2, 0, 0, $x, $y, $width, $height, $width, $height);
+                } else {
+                    $extra = $newWidth - $width;
+                    $x = round($extra / 2); // source x
+                    $y = 0; // source y
+                    // Resize old image into new
+                    imagecopyresampled($image3, $image2, 0, 0, $x, $y, $width, $height, $width, $height);
+                }
+                // Destroy image resource
+                imagedestroy($image2);
+                // Rename image with defined dimensions
+                $imagePath3 = pathinfo($imagePath, PATHINFO_DIRNAME) . '/' . pathinfo($imagePath, PATHINFO_FILENAME) . "-{$width}x{$height}." .pathinfo($imagePath, PATHINFO_EXTENSION);
+                $imageFunction($image3, $imagePath3, 90); // quality 90%
+                $_SESSION['uploads'][$name]['lastCreated'][] = $imagePath3;
+                return $imagePath3;
+            } else {
+                // Rename image with defined dimensions
+                $imagePath2 = pathinfo($imagePath, PATHINFO_DIRNAME) . '/' . pathinfo($imagePath, PATHINFO_FILENAME) . "-{$width}x{$height}." .pathinfo($imagePath, PATHINFO_EXTENSION);
+                $imageFunction($image2, $imagePath2, 90); // quality 90%
+                $_SESSION['uploads'][$name]['lastCreated'][] = $imagePath2;
+                return $imagePath2;
+            }
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**
      * Render a 401 ("Unauthorized") form submission response
      * @return string: page HTML content
      */
-    public function setUnauthorizedFormSubmissionResponse() {
-        $_SESSION['unauthorizedFormSubmission'] = true;
-        $this->router->getHTTPResponse()->set401ErrorResponse('<strong>Form submission is unauthorized.</strong><br>this is due to inactivity or security reason.<br>Please go back to <a href="/' . $this->router->getUrl() . '" class="normal-link" title="Previous visited page">previous page</a> and try again.', $this->router);
+    public function setUnauthorizedFormSubmissionResponse()
+    {
+        // Call session expiration when user is authenticated and use back office
+        // Redirect to login page for security reason thanks to this session var
+        // Look at AdminUserController->showAdminAccess()
+        if ($this->router->getSession()::isUserAuthenticated()) {
+            // Run disconnection
+            $this->router->getSession()::destroy();
+            // Initialize state
+            $_SESSION['expiredSession']['state'] = true;
+            $_SESSION['expiredSession']['unauthorizedFromAdmin'] = true;
+        // Call a 401 error response for forms which are not part of back office.
+        } else {
+            $_SESSION['unauthorizedFormSubmission'] = true;
+            $this->router->getHTTPResponse()->set401ErrorResponse('<strong>Form submission is unauthorized.</strong><br>this message is mainly due to security reason.<br>This issue could also be due to inactivity (session expiration) on our website.<br>Please go back to <a href="/' . $this->router->getUrl() . '" class="normal-link" title="Previous visited page">previous page</a> and try again.', $this->router);
             exit();
+        }
     }
 
     /**

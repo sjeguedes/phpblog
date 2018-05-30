@@ -24,12 +24,15 @@ config:
         dbPwd: your_db_pwd
     posts:
         postPerPage: 5 (number - post quantity to show per page for posts list)
+    singlePost:
         commentPerSlide: 5 (number - comment quantity to show per slide item for single post)
     admin:
         home:
             contactPerSlide: 5 (number - contact quantity to show per slide item)
-            commentPerSlide: 5 (number - comment quantity to show per slide item)
+            userPerSlide: 5 (number - user quantity to show per slide item)
+        posts:
             postPerSlide: 5 (number - post quantity to show per slide item)
+            commentPerSlide: 5 (number - comment quantity to show per slide item)
     googleRecaptcha:
         siteKey: your_site_key
         secretKey: your_secret_key

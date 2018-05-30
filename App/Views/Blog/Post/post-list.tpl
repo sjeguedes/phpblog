@@ -1,4 +1,4 @@
-{% extends "layout.tpl" %}
+{% extends 'layout.tpl' %}
 {% block content %}
 
 {% if postListOnPage['postsOnPage'] is not empty %}
@@ -23,13 +23,14 @@
                     <div class="post-header">
                         <ul class="post-header-infos">
                             <li>
-                                {% if item.author is defined %} <i class="fa fa-user">&nbsp;</i>by {{ item.author.nickName|raw }} {% endif %}
-                                <i class="fa fa-calendar">&nbsp;</i>Published on {{ item.creationDate }}&nbsp;-&nbsp;Updated on {{ item.updateDate }}
+                                {% if item.author is defined %} <i class="fa fa-user">&nbsp;</i>by {{ item.author.nickName|raw }}{% endif %}
+                                <i class="fa fa-calendar">&nbsp;</i>Published on {{ item.creationDate }}
+                                {% if date(item.creationDate) != date(item.updateDate) %}&nbsp;-&nbsp;Updated on {{ item.updateDate }}{% endif %}
                             </li>
                             {% if item.temporaryParams['postComments'] is defined %}
                             <li>
                                 {% set countedComments = 0 %}
-                                {% for comment in item.temporaryParams['postComments'] if comment.isPublished == 1 %}
+                                {% for comment in item.temporaryParams['postComments'] %}
                                     {% set countedComments = loop.index %}
                                 {% endfor %}
                                 {% if countedComments != 0 %}
@@ -42,18 +43,26 @@
                     <div class="separator separator-neutral"></div>
                     <div class="row">
                         <div class="post-thumbnail col-md-12 col-lg-3 mb-4">
-                            <img class="rounded img-raised" src="http://placehold.it/320x240" alt="{{ item.title|e('html_attr') }}">
+                            {% set imageSrc = 'http://placehold.it/320x240' %}
+                            {% if item.temporaryParams['postImages'] is defined %}
+                                {% for image in item.temporaryParams['postImages'] %}
+                                    {% if (image.postId == item.id) and (image.dimensions == '320x240') %}
+                                        {% set imageSrc = '/uploads/images/ci-'~image.creatorId~'/'~image.name~'.'~image.extension %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                            <img class="rounded img-raised" src="{{ imageSrc|e('html_attr') }}" alt="{{ item.title|striptags|e('html_attr') }}">
                         </div>
-                        <div class="post-intro text-left col-md-12 col-lg-9">
+                        <div class="post-intro text-left pb-4 col-md-12 col-lg-9">
                             <p class="px-3">{{ item.intro|raw }}</p>
-                            <div class="text-right px-3"><a href="/post/{{ item.slug|e('url') }}-{{ item.id }}" title="{{ item.title|e('html_attr') }}">Read more +</a></div>
+                            <div class="read-more text-right px-3"><a href="/post/{{ item.slug|e('url') }}-{{ item.id }}" title="Read more about post: {{ item.title|striptags|e('html_attr') }}">Read more +</a></div>
                         </div>
                     </div>
                     <hr>
                 </article>
             {% endfor %}
-            {% if postListOnPage %}
-                <!-- Pagination -->
+            {% if (postListOnPage is defined) and (postListOnPage['pageQuantity'] > 1) %}
+                <!-- Pagination for at least 2 pages -->
                 {% set pageQuantity = postListOnPage['pageQuantity'] %}
                 {% set currentPage = postListOnPage['currentPage'] %}
                 <nav class="post-list-nav" aria-label="Post list navigation">

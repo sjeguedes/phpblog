@@ -5,6 +5,31 @@ jQuery(function($) {
 
     // -------------------------------------------------------------------------------------------------------
 
+    // Fix call to scroll when page loaded for Safari: look at next script!
+    if (navigator.userAgent.search('Safari') >= 0) {
+        var interval = setInterval(function() {
+            if (document.readyState === 'complete') {
+                clearInterval(interval);
+                // Better user experience with scroll
+                // Scroll to form notice message box if it is visible (obviously, in case of no AJAX mode).
+                $('.form-error, .form-success').each(function() {
+                    if ($(this).is(':visible')) {
+                        $('html, body').animate({
+                            scrollTop: ($(this).offset().top - 125) + 'px'
+                        }, '700');
+                    }
+                });
+                // Scroll to bloc-"name-of-bloc"
+                var hash = window.location.hash;
+                if (hash) {
+                    $('html, body').animate({
+                        scrollTop: ($('#bloc-' + hash.replace('#', '')).offset().top - 125) + 'px'
+                    }, '700');
+                }
+            }
+        }, 100);
+    }
+
     $(window).on('load hashchange', function(e) {
         // Better user experience with scroll
         // Scroll to contact form notice message box if it is visible (obviously, in case of no AJAX mode).
@@ -80,9 +105,9 @@ jQuery(function($) {
 	// -------------------------------------------------------------------------------------------------------
 
     // Avoid submit before page was correctly loaded
-    interval = setInterval(function() {
-        if(document.readyState === 'complete') {
-            clearInterval(interval);
+    var interval2 = setInterval(function() {
+        if (document.readyState === 'complete') {
+            clearInterval(interval2);
             // User submits contact form.
             $(document).on('submit', '.contact-form', function(e) {
                 // Only AJAX mode
@@ -207,7 +232,7 @@ jQuery(function($) {
                         });
                     }
                 }
-            });
+             });
         }
     }, 100);
 
@@ -268,10 +293,8 @@ var formSelector = '.contact-form',
 
 // -------------------------------------------------------------------------------------------------------
 
-// Check if page if correctly loaded for ajax
-var interval,
 // User inputs are modified.
-    formJustLoaded = false,
+var formJustLoaded = false,
     currentElement,
     fieldsInQueue = [],
     elements,

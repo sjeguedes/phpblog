@@ -1,4 +1,4 @@
-{% extends "layout.tpl" %}
+{% extends 'layout.tpl' %}
 {% block content %}
 <div class="section section-admin-login-form text-center">
     <div class="container">
@@ -16,7 +16,11 @@
                     </button>
                 </p>
                 <p class="alert alert-danger form-error{{ errors == 0 ? ' form-hide'}}" role="alert">
+                    {% if errors['expiredSession'] is defined %}
+                    <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>YOU ARE NOT AUTHENTICATED ANYMORE!</strong>{% if errors['expiredSession']['unauthorizedFromAdmin'] is defined %}<br>You were disconnected for security reason.{% endif %}<br>Your session expired. Please login again.
+                    {% else %}
                     <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERRORS!</strong>&nbsp;Change a few things up and try submitting again.{% if errors['lif_login'] is defined %}<br>{{ errors['lif_login']|raw }}{% endif %}{% if errors['lif_check'] is defined %}<br>{{ errors['lif_check']|raw }}{% endif %}
+                    {% endif %}
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">
                             <i class="now-ui-icons ui-1_simple-remove"></i>

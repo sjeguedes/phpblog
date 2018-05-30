@@ -28,7 +28,7 @@ class AdminController extends BaseController
         }
         // Disallow admin access if user is not authenticated
         // or user cookie token index does not match, or user cookie/session token values don't match.
-        $this->allowAdminAccess();
+        $this->controlAdminAccess();
     }
 
     /**
@@ -57,7 +57,7 @@ class AdminController extends BaseController
      * Check if access to admin pages is allowed
      * @return void
      */
-    private function allowAdminAccess() {
+    protected function controlAdminAccess() {
         // Check access to admin pages but not for user login, user request new password, user renew password, user register pages
         $adminPageRequest = preg_match('#^/?admin((?!/login|/request-new-password|/renew-password|/register)(?=.*[\d\w-/]).*)?$#', $_GET['url']);
         $authenticatedUser = $this->session::isUserAuthenticated();
@@ -102,6 +102,78 @@ class AdminController extends BaseController
                 exit();
             }
         }
+    }
+
+    /**
+     * Validate (or not) admin actions forms on entity (deleting, validation, publication, publication cancelation)
+     * @param array $params: an array of parameter to validate a simple form
+     * @param object $formValidatorObject: an instance of form validator
+     * @param string $redirectUrl: url to redirect after validation success
+     * @return array: an array which contains result of validation (errors, form values, ...)
+     */
+    protected function validateEntityForms($params, $formValidatorObject, $redirectUrl = null)
+    {
+        // Use value as var name
+        $tokenIndex = $params['tokenIndex'];
+        $entityIdIndex = $params['tokenIdentifier'] . '_id';
+        $entity = $params['datas']['entity'];
+        $entityName = ucfirst($params['datas']['entity']);
+        $getEntityByid = "get${entityName}ById";
+        $action = $params['action'] . 'Entity';
+        $arguments = [$_POST[$entityIdIndex], $params['datas']];
+        // Check token to avoid CSRF
+        $tokenValue = isset($_POST[$tokenIndex]) ? $_POST[$tokenIndex] : false;
+        $tokenPrefix = $params['tokenIdentifier'] . '_';
+        // Form validator actions
+        $formIdentifier = $formValidatorObject->getFormIdentifier();
+        $formValidatorObject->validateToken($tokenValue, $tokenPrefix);
+        // Get validation result
+        $result = $formValidatorObject->getResult();
+        // Additional error message in case of form errors
+        if (!empty($result[$formIdentifier . 'errors'])) {
+            // Check wrong entity id used in form
+            if ((int) $_POST[$entityIdIndex] > 0 && $this->currentModel->$getEntityByid($_POST[$entityIdIndex]) == false) {
+                $result[$formIdentifier . 'errors'][$formIdentifier . 'failed'][$entity]['message'] = $params['errorMessage'] . htmlentities($_POST[$entityIdIndex]) . '.';
+            }
+        }
+        // Submit: entity form is correctly filled.
+        if (isset($result) && empty($result[$formIdentifier . 'errors']) && isset($result[$formIdentifier . 'check']) && $result[$formIdentifier . 'check']) {
+            // Perform desired action in database
+            try {
+                // Check entity id used in form
+                // Is there an existing entity with this id?
+                if ((int) $_POST[$entityIdIndex] > 0 && $this->currentModel->$getEntityByid($_POST[$entityIdIndex]) != false) {
+                    // Delete or validate or publish or unpublish entity
+                    call_user_func_array([$this->currentModel, $action], $arguments);
+                    $performed = true;
+                } else {
+                    $result[$formIdentifier . 'errors'][$formIdentifier . 'failed'][$entity]['message2'] = $this->config::isDebug('<span class="form-check-notice">Sorry an error happened! <strong>Wrong ' . $entity . ' id</strong> is used.<br>Action [Debug trace: <strong>' . $params["action"] . '</strong>] on ' . $entity . ' can not be performed correctly.<br>[Debug trace: ' . $entity . ' id "<strong>' . htmlentities($_POST[$entityIdIndex]) . '</strong>" doesn\'t exist in database!]</span>');
+                    $performed = false;
+                }
+            } catch (\PDOException $e) {
+                $result[$formIdentifier . 'errors'][$formIdentifier . 'failed'][$entity]['message2'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Please try again later.<br>Action [Debug trace: <strong>' . $params["action"] . '</strong>] on ' . $entity . ' [Debug trace: <strong> ' . $entity . ' id ' . htmlentities($_POST[$entityIdIndex]) . '</strong>] was not performed correctly.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $performed = false;
+            }
+            // Action was performed successfully on entity!
+            if ($performed) {
+                // Reset form associated datas
+                $result = [];
+                // Initialize success state
+                $_SESSION[$formIdentifier . 'success'][$entity] = [
+                    'state' => true, // show success message (not really useful)
+                    'id' => htmlentities($_POST[$entityIdIndex]), // retrieve entity id
+                    'message' => $params['successMessage'] . htmlentities($_POST[$entityIdIndex]), // customize success message as regards action
+                    'slideRank' => htmlentities($_POST[$tokenPrefix . 'slide_rank']) // last slide item reminder to position slide after redirection
+                ];
+                // Redirect to admin home action (to reset submitted form)
+                if (!is_null($redirectUrl)) {
+                    $this->httpResponse->addHeader('Location: ' . $redirectUrl);
+                    exit();
+                }
+            }
+        }
+        // Update error notice messages and form values
+        return $result;
     }
 
     /**

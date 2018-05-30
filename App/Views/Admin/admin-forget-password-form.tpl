@@ -1,4 +1,4 @@
-{% extends "layout.tpl" %}
+{% extends 'layout.tpl' %}
 {% block content %}
 <div class="section section-admin-forget-password-form text-center">
     <div class="container">
@@ -31,7 +31,7 @@
         <div class="row">
             <div class="col-lg-5 text-center col-md-8 col-sm-10 ml-auto mr-auto">
                 <div class="row card p-4" data-background-color="black">
-                        <form novalidate class="forget-password-form form-nospam" method="post" action="/admin/request-new-password" data-try-validation="{{ tryValidation }}">
+                        <form novalidate class="forget-password-form form-switch-input" method="post" action="/admin/request-new-password" data-try-validation="{{ tryValidation }}">
                             <p class="text-danger{{ errors['fpf_email'] is not defined ? ' form-hide'}}" role="alert">&nbsp;{{ errors['fpf_email']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                             <div class="input-group phpblog-field-group form-group-no-border input-lg">
                                 <span class="input-group-addon">

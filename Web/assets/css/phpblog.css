@@ -61,11 +61,28 @@ a:not(.btn):hover {
 /* End override Recaptcha */
 
 html {
-    height: 100%;
+    /*height: 100%;*/
 }
 
 body {
-    height: inherit;
+    /*height: inherit;*/
+}
+
+.content {
+    padding-top: 2em !important;
+}
+
+.content h1, .content .h1 {
+    margin-top: 0 !important;
+}
+
+.section:first-child {
+    padding: 0 0 30px;
+}
+
+small {
+    font-weight: 700;
+    font-size: 70%;
 }
 
 ul.phpblog-list {
@@ -306,6 +323,10 @@ ul.phpblog-list {
     padding: 30px 0;
 }
 
+.section.section-comment-post {
+    padding: 0 0 30px;
+}
+
 .footer.footer-default {
     background-color: rgb(153, 153, 153);
 }
@@ -347,6 +368,16 @@ ul.phpblog-list {
     display: inline-block;
 }
 
+.post-intro {
+    position: relative;
+}
+
+.post-intro .read-more {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
 .post-thumbnail img, .post-img img {
     border-width: 0 10px;
     border-style: solid;
@@ -382,6 +413,10 @@ form p.text-danger {
     font-size: 0.85em;
 }
 
+.input-group {
+    overflow: hidden;
+}
+
 .input-group-addon, .form-control {
     background-color: transparent !important;
     border: 2px solid rgba(255, 255, 255, 0.1) !important;
@@ -397,13 +432,110 @@ form p.text-danger {
     border-radius: 0 5px 5px 0 !important;
 }
 
-.active-field .input-group-addon, .active-field .form-control {
+/*Custom input type file*/
+.custom-file {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    height: auto !important;
+    margin-bottom: 0;
+}
+
+.custom-file-control {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 5;
+    height: auto !important;
+    padding: 16px 18px 15px 16px;
+    line-height: normal;
+    font-size: 0.8571em;
+    color: #fff;
+    pointer-events: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-color: transparent !important;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-left-width: 0 !important;
+    border-radius: 0 5px 5px 0 !important;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.custom-file-control::before {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    bottom: -2px;
+    z-index: 6;
+    display: block;
+    height: auto !important;
+    padding: 15px 18px 15px 16px;
+    line-height: normal;
+    font-size: 1em;
+    color: #fff;
+    background-color: #888;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-left-width: 0 !important;
+    border-radius: 0 5px 5px 0 !important;
+}
+
+.custom-file-input.form-control {
+    padding: 11px 19px !important;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    line-height: normal;
+    font-size: 1em;
+    display: block;
+    width: 100%;
+    height: auto !important;
+    min-width: auto !important;
+}
+
+.post-custom-image .custom-file-control:lang(en)::before {
+    content: "Choose";
+}
+
+.post-custom-image .custom-file-control:lang(en)::after {
+    content: "Select image...";
+}
+
+.post-custom-image .custom-file-control.selected-not-empty:lang(en)::after {
+    content: "";
+}
+
+/*when a value is selected, this class removes the content*/
+.post-custom-image .custom-file-control.selected:lang(en)::after {
+    content: "File added!" !important;
+}
+/*End custom input type file*/
+
+.input-group-addon.phpblog-disabled,.form-control.phpblog-disabled {
+    border: 0 none !important;
+    background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+select.form-control.custom-select {
+    height: auto !important;
+    background: #fff url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23ffffff' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E") no-repeat right .75rem center;
+    background-size: 8px 10px;
+}
+
+.active-field .input-group-addon:not('.phpblog-disabled'), .active-field .form-control:not('.phpblog-disabled') {
     background-color: transparent !important;
     border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 .section-contact-us .contact-form .input-group {
     padding: 0;
+}
+
+/* Tiny MCE */
+.phpblog-tinymce {
+    height: 0;
+    visibility: hidden;
 }
 
 .section-contact-us .contact-form .textarea-container,
@@ -416,6 +548,10 @@ form p.text-danger {
 .textarea-container.input-group .input-group-addon {
     padding-top: 19px;
     align-items: flex-start;
+}
+
+.phpblog-mce {
+    padding-right: 16px !important;
 }
 
 .phpblog-form-text {
@@ -517,22 +653,22 @@ select:-webkit-autofill {
 }
 
 /* No spam switch form */
-.form-nospam .phpblog-label {
+.form-switch-input .phpblog-label {
     position: relative;
     top: -5px;
 }
 
-.form-nospam  .bootstrap-switch {
+.form-switch-input .bootstrap-switch {
     background-color: rgba(255, 255, 255, 0.1);
     margin-right: 0;
     overflow: hidden;
 }
 
-.form-nospam  .bootstrap-switch.bootstrap-switch-on .bootstrap-switch-label {
+.form-switch-input .bootstrap-switch.bootstrap-switch-on .bootstrap-switch-label {
     border: 2px solid rgba(153, 153, 153, 1);
 }
 
-.form-nospam  .bootstrap-switch.bootstrap-switch-off .bootstrap-switch-label {
+.form-switch-input .bootstrap-switch.bootstrap-switch-off .bootstrap-switch-label {
     border: 2px solid rgba(153, 153, 153, 0.7);
 }
 

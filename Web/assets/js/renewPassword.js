@@ -5,11 +5,29 @@ jQuery(function($) {
 
     // -------------------------------------------------------------------------------------------------------
 
+    // Fix call to scroll when page loaded for Safari: look at next script!
+    if (navigator.userAgent.search('Safari') >= 0) {
+        var interval = setInterval(function() {
+            if (document.readyState === 'complete') {
+                clearInterval(interval);
+                // Better user experience with scroll
+                // Scroll to form notice message box if it is visible (obviously, in case of no AJAX mode).
+                $('.form-error, .form-success').each(function() {
+                    if ($(this).is(':visible')) {
+                        $('html, body').animate({
+                            scrollTop: ($(this).offset().top - 125) + 'px'
+                        }, '700');
+                    }
+                });
+            }
+        }, 100);
+    }
+
     $(window).on('load', function(e) {
         // Better user experience with scroll
         // Scroll to form notice message box if it is visible (obviously, in case of no AJAX mode).
         $('.form-error, .form-success').each(function() {
-            if($(this).is(':visible')) {
+            if ($(this).is(':visible')) {
                 $('html, body').animate({
                     scrollTop: ($(this).offset().top - 125) + 'px'
                 }, '700');
@@ -265,40 +283,40 @@ var fieldsToUpdate = function(fieldsToCheck) {
 // Zurb foundation add on: show
 // https://foundation.zurb.com/building-blocks/blocks/show-password.html
 var changeType = function(x, type) {
-        if (x.prop('type') == type) return x; // That was easy.
-        if (timer === undefined) {
-            var timer = 0;
-        } else {
-            clearTimeout(timer);
-        }
-        try {
-            return x.prop('type', type); // Stupid IE security will not allow this
-        } catch(e) {
-            // Try re-creating the element
-            // jQuery has no html() method for the element, so we have to put into a div first
-            var html = $("<div>").append(x.clone()).html();
-            var regex = /type=(\")?([^\"\s]+)(\")?/; // matches type=text or type="text"
-            // If no match, we add the type attribute to the end; otherwise, we replace
-            var tmp = $(html.match(regex) == null ?
-            html.replace(">", ' type="' + type + '">') :
-            html.replace(regex, 'type="' + type + '"') );
-            // Copy data from old element
-            tmp.data('type', x.data('type'));
-            var events = x.data('events');
-            var cb = function(events) {
-                return function() {
-                    // Bind all prior events
-                    for (var i in events) {
-                        var y = events[i];
-                        for (var j in y) {
-                            tmp.bind(i, y[j].handler);
-                        }
-                    }
-                  }
-                }(events);
-            x.replaceWith(tmp);
-            // Wait a bit to call function
-            timer = setTimeout(cb, 10);
-            return tmp;
-        }
+    if (x.prop('type') == type) return x; // That was easy.
+    if (timer === undefined) {
+        var timer = 0;
+    } else {
+        clearTimeout(timer);
     }
+    try {
+        return x.prop('type', type); // Stupid IE security will not allow this
+    } catch(e) {
+        // Try re-creating the element
+        // jQuery has no html() method for the element, so we have to put into a div first
+        var html = $("<div>").append(x.clone()).html();
+        var regex = /type=(\")?([^\"\s]+)(\")?/; // matches type=text or type="text"
+        // If no match, we add the type attribute to the end; otherwise, we replace
+        var tmp = $(html.match(regex) == null ?
+        html.replace(">", ' type="' + type + '">') :
+        html.replace(regex, 'type="' + type + '"') );
+        // Copy data from old element
+        tmp.data('type', x.data('type'));
+        var events = x.data('events');
+        var cb = function(events) {
+            return function() {
+                // Bind all prior events
+                for (var i in events) {
+                    var y = events[i];
+                    for (var j in y) {
+                        tmp.bind(i, y[j].handler);
+                    }
+                }
+              }
+            }(events);
+        x.replaceWith(tmp);
+        // Wait a bit to call function
+        timer = setTimeout(cb, 10);
+        return tmp;
+    }
+}

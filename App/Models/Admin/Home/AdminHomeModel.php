@@ -3,8 +3,7 @@ namespace App\Models\Admin\Home;
 use App\Models\Admin\AdminModel;
 use Core\Routing\AppRouter;
 use App\Models\Admin\Entity\Contact;
-use App\Models\Blog\Entity\User;
-use App\Models\Admin\Entity\Comment;
+use App\Models\Admin\Entity\User;
 
 /**
  * Create an admin model for admin homepage
@@ -44,12 +43,25 @@ class AdminHomeModel extends AdminModel
     }
 
     /**
-     * Get a Comment entity
-     * Use an external model: PostModel
-     * @return array: an array of Comment entity datas
+     * Get a single user with its id
+     * @param string $userId
+     * @return object|boolean: a User entity instance or false
      */
-    public function getCommentById($commentId) {
-        return $this->externalModels['postModel']->getCommentById($commentId);
+    public function getUserById($userId)
+    {
+        $query = $this->dbConnector->prepare('SELECT *
+                                              FROM users
+                                              WHERE user_id = :userId');
+        $query->bindParam(':userId', $userId, \PDO::PARAM_INT);
+        $query->execute();
+        $datas = $query->fetch(\PDO::FETCH_ASSOC);
+        // Is there a result?
+        if ($datas != false) {
+            $user = new User($datas);
+            return $user;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -70,30 +82,40 @@ class AdminHomeModel extends AdminModel
     }
 
     /**
-     * Get all Comment entities ordered by creation date and by post id
-     * @return array: an array which contains all Comment entities instances
+     * Get User entities ordered by creation date
+     * @return array: an array of User entities instances
      */
-    public function getCommentList()
+    public function getUserList()
     {
-        $comments = [];
+        $users = [];
         $query = $this->dbConnector->query('SELECT *
-                                            FROM comments
-                                            ORDER BY comment_creationDate
-                                            DESC, comment_postId');
-        $query->execute();
-
-        while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
-            $comments[] = new Comment($datas);
+                                            FROM users
+                                            ORDER BY user_creationDate
+                                            DESC');
+        while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+            $users[] = new User($datas);
         }
-        return $comments;
+        return $users;
     }
 
     /**
-     * Get Post entities ordered by creation date
-     * Use an external model: PostModel
-     * @return array: an array of Post entities instances
+     * Get User entity user type label by id
+     * @return array: an array which contains user type label (administrator, member...) or false
      */
-    public function getPostList() {
-        return $this->externalModels['postModel']->getList();
+    public function getUserTypeLabelById($userTypeId)
+    {
+        $users = [];
+        $query = $this->dbConnector->prepare('SELECT ut.userType_label
+                                              FROM users u
+                                              INNER JOIN userTypes ut ON (u.user_userTypeId = ut.userType_id)
+                                              WHERE u.user_id = :userTypeId');
+        $query->bindParam(':userTypeId', $userTypeId, \PDO::PARAM_INT);
+        $query->execute();
+        $data = $query->fetch(\PDO::FETCH_ASSOC);
+        if ($data != false) {
+            return $data;
+        } else {
+            return false;
+        }
     }
 }

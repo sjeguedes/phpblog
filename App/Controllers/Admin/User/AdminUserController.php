@@ -84,13 +84,13 @@ class AdminUserController extends AdminController
         parent::__construct($router);
         $this->currentModel = $this->getCurrentModel(__CLASS__);
         // Initialize register form validator
-        $this->registerFormValidator = $this->container::getFormValidator()[3];
+        $this->registerFormValidator = $this->container::getFormValidator()[6];
         // Initialize login form validator
-        $this->loginFormValidator = $this->container::getFormValidator()[4];
+        $this->loginFormValidator = $this->container::getFormValidator()[7];
         // Initialize request new password (forgotten) validator
-        $this->forgetPasswordFormValidator = $this->container::getFormValidator()[5];
+        $this->forgetPasswordFormValidator = $this->container::getFormValidator()[8];
         // Initialize renew password validator
-        $this->renewPasswordFormValidator = $this->container::getFormValidator()[6];
+        $this->renewPasswordFormValidator = $this->container::getFormValidator()[9];
         // Define used parameters to avoid CSRF on register form
         $this->refTokenIndex = $this->registerFormValidator->generateTokenIndex('ref_check');
         $this->refTokenValue = $this->registerFormValidator->generateTokenValue('ref_token');
@@ -359,7 +359,7 @@ class AdminUserController extends AdminController
         $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
         $headers .= 'From: "' . $this->config->getParam('websiteName') . '" <' . $this->config->getParam('contactForm.contactEmail') . '>'. "\r\n";
         $emailMessage = '<html><head></head><body>' . PHP_EOL .
-        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg" alt="phpBlog - Registration activation" with="150" height="150"></p>' . PHP_EOL .
+        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg" alt="phpBlog - Registration activation" width="150" height="150"></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center;"><strong>ACCOUNT REGISTRATION ACTIVATION</strong><br><br></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center; border-top: 2px solid #ffb236; border-bottom: 2px solid #2ca8ff;"><br>Dear ' . htmlentities($result['ref_firstName']) . ' ' . htmlentities($result['ref_familyName']) . ',<br>Thank you to be registered on <a href="' . $this->config->getParam('domain'). '" title="phpBlog"><font color="#888"><u><strong>' . $this->config->getParam('domain') . '</u></strong></font></a>.<br>Now, you have to activate your account to be able to use it on our website.<br>Please click on <a href="' . $this->config->getParam('domain') .'/admin/register/?userAccount=' . $result['ref_email'] . '&amp;activationKey=' . $result['ref_activationCode'] . '" title="Activate your user account"><font color="#f96332"><u>your personal link</u></font></a> to perform this action.<br>Important: please consider your account will be deleted automatically in 48 hours<br>if no activation happens before time limit: <strong>' . $date->format('d-m-Y H:i:s') . '</strong>.<br>Best regards.<br><br>&copy; ' . date('Y') . ' phpBlog<br><br></p>' . PHP_EOL .
         '</body></html>';
@@ -524,6 +524,14 @@ class AdminUserController extends AdminController
         // Call template with methods for more flexibility
         // (No need here to update user form inputs! "$checkedForm" argument is null)
         $varsArray = $this->initAdminAccess();
+        // Session just expired and user was authenticated (inactivity or unauthorized form submission from admin forms).
+        // Then, show message to inform user is not authenticated anymore!
+        if (isset($_SESSION['expiredSession'])) {
+            // Create particular template var
+            // Look at AppSession::expire() or AppFormValidator->setUnauthorizedFormSubmissionResponse()
+            $varsArray['errors']['expiredSession'] = $_SESSION['expiredSession'];
+            unset($_SESSION['expiredSession']);
+        }
         $this->renderAdminAccess($varsArray);
         // Is it already a succcess state for user when renewing password?
         // Enable password renewal success message box once a time
@@ -854,7 +862,7 @@ class AdminUserController extends AdminController
         $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
         $headers .= 'From: "' . $this->config->getParam('websiteName') . '" <' . $this->config->getParam('contactForm.contactEmail') . '>'. "\r\n";
         $emailMessage = '<html><head></head><body>' . PHP_EOL .
-        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg" alt="phpBlog - Registration activation" with="150" height="150"></p>' . PHP_EOL .
+        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg" alt="phpBlog - Registration activation" width="150" height="150"></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center;"><strong>PASSWORD RENEWAL AUTHENTICATION CODE</strong><br><br></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center; border-top: 2px solid #ffb236; border-bottom: 2px solid #2ca8ff;"><br>Dear ' . htmlentities($result['fpf_firstName']) . ' ' . htmlentities($result['fpf_familyName']) . ',<br>Here is your authentication code <strong>' . $result['fpf_passwordUpdateToken'] . '</strong> which is only valid on <a href="' . $this->config->getParam('domain'). '" title="phpBlog"><font color="#888"><u><strong>' . $this->config->getParam('domain') . '</u></strong></font></a>.<br>Now, you have to use it on our website, to renew your password.<br>Please click on <a href="' . $this->config->getParam('domain') .'/admin/renew-password" title="Renew your password"><font color="#f96332"><u>this link</u></font></a> to access a dedicated form.<br>Important: please consider your authentication code (token) will be deleted automatically in 48 hours<br>if no update happens before time limit: <strong>' . $date->format('d-m-Y H:i:s') . '</strong>.<br>Best regards.<br><br>&copy; ' . date('Y') . ' phpBlog<br><br></p>' . PHP_EOL .
         '</body></html>';

@@ -13,6 +13,18 @@ service:
             formIdentifier: haf_
             formDatasRequest: POST
         -
+            name: posts.adminForm
+            formIdentifier: paf_
+            formDatasRequest: POST
+        -
+            name: post.addForm
+            formIdentifier: pnf_
+            formDatasRequest: POST
+        -
+            name: post.updateForm
+            formIdentifier: puf_
+            formDatasRequest: POST
+        -
             name: user.registerForm
             formIdentifier: ref_
             formDatasRequest: POST

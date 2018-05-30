@@ -6,6 +6,7 @@ Minimalist PHP Blog system and MVC structure
 ---- symfony/yaml
 ---- google/recaptcha
 ---- phpmailer/phpmailer
+---- voku/urlify
 - Rename Core/Config/config-example.yml into Core/Config/config.yml and declare your own parameters
-- Add your own CV resume pdf file in Web/assets/files and update its name concerning link placed in App/Views/Home/home-index.tpl
+- Add your own CV resume pdf file in Web/assets/files defined in config.yml
 

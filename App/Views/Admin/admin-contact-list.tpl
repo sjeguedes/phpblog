@@ -16,7 +16,7 @@
                                 </span>
                             </button>
                         </p>
-                        <p class="alert alert-danger form-error{{ errors == 0 ? ' form-hide'}}" role="alert">
+                        <p class="alert alert-danger form-error{{ errors['contact']['state'] == 0 ? ' form-hide'}}" role="alert">
                             <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERRORS!</strong>&nbsp;Change a few things up and try submitting again.{% if errors['haf_check'] is defined %}<br><br>{{ errors['haf_check']|raw }}{% endif %}
                             {% if errors['haf_failed']['contact']['message'] is defined %}<br><br>{{ errors['haf_failed']['contact']['message']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>{% endif %}
                             {% if errors['haf_failed']['contact']['message2'] is defined %}<br><br>{{ errors['haf_failed']['contact']['message2']|raw }}{% endif %}
@@ -75,7 +75,7 @@
                                             <span class="flex-label">Sender</span>
                                         </div>
                                         <p class="flex-content">
-                                            <i class="fa fa-user-circle" aria-hidden="true"></i>&nbsp;<strong>{{ contactList[i].firstName|raw }}&nbsp;{{ contactList[i].familyName|raw }}</strong>
+                                            <i class="fa fa-user-circle" aria-hidden="true"></i>&nbsp;<strong>{{ contactList[i].firstName }} {{ contactList[i].familyName }}</strong>
                                         </p>
                                     </div>
                                     <div class="flex-col">
@@ -136,8 +136,8 @@
                 <h4 class="title title-up">Contact #{{ contactList[i].id }}<br>Message content</h4>
             </div>
             <div class="modal-body">
-                <p><strong>Sender first name:</strong> {{ contactList[i].firstName|raw }}<br>
-                <strong>Sender family name:</strong> {{ contactList[i].familyName|raw }}<br>
+                <p><strong>Sender first name:</strong> {{ contactList[i].firstName }}<br>
+                <strong>Sender family name:</strong> {{ contactList[i].familyName }}<br>
                 <strong>Sender email:</strong> {{ contactList[i].email }}</p>
                 <p class="text-left">{{ contactList[i].message|raw|nl2br }}</p>
             </div>

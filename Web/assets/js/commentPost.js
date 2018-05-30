@@ -5,11 +5,37 @@ jQuery(function($) {
 
     // -------------------------------------------------------------------------------------------------------
 
+    // Fix call to scroll when page loaded for Safari: look at next script!
+    if (navigator.userAgent.search('Safari') >= 0) {
+        var interval = setInterval(function() {
+            if (document.readyState === 'complete') {
+                clearInterval(interval);
+                // Better user experience with scroll
+                // Scroll to comment form notice message box if it is visible (obviously, in case of no AJAX mode).
+                $('.form-error, .form-success').each(function() {
+                    if ($(this).is(':visible')) {
+                        $('html, body').animate({
+                            scrollTop: ($(this).offset().top - 125) + 'px'
+                        }, '700');
+                    }
+                });
+                // Scroll to element with "hash" css id name
+                var hash = window.location.hash;
+                // Scroll to a single comment on single post page
+                if (hash && /^#comment-\d{1,}$/g.test(hash)) {
+                    $('html, body').animate({
+                        scrollTop: $(hash).offset().top + 'px'
+                    }, '700');
+                }
+            }
+        }, 100);
+    }
+
     $(window).on('load hashchange', function(e) {
         // Better user experience with scroll
         // Scroll to comment form notice message box if it is visible (obviously, in case of no AJAX mode).
         $('.form-error, .form-success').each(function() {
-            if($(this).is(':visible')) {
+            if ($(this).is(':visible')) {
                 $('html, body').animate({
                     scrollTop: ($(this).offset().top - 125) + 'px'
                 }, '700');
