@@ -1,5 +1,6 @@
 <?php
 namespace Core\Routing;
+
 use Core\Routing\RoutingException;
 use Core\Routing\AppRoute;
 use Core\Config\AppConfig;
@@ -21,22 +22,22 @@ use Core\Session\AppSession;
 */
 class AppRouter
 {
-	/**
+    /**
      * @var object: a unique instance of AppRouter
      */
     private static $_instance;
     /**
-	 * @var string: URL called
-	 */
-	private $url;
-	/**
-	 * @var array: empty array will store routes
-	 */
-	private $routes = [];
-	/**
-	 * @var array: will store routes names
-	 */
-	private $namedRoutes = [];
+     * @var string: URL called
+     */
+    private $url;
+    /**
+     * @var array: empty array will store routes
+     */
+    private $routes = [];
+    /**
+     * @var array: will store routes names
+     */
+    private $namedRoutes = [];
     /**
      * @var object: store the current unique AppRouter instance
      */
@@ -45,18 +46,18 @@ class AppRouter
      * @var AppContainer instance
      */
     private $container;
-	/**
-	 * @var AppPage instance
-	 */
-	private $page;
-	/**
-	 * @var AppHTTPResponse instance
-	 */
-	private $httpResponse;
-	/**
-	 * @var AppConfig instance
-	 */
-	private $config;
+    /**
+     * @var AppPage instance
+     */
+    private $page;
+    /**
+     * @var AppHTTPResponse instance
+     */
+    private $httpResponse;
+    /**
+     * @var AppConfig instance
+     */
+    private $config;
     /**
      * @var AppSession instance
      */
@@ -64,7 +65,9 @@ class AppRouter
 
     /**
      * Instanciate a unique AppRouter object (Singleton)
+     *
      * @param string $url
+     *
      * @return AppRouter: a unique instance of AppRouter
      */
     public static function getInstance($url)
@@ -75,15 +78,17 @@ class AppRouter
         return self::$_instance;
     }
 
-	/**
-	 * Constructor
-	 * @param string $url
-	 * @return void
-	 */
-	private function __construct($url)
-	{
-		// Store $_GET['url'] value
-		$this->url = $url;
+    /**
+     * Constructor
+     *
+     * @param string $url
+     *
+     * @return void
+     */
+    private function __construct($url)
+    {
+        // Store $_GET['url'] value
+        $this->url = $url;
         // Store the same instance
         $this->router = $this;
         // Instantiate AppConfig object!
@@ -109,9 +114,9 @@ class AppRouter
         $this->session::setRouter($this->router);
         $this->session::setHTTPResponse($this->httpResponse);
         $this->session::setConfig($this->config);
-		// Instantiate AppPage object!
+        // Instantiate AppPage object!
         // This instance needs router, config, httpResponse, session instances
-		$this->page = AppPage::getInstance();
+        $this->page = AppPage::getInstance();
         $this->page::setRouter($this->router);
         $this->page::setHTTPResponse($this->httpResponse);
         $this->page::setConfig($this->config);
@@ -122,6 +127,7 @@ class AppRouter
 
     /**
     * Magic method __clone
+    *
     * @return void
     */
     public function __clone()
@@ -132,6 +138,7 @@ class AppRouter
 
     /**
      * Get used "url" parameter
+     *
      * @return string: url to route
      */
     public function getUrl()
@@ -141,6 +148,7 @@ class AppRouter
 
     /**
      * Get router AppContainer instance
+     *
      * @return object: an AppContainer instance
      */
     public function getContainer()
@@ -150,6 +158,7 @@ class AppRouter
 
     /**
      * Get router AppPage instance
+     *
      * @return object: an AppPage instance
      */
     public function getPage()
@@ -159,6 +168,7 @@ class AppRouter
 
     /**
      * Get router page AppHTTPResponse
+     *
      * @return object: an AppHTTPResponse instance
      */
     public function getHTTPResponse()
@@ -168,6 +178,7 @@ class AppRouter
 
     /**
      * Get router AppConfig instance
+     *
      * @return object: an AppConfig instance
      */
     public function getConfig()
@@ -177,6 +188,7 @@ class AppRouter
 
     /**
      * Get router AppSession instance
+     *
      * @return object: an AppSession instance
      */
     public function getSession()
@@ -186,6 +198,7 @@ class AppRouter
 
     /**
      * Init application router getting routes
+     *
      * @return void
      */
     public function init()
@@ -194,52 +207,57 @@ class AppRouter
         $this->getRoutesConfig();
     }
 
-	/**
-	 * Parse routes configuration, call routes creation and call routes checking
-	 * @return void
-	 */
-	private function getRoutesConfig()
-	{
-		// Get routes from yaml file
-		$yaml = $this->config::parseYAMLFile(__DIR__ . '/routing.yml');
+    /**
+     * Parse routes configuration, call routes creation and call routes checking
+     *
+     * @return void
+     */
+    private function getRoutesConfig()
+    {
+        // Get routes from yaml file
+        $yaml = $this->config::parseYAMLFile(__DIR__ . '/routing.yml');
         foreach ($yaml['routing'] as $route) {
-    		$path = $route['path'];
-    		$name = $route['name'];
-    		$method = $route['method'];
-    		$this->createRoute($path, $name, $method);
-    	}
-    	$this->checkRoutes();
-	}
+            $path = $route['path'];
+            $name = $route['name'];
+            $method = $route['method'];
+            $this->createRoute($path, $name, $method);
+        }
+        $this->checkRoutes();
+    }
 
-	/**
-	 * Create routes and their names
-	 * @param string $path: a path to compare with url which may contain parameters
-	 * @param string $name: route name
-	 * @param string $method: http request method ('POST', 'GET')
-	 * @return void
-	 */
-	private function createRoute($path, $name, $method)
-	{
-		// TODO: use DIC to instantiate AppRoute object!
-		$route = new AppRoute($path, $name);
-		$this->routes[$method][] = $route;
-		$this->namedRoutes[$name] = $route;
-	}
+    /**
+     * Create routes and their names
+     *
+     * @param string $path: a path to compare with url which may contain parameters
+     * @param string $name: route name
+     * @param string $method: http request method ('POST', 'GET')
+     *
+     * @return void
+     */
+    private function createRoute($path, $name, $method)
+    {
+        // TODO: use DIC to instantiate AppRoute object!
+        $route = new AppRoute($path, $name);
+        $this->routes[$method][] = $route;
+        $this->namedRoutes[$name] = $route;
+    }
 
-	/**
-	 * Check if a route matches with called url
-	 * @throws RoutingException
-	 * @return callable|void: method to call a controller action
-	 */
-	private function checkRoutes()
-	{
+    /**
+     * Check if a route matches with called url
+     *
+     * @throws RoutingException
+     *
+     * @return callable|void: method to call a controller action
+     */
+    private function checkRoutes()
+    {
         try {
-			if(isset($this->routes[$_SERVER['REQUEST_METHOD']])) {
-				$isNoRoute = true;
-				// Loop only if a route exists with this method
-				foreach ($this->routes[$_SERVER['REQUEST_METHOD']] as $route) {
+            if (isset($this->routes[$_SERVER['REQUEST_METHOD']])) {
+                $isNoRoute = true;
+                // Loop only if a route exists with this method
+                foreach ($this->routes[$_SERVER['REQUEST_METHOD']] as $route) {
                     // isMatched method returns true: url matched
-					if ($route->isMatched($this->url)) {
+                    if ($route->isMatched($this->url)) {
                         $isNoRoute = false;
                         // Call controller and its appropriate action if both exist.
                         $result = $route->getControllerAction($this->router);
@@ -255,8 +273,8 @@ class AppRouter
                         }
                         // Stop loop
                         break;
-					}
-				}
+                    }
+                }
                 // No existing route
                 if ($isNoRoute) {
                     // Get initial requested URL
@@ -273,40 +291,42 @@ class AppRouter
                         throw new RoutingException("No content is available for your request \"<strong>$request</strong>\". [Debug trace: no route matches url!]");
                     }
                 }
-			} else {
-				throw new RoutingException("No content is available for request method. [Debug trace: request method \"<strong>{$_SERVER['REQUEST_METHOD']}</strong>\" is not being used by any routes!]");
-			}
-		} catch (RoutingException $e) {
-			// Show error view with 404 error
+            } else {
+                throw new RoutingException("No content is available for request method. [Debug trace: request method \"<strong>{$_SERVER['REQUEST_METHOD']}</strong>\" is not being used by any routes!]");
+            }
+        } catch (RoutingException $e) {
+            // Show error view with 404 error
             $this->httpResponse->setError(404, $this->config::isDebug($e->getMessage()), $this->router);
             exit();
-		}
-	}
+        }
+    }
 
-	/**
-	 * Retrieve a complete URL with route name and path parameters
-	 * Example: $router->useURL('Blog\Post|showSingle', ['slug' => 'article-intro', 'id' => '5']);
-	 * @param string $name
-	 * @param array $params
-	 * @throws RoutingException
-	 * @return string|void: corresponding URL
-	 */
-	public function useURL($name, $pathParams = [])
-	{
+    /**
+     * Retrieve a complete URL with route name and path parameters
+     * Example: $router->useURL('Blog\Post|showSingle', ['slug' => 'article-intro', 'id' => '5']);
+     *
+     * @param string $name
+     * @param array $params
+     * @param mixed $pathParams
+     *
+     * @throws RoutingException
+     *
+     * @return string|void: corresponding URL
+     */
+    public function useURL($name, $pathParams = [])
+    {
         try {
-			if(isset($this->namedRoutes[$name])) {
-				// $this->namedRoutes[$name] is an instance of "Route".
-				$route = $this->namedRoutes[$name];
-				return $route->generateURL($pathParams);
-			}
-			else {
-				throw new RoutingException("No content is available for request. [Debug trace: no route matches this name!]");
-			}
-		}
-		catch(RoutingException $e) {
-			// Show error view with 404 error
+            if (isset($this->namedRoutes[$name])) {
+                // $this->namedRoutes[$name] is an instance of "Route".
+                $route = $this->namedRoutes[$name];
+                return $route->generateURL($pathParams);
+            } else {
+                throw new RoutingException("No content is available for request. [Debug trace: no route matches this name!]");
+            }
+        } catch (RoutingException $e) {
+            // Show error view with 404 error
             $this->httpResponse->setError(404, $this->config::isDebug($e->getMessage()), $this->router);
             exit();
-		}
-	}
+        }
+    }
 }

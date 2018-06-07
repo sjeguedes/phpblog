@@ -49,7 +49,9 @@ class Comment
 
     /**
      * Constructor
+     *
      * @param array $array: an array of properties
+     *
      * @return void
      */
     public function __construct($array)
@@ -59,7 +61,9 @@ class Comment
 
     /**
      * Hydrate entity
+     *
      * @param array $datas
+     *
      * @return void
      */
     public function hydrate($datas)
@@ -82,8 +86,10 @@ class Comment
 
     /**
      * __set() magic method
+     *
      * @param string $name: name of property
      * @param string $value: value of property to set
+     *
      * @return void
      */
     public function __set($name, $value)
@@ -99,7 +105,9 @@ class Comment
 
     /**
      * __get() magic method
+     *
      * @param type $name: name of property to get
+     *
      * @return callable|string|null
      */
     public function __get($name)
@@ -118,6 +126,7 @@ class Comment
 
     /**
      * Get temporary entity properties which do not exist in database
+     *
      * @return array: an array of temporary properties which are not hydrated
      */
     public function getTemporaryParams()
@@ -129,6 +138,7 @@ class Comment
 
     /**
      * Get property: id
+     *
      * @return integer
      */
     public function getId()
@@ -138,6 +148,7 @@ class Comment
 
     /**
      * Get property: creationDate
+     *
      * @return string
      */
     public function getCreationDate()
@@ -147,6 +158,7 @@ class Comment
 
     /**
      * Get property: nickName
+     *
      * @return string
      */
     public function getNickName()
@@ -156,6 +168,7 @@ class Comment
 
     /**
      * Get property: email
+     *
      * @return string
      */
     public function getEmail()
@@ -165,6 +178,7 @@ class Comment
 
     /**
      * Get property: title
+     *
      * @return string
      */
     public function getTitle()
@@ -174,6 +188,7 @@ class Comment
 
     /**
      * Get property: content
+     *
      * @return string
      */
     public function getContent()
@@ -183,6 +198,7 @@ class Comment
 
     /**
      * Get property: isValidated
+     *
      * @return boolean
      */
     public function getIsValidated()
@@ -192,6 +208,7 @@ class Comment
 
     /**
      * Get property: isPublished
+     *
      * @return boolean
      */
     public function getIsPublished()
@@ -201,6 +218,7 @@ class Comment
 
     /**
      * Get property: postId
+     *
      * @return integer
      */
     public function getPostId()
@@ -212,7 +230,9 @@ class Comment
 
     /**
      * Set property: id
+     *
      * @param integer $id
+     *
      * @return void
      */
     public function setId($id)
@@ -225,7 +245,9 @@ class Comment
 
     /**
      * Set property: creationDate
+     *
      * @param string $creationDate
+     *
      * @return void
      */
     public function setCreationDate($creationDate)
@@ -238,7 +260,9 @@ class Comment
 
     /**
      * Set property: nickName
+     *
      * @param string $nickName
+     *
      * @return void
      */
     public function setNickName($nickName)
@@ -250,7 +274,9 @@ class Comment
 
     /**
      * Set property: email
+     *
      * @param string $email
+     *
      * @return void
      */
     public function setEmail($email)
@@ -262,7 +288,9 @@ class Comment
 
     /**
      * Set property: title
+     *
      * @param string $title
+     *
      * @return void
      */
     public function setTitle($title)
@@ -274,7 +302,9 @@ class Comment
 
     /**
      * Set property: content
+     *
      * @param string $content
+     *
      * @return void
      */
     public function setContent($content)
@@ -286,7 +316,9 @@ class Comment
 
     /**
      * Set property: isValidated
+     *
      * @param boolean $isValidated
+     *
      * @return void
      */
     public function setIsValidated($isValidated)
@@ -299,7 +331,9 @@ class Comment
 
     /**
      * Set property: isPublished
+     *
      * @param boolean $isPublished
+     *
      * @return void
      */
     public function setIsPublished($isPublished)
@@ -312,7 +346,9 @@ class Comment
 
     /**
      * Set property: postId
+     *
      * @param integer $postId
+     *
      * @return void
      */
     public function setPostId($postId)

@@ -21,6 +21,7 @@ class AppTwig
 
     /**
      * Constructor
+     *
      * @return void
      */
     public function __construct()
@@ -35,6 +36,7 @@ class AppTwig
 
     /**
      * Set Twig template engine configuration
+     *
      * @return void
      */
     private static function setTemplateEngineEnv()
@@ -46,8 +48,10 @@ class AppTwig
 
     /**
      * Render Entirely a particular Twig template
+     *
      * @param string $view: path for template to load
      * @param array $vars: parameters to use in template
+     *
      * @return string: HTML content type
      */
     public function renderTwigTemplate($view, $vars = [])
@@ -59,9 +63,11 @@ class AppTwig
 
     /**
      * Render only a part of a particular Twig template
+     *
      * @param string $view: path for template to load
      * @param string $blockName: block name in template
      * @param array $vars: parameters to use in template
+     *
      * @return string: HTML content type
      */
     public function renderTwigBlock($view, $blockName, $vars = [])

@@ -1,5 +1,6 @@
 <?php
 namespace App\Controllers\Admin\Home;
+
 use App\Controllers\Admin\AdminController;
 use Core\Routing\AppRouter;
 use App\Models\Admin\Entity\User;
@@ -31,14 +32,16 @@ class AdminHomeController extends AdminController
     private $udTokenValue;
 
     /**
-	 * Constructor
-	 * @param AppRouter $router
-	 * @return void
-	 */
-	public function __construct(AppRouter $router)
-	{
-		parent::__construct($router);
-		$this->currentModel = $this->getCurrentModel(__CLASS__);
+     * Constructor
+     *
+     * @param AppRouter $router
+     *
+     * @return void
+     */
+    public function __construct(AppRouter $router)
+    {
+        parent::__construct($router);
+        $this->currentModel = $this->getCurrentModel(__CLASS__);
         // Initialize home admin forms validator
         $this->adminHomeValidator = $this->container::getFormValidator()[2];
         // Define used parameters to avoid CSRF:
@@ -48,10 +51,11 @@ class AdminHomeController extends AdminController
         // User deleting token
         $this->udTokenIndex = $this->adminHomeValidator->generateTokenIndex('ud_check');
         $this->udTokenValue = $this->adminHomeValidator->generateTokenValue('ud_token');
-	}
+    }
 
     /**
      * Initialize default template parameters
+     *
      * @return array: an array of template parameters
      */
     private function initAdminHome()
@@ -69,7 +73,7 @@ class AdminHomeController extends AdminController
             $disallowDeleting = $this->disallowUserDeleting($userList[$i]);
             // User deleting is disallowed because of one particular condition among several cases!
             if (!empty($disallowDeleting)) {
-                 // This generates temporary param "noDeletingAction".
+                // This generates temporary param "noDeletingAction".
                 $userList[$i]->noDeletingAction = $disallowDeleting[0];
             }
         }
@@ -123,7 +127,9 @@ class AdminHomeController extends AdminController
 
     /**
      * Render admin home template (template based on Twig template engine)
+     *
      * @param array $vars: an array of template engine parameters
+     *
      * @return void
      */
     private function renderAdminHome($vars)
@@ -133,23 +139,25 @@ class AdminHomeController extends AdminController
 
     /**
      * Check if there is already a success state for one of home admin forms
+     *
      * @return boolean
      */
-    private function isActionSuccess() {
+    private function isActionSuccess()
+    {
         if (isset($_SESSION['haf_success'])) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-	/**
-	 * Show default admin homepage template
-	 * @return void
-	 */
-	public function showAdminHome()
-	{
+    /**
+     * Show default admin homepage template
+     *
+     * @return void
+     */
+    public function showAdminHome()
+    {
         $varsArray = $this->initAdminHome();
         $this->renderAdminHome($varsArray);
         // Is it already a succcess state for one of admin forms?
@@ -163,10 +171,11 @@ class AdminHomeController extends AdminController
             // Do not store a success state anymore!
             unset($_SESSION['lif_success']);
         }
-	}
+    }
 
     /**
      * Delete a Contact entity in database
+     *
      * @return void
      */
     public function deleteContact()
@@ -204,7 +213,9 @@ class AdminHomeController extends AdminController
 
     /**
      * Check several particular conditions to allow User entity deleting
+     *
      * @param User $user: User entity to delete
+     *
      * @return array: an array with data to retrieve not allowed main condition (empty array if deleting is allowed)
      */
     public function disallowUserDeleting(User $user)
@@ -227,8 +238,8 @@ class AdminHomeController extends AdminController
         $imageList = $this->currentModel->getImageList();
         // Is user to delete a images creator (authenticated user who uploaded images as concerns posts)?
         $isUserImageCreator = false;
-        if (count($imageList ) > 0) {
-            for ($i = 0; $i < count($imageList ); $i ++) {
+        if (count($imageList) > 0) {
+            for ($i = 0; $i < count($imageList); $i ++) {
                 if ($user->id == $imageList[$i]->creatorId) {
                     $isUserImageCreator = true;
                     break;
@@ -254,7 +265,9 @@ class AdminHomeController extends AdminController
 
     /**
      * Delete a User entity in database
+     *
      * @param array $matches: an array of parameters matched in route
+     *
      * @return void
      */
     public function deleteUser($matches)
@@ -301,12 +314,13 @@ class AdminHomeController extends AdminController
         $this->renderAdminHome($varsArray);
     }
 
-	/**
-	 * Get all contact entities datas
-	 * @return array: an array which contains all the datas
-	 */
-	public function getContacts()
-	{
-		return $this->currentModel->selectAll('contacts');
-	}
+    /**
+     * Get all contact entities datas
+     *
+     * @return array: an array which contains all the datas
+     */
+    public function getContacts()
+    {
+        return $this->currentModel->selectAll('contacts');
+    }
 }

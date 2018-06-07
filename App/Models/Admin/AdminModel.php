@@ -1,5 +1,6 @@
 <?php
 namespace App\Models\Admin;
+
 use App\Models\BaseModel;
 use App\Models\Blog\Post\PostModel;
 use Core\Routing\AppRouter;
@@ -16,7 +17,9 @@ abstract class AdminModel extends BaseModel
 
     /**
      * Constructor
+     *
      * @param AppRouter $router: an instance of AppRouter
+     *
      * @return void
      */
     public function __construct(AppRouter $router)
@@ -28,9 +31,11 @@ abstract class AdminModel extends BaseModel
 
     /**
      * Delete an entity in database with its id
+     *
      * @param string $entityId: entity id
      * @param array $datas: an array which contains only entity type
      * to delete entity
+     *
      * @return void
      */
     public function deleteEntity($entityId, $datas)
@@ -46,9 +51,11 @@ abstract class AdminModel extends BaseModel
 
     /**
      * Update an entity in database with its id
+     *
      * @param string $entityId: entity id
      * @param array $newDatas: an array of parameters (entity type and values)
      * to update entity
+     *
      * @return void
      */
     public function updateEntity($entityId, $newDatas)
@@ -70,7 +77,7 @@ abstract class AdminModel extends BaseModel
                                               SET $set
                                               WHERE ${columnPrefix}id = :entityId");
         for ($i = 0; $i < count($newValues); $i ++) {
-             $query->bindParam(':' . $newValues[$i]['column'], $newValues[$i]['value'], $PDOParams[$newValues[$i]['type']] - 1);
+            $query->bindParam(':' . $newValues[$i]['column'], $newValues[$i]['value'], $PDOParams[$newValues[$i]['type']] - 1);
         }
         $query->bindParam(':entityId', $entityId, \PDO::PARAM_INT);
         $query->execute();

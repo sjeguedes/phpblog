@@ -1,5 +1,6 @@
 <?php
 namespace Core\Form;
+
 use Core\Routing\AppRouter;
 use Core\Helper\AppStringModifier;
 
@@ -21,19 +22,19 @@ class AppFormValidator
      */
     private $helper;
     /**
-     * @var array: $_POST/$_GET values before validation
+     * @var array:/$_GET values before validation
      */
     private $datas = [];
     /**
-     * @var string: form prefix name to distinguish values in $_POST/$_GET
+     * @var string: form prefix name to distinguish values in/$_GET
      */
     private $formIdentifier;
-        /**
-     * @var string: index name based on $formIdentifier for errors which are stored in $result
+    /**
+     * @var string: index name based on for errors which are stored in
      */
     private $errorIndex;
     /**
-     * @var array: $_POST/$_GET values filtered with PHP filters
+     * @var array:/$_GET values filtered with PHP filters
      */
     private $filteredDatas = [];
     /**
@@ -43,9 +44,11 @@ class AppFormValidator
 
     /**
      * Constructor
+     *
      * @param object $router: an AppRouter instance
      * @param array $datas to validate
      * @param string $formIdentifier
+     *
      * @return void
      */
     public function __construct(AppRouter $router, $datas, $formIdentifier)
@@ -60,6 +63,7 @@ class AppFormValidator
 
     /**
      * Get form identifier
+     *
      * @return string: identifier name
      */
     public function getFormIdentifier()
@@ -69,6 +73,7 @@ class AppFormValidator
 
     /**
      * Get form helper
+     *
      * @return object: AppStringModifier instance
      */
     public function getFormHelper()
@@ -78,6 +83,7 @@ class AppFormValidator
 
     /**
      * Get result datas
+     *
      * @return array: an array which contains filtered datas and error messages
      */
     public function getResult()
@@ -87,8 +93,10 @@ class AppFormValidator
 
     /**
      * Filter each user input
+     *
      * @param array $datas: datas to filter
      * @param int $inputType: chosen http request method
+     *
      * @return void
      */
     public function filterDatas($datas, $inputType = INPUT_POST)
@@ -103,42 +111,44 @@ class AppFormValidator
             switch ($filterType) {
                 case 'alphanum':
                     $this->filteredDatas[$name] = filter_input($inputType, $name, FILTER_CALLBACK, [
-                        'options' => function($data) use($validator, $modifiers, $name) {
+                        'options' => function ($data) use ($validator, $modifiers, $name) {
                             $data = $validator->modifyData($data, $modifiers);
                             $data = filter_var($data, FILTER_SANITIZE_STRING);
                             $this->result[$name] = $data;
                             return $data;
                         }
                     ]);
-                break;
+                    break;
                 case 'email':
                     $this->filteredDatas[$name] = filter_input($inputType, $name, FILTER_CALLBACK, [
-                        'options' => function($data) use($validator, $modifiers, $name) {
+                        'options' => function ($data) use ($validator, $modifiers, $name) {
                             $data = $validator->modifyData($data, $modifiers);
                             $data = filter_var($data, FILTER_SANITIZE_EMAIL);
                             $this->result[$name] = $data;
                             return $data;
                         }
                     ]);
-                break;
+                    break;
                 default:
                     $this->filteredDatas[$name] = filter_input($inputType, $name, FILTER_CALLBACK, [
-                        'options' => function($data) use($validator, $modifiers, $name) {
+                        'options' => function ($data) use ($validator, $modifiers, $name) {
                             $data = $validator->modifyData($data, $modifiers);
                             $data = filter_var($data, FILTER_UNSAFE_RAW);
                             $this->result[$name] = $data;
                             return $data;
                         }
                     ]);
-                break;
+                    break;
             }
         }
     }
 
     /**
      * Apply modifiers on data
+     *
      * @param string $data: data to modify
      * @param array $helpers: format a data
+     *
      * @return string: formatted data
      */
     private function modifyData($data, $helpers)
@@ -153,9 +163,11 @@ class AppFormValidator
 
     /**
      * Check if user input is set and user input is not an empty string
+     *
      * @param string $name: field attribute name
      * @param string $label: field name to show
      * @param boolean $errorMessage: manage field error message
+     *
      * @return boolean|void
      */
     public function validateRequired($name, $label, $errorMessage = true)
@@ -175,9 +187,11 @@ class AppFormValidator
 
     /**
      * Check if user input is a valid email
+     *
      * @param string $name: field name
      * @param string $label: field name to show
      * @param string $value: field value
+     *
      * @return void
      */
     public function validateEmail($name, $label, $value)
@@ -198,9 +212,11 @@ class AppFormValidator
 
     /**
      * Check if user input is a valid password
+     *
      * @param string $name: field name
      * @param string $label: field name to show
      * @param string $value: field value
+     *
      * @return void
      */
     public function validatePassword($name, $label, $value)
@@ -228,12 +244,15 @@ class AppFormValidator
 
     /**
      * Check if password confirmation user input is identical to main password user input
+     *
      * @param string $name: field name
      * @param string $password: main password
      * @param string $passwordConfirmation: password confirmation
+     *
      * @return void
      */
-    public function validatePasswordConfirmation($name, $password, $passwordConfirmation) {
+    public function validatePasswordConfirmation($name, $password, $passwordConfirmation)
+    {
         $name = $this->formIdentifier . $name;
         if ($passwordConfirmation !== $password) {
             $this->result[$this->errorIndex][$name] = 'Password confirmation does not match<br>your password!<br>Please check both to be identical.<br>Unwanted authorized space character(s) " "<br>may be an issue!';
@@ -242,8 +261,10 @@ class AppFormValidator
 
     /**
      * Check if user password renewal authentication token in $_REQUEST value contains exactly 15 characters
+     *
      * @param string $name: field name
      * @param string $inputToken: user input token value
+     *
      * @return void
      */
     public function validatePasswordUpdateTokenLength($name, $inputToken)
@@ -256,12 +277,15 @@ class AppFormValidator
 
     /**
      * Validate anti CSRF token
+     *
      * @param string $dynamicToken: dynamic token value in $_REQUEST with dynamic token index name
      * @param string $tokenPrefix: prefix used to override form identifier
      * if form validator manages multiple forms
+     *
      * @return void
      */
-    public function validateToken($dynamicToken, $tokenPrefix = null) {
+    public function validateToken($dynamicToken, $tokenPrefix = null)
+    {
         $prefix = !is_null($tokenPrefix) ? $tokenPrefix : $this->formIdentifier;
         if (isset($dynamicToken) && isset($_SESSION[$prefix . 'token'])) {
             // Get dynamic token index
@@ -281,7 +305,7 @@ class AppFormValidator
                 // Wrong token value or wrong token dynamic index!
                 $this->result[$this->formIdentifier . 'check'] = false;
             }
-        // Anything else happened.
+            // Anything else happened.
         } else {
             $this->result[$this->formIdentifier . 'check'] = false;
         }
@@ -290,12 +314,13 @@ class AppFormValidator
             // Set 401 error page
             $this->setUnauthorizedFormSubmissionResponse();
         }
-
     }
 
     /**
      * Validate an uploaded image
+     *
      * @param string $name: field name in $_FILES
+     *
      * @return string|boolean: path to temporary file name or false
      */
     public function validateImageUpload($name)
@@ -360,8 +385,10 @@ class AppFormValidator
 
     /**
      * Save an uploaded image
+     *
      * @param string $name: field name
      * @param boolean $temporary: generate a temporary file or not
+     *
      * @return string|boolean: path to uploaded image or false
      */
     public function saveImageUpload($name, $temporary = false)
@@ -395,7 +422,7 @@ class AppFormValidator
                     // Owner can read and write, others can only read.
                     chmod($file, 0644);
                 }
-            // Temporary file
+                // Temporary file
             } else {
                 if (!isset($_SESSION['uploads'][$name]['tempFile']['tmp_name'])) {
                     return false;
@@ -408,12 +435,12 @@ class AppFormValidator
                 // Delete previous temporary files if they exist.
                 if (is_dir($pathToUploadFolder)) {
                     $files = glob($pathToUploadFolder . '/*'); // get all file names
-                    foreach ($files as $file){ // iterate files
+                    foreach ($files as $file) { // iterate files
                         if (is_file($file)) {
                             @unlink($file); // delete file
                         }
                     }
-                // No directory, so create it!
+                    // No directory, so create it!
                 } else {
                     mkdir($_SERVER['DOCUMENT_ROOT'] . '/uploads/images/temp', 0755, true);
                 }
@@ -466,7 +493,9 @@ class AppFormValidator
 
     /**
      * Delete unattached images when trying to upload
+     *
      * @param string $name: field name
+     *
      * @return boolean: true in case of success or false
      */
     public function deleteUnattachedImage($name)
@@ -488,10 +517,12 @@ class AppFormValidator
 
     /**
      * Resize image with crop if it's necessary
+     *
      * @param string $name: field name
      * @param string $imagePath: path to image to resize
      * @param integer $width: desired width
      * @param integer $height: desired height
+     *
      * @return string|boolean: resized image complete path or false
      */
     public function resizeImageWithCrop($name, $imagePath, $width, $height)
@@ -506,12 +537,12 @@ class AppFormValidator
                 'gif' => 'image/gif',
             ];
             // Valid MIME type
-            if (false !== $ext = array_search( $finfo->file($imagePath), $mimeTypes, true)) {
+            if (false !== $ext = array_search($finfo->file($imagePath), $mimeTypes, true)) {
                 $mimeType = $ext;
                 $imageFunction = 'image' . $mimeType; // can be imagejpeg, imagepng, imagegif
             // Stop script and avoid resizing
             } else {
-                 return false;
+                return false;
             }
             // Get image content
             $image = file_get_contents($imagePath);
@@ -574,6 +605,7 @@ class AppFormValidator
 
     /**
      * Render a 401 ("Unauthorized") form submission response
+     *
      * @return string: page HTML content
      */
     public function setUnauthorizedFormSubmissionResponse()
@@ -597,7 +629,9 @@ class AppFormValidator
 
     /**
      * Create a dynamic $_POST/$_GET check (token) index in addition to token value to prevent CSRF
+     *
      * @param string $name: name of field which contains token
+     *
      * @return string stored in $_SESSION
      */
     public function generateTokenIndex($name)
@@ -610,7 +644,9 @@ class AppFormValidator
 
     /**
      * Create a token value to fight against CSRF
+     *
      * @param string $varName: name which corresponds to token index
+     *
      * @return string: value stored in $_SESSION
      */
     public function generateTokenValue($varName)
@@ -624,8 +660,10 @@ class AppFormValidator
 
     /**
      * Check if created CSRF token matches token in $_POST/$_GET value
+     *
      * @param string $token: $_POST/$_GET value
      * @param string $varName: name which corresponds to token index in $_SESSION
+     *
      * @return boolean
      */
     public function checkTokenValue($token, $varName)

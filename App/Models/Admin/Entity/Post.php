@@ -57,7 +57,9 @@ class Post
 
     /**
      * Constructor
+     *
      * @param array $array: an array of properties
+     *
      * @return void
      */
     public function __construct(array $array)
@@ -67,7 +69,9 @@ class Post
 
     /**
      * Hydrate entity
+     *
      * @param array $datas
+     *
      * @return void
      */
     public function hydrate($datas)
@@ -90,8 +94,10 @@ class Post
 
     /**
      * __set() magic method
+     *
      * @param string $name: name of property
      * @param string $value: value of property to set
+     *
      * @return void
      */
     public function __set($name, $value)
@@ -107,7 +113,9 @@ class Post
 
     /**
      * __get() magic method
+     *
      * @param type $name: name of property to get
+     *
      * @return callable|string|null
      */
     public function __get($name)
@@ -126,6 +134,7 @@ class Post
 
     /**
      * Get temporary entity properties which do not exist in database
+     *
      * @return array: an array of temporary properties which are not hydrated
      */
     public function getTemporaryParams()
@@ -137,6 +146,7 @@ class Post
 
     /**
      * Get property: id
+     *
      * @return integer
      */
     public function getId()
@@ -146,6 +156,7 @@ class Post
 
     /**
      * Get property: creationDate
+     *
      * @return string
      */
     public function getCreationDate()
@@ -155,6 +166,7 @@ class Post
 
     /**
      * Get property: updateDate
+     *
      * @return string|null
      */
     public function getUpdateDate()
@@ -164,6 +176,7 @@ class Post
 
     /**
      * Get property: title
+     *
      * @return string
      */
     public function getTitle()
@@ -173,6 +186,7 @@ class Post
 
     /**
      * Get property: intro
+     *
      * @return string
      */
     public function getIntro()
@@ -182,6 +196,7 @@ class Post
 
     /**
      * Get property: content
+     *
      * @return string
      */
     public function getContent()
@@ -191,6 +206,7 @@ class Post
 
     /**
      * Get property: slug
+     *
      * @return string
      */
     public function getSlug()
@@ -200,6 +216,7 @@ class Post
 
     /**
      * Get property: isSlugCustomized
+     *
      * @return boolean
      */
     public function getIsSlugCustomized()
@@ -209,6 +226,7 @@ class Post
 
     /**
      * Get property: isValidated
+     *
      * @return boolean
      */
     public function getIsValidated()
@@ -218,6 +236,7 @@ class Post
 
     /**
      * Get property: isPublished
+     *
      * @return boolean
      */
     public function getIsPublished()
@@ -227,6 +246,7 @@ class Post
 
     /**
      * Get property: userId
+     *
      * @return integer
      */
     public function getUserId() // get author id
@@ -238,7 +258,9 @@ class Post
 
     /**
      * Set property: id
+     *
      * @param integer $id
+     *
      * @return void
      */
     public function setId($id)
@@ -251,45 +273,53 @@ class Post
 
     /**
      * Set property: creationDate
+     *
      * @param string $creationDate
+     *
      * @return void
      */
     public function setCreationDate($creationDate)
     {
-        if(is_string($creationDate)) {
+        if (is_string($creationDate)) {
             $date = new \DateTime($creationDate);
-            $this->creationDate = $date->format( 'd-m-Y H:i:s');
+            $this->creationDate = $date->format('d-m-Y H:i:s');
         }
     }
 
     /**
      * Set property: updateDate
+     *
      * @param string $updateDate
+     *
      * @return void
      */
     public function setUpdateDate($updateDate)
     {
-        if(is_string($updateDate)) {
+        if (is_string($updateDate)) {
             $date = new \DateTime($updateDate);
-            $this->updateDate = $date->format( 'd-m-Y H:i:s');
+            $this->updateDate = $date->format('d-m-Y H:i:s');
         }
     }
 
     /**
      * Set property: title
+     *
      * @param string $title
+     *
      * @return void
      */
     public function setTitle($title)
     {
-        if(is_string($title)) {
+        if (is_string($title)) {
             $this->title = $title;
         }
     }
 
     /**
      * Set property: intro
+     *
      * @param string $intro
+     *
      * @return void
      */
     public function setIntro($intro)
@@ -301,7 +331,9 @@ class Post
 
     /**
      * Set property: content
+     *
      * @param string $content
+     *
      * @return void
      */
     public function setContent($content)
@@ -313,7 +345,9 @@ class Post
 
     /**
      * Set property: slug
+     *
      * @param string $slug
+     *
      * @return void
      */
     public function setSlug($slug)
@@ -325,7 +359,9 @@ class Post
 
     /**
      * Set property: isSlugCustomized
+     *
      * @param boolean $isSlugCustomized
+     *
      * @return void
      */
     public function setIsSlugCustomized($isSlugCustomized)
@@ -338,7 +374,9 @@ class Post
 
     /**
      * Set property: isValidated
+     *
      * @param boolean $isValidated
+     *
      * @return void
      */
     public function setIsValidated($isValidated)
@@ -351,7 +389,9 @@ class Post
 
     /**
      * Set property: isPublished
+     *
      * @param boolean $isPublished
+     *
      * @return void
      */
     public function setIsPublished($isPublished)
@@ -364,7 +404,9 @@ class Post
 
     /**
      * Set property: userId
+     *
      * @param integer $userId
+     *
      * @return void
      */
     public function setUserId($userId)  // set author id

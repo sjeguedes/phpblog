@@ -1,5 +1,6 @@
 <?php
 namespace Core\Database;
+
 use Core\Routing\AppRouter;
 use Core\Database\PDOFactory;
 
@@ -8,7 +9,7 @@ use Core\Database\PDOFactory;
  */
 class AppDatabase
 {
-	/**
+    /**
      * @var object: a unique instance of AppDatabase
      */
     private static $_instance;
@@ -25,9 +26,11 @@ class AppDatabase
      */
     private static $_httpResponse;
 
-	/**
+    /**
      * Instanciate a unique AppDatabase object (Singleton)
+     *
      * @param object: an AppRouter instance
+     *
      * @return AppDatabase: a unique instance of AppDatabase
      */
     public static function getInstance(AppRouter $router)
@@ -38,23 +41,26 @@ class AppDatabase
         return self::$_instance;
     }
 
-	/**
+    /**
      * Constructor
+     *
      * @param object: an AppRouter instance
+     *
      * @return void
      */
     private function __construct(AppRouter $router)
-	{
-		// Set AppRouter instance
+    {
+        // Set AppRouter instance
         self::$_router = $router;
         // Set AppHTTPResponse instance used router!
         self::$_httpResponse = self::$_router->getHTTPResponse();
         // Set AppConfig instance used by router!
         self::$_config = self::$_router->getConfig();
-	}
+    }
 
     /**
     * Magic method __clone
+    *
     * @return void
     */
     public function __clone()
@@ -63,17 +69,19 @@ class AppDatabase
         exit();
     }
 
-	/**
+    /**
      * Get a MySQL connection with PDO
+     *
      * @return PDO: an instance of PDO with MySQL connector
      */
     public static function getPDOWithMySQl()
-	{
-		return PDOFactory::getMySQLConnection(self::$_config::getParam('database.dbHost'), self::$_config::getParam('database.dbName'), self::$_config::getParam('database.dbUser'), self::$_config::getParam('database.dbPwd'));
-	}
+    {
+        return PDOFactory::getMySQLConnection(self::$_config::getParam('database.dbHost'), self::$_config::getParam('database.dbName'), self::$_config::getParam('database.dbUser'), self::$_config::getParam('database.dbPwd'));
+    }
 
-	/**
+    /**
      * Get a PostgreSQL connection with PDO
+     *
      * @return PDO: an instance of PDO with PostgreSQL connector
      */
     public static function getPDOWithPostgreSQL()

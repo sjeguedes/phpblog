@@ -1,5 +1,6 @@
 <?php
 namespace Core\HTTP;
+
 use Core\Routing\AppRouter;
 
 /**
@@ -28,8 +29,9 @@ class AppHTTPResponse
      */
     private static $_page;
 
-	/**
+    /**
      * Instanciate a unique AppHTTPResponse object (Singleton)
+     *
      * @return AppHTTPResponse: a unique instance of AppSession
      */
     public static function getInstance()
@@ -42,6 +44,7 @@ class AppHTTPResponse
 
     /**
      * Constructor
+     *
      * @return void
      */
     private function __construct()
@@ -51,6 +54,7 @@ class AppHTTPResponse
 
     /**
     * Magic method __clone
+    *
     * @return void
     */
     public function __clone()
@@ -61,10 +65,13 @@ class AppHTTPResponse
 
     /**
      * Get wrong used "url" parameter
+     *
      * @param string $url: url requested by user
+     *
      * @return string: url requested by user or refreshed url with HTTP error
      */
-    public function getWrongUrl($url) {
+    public function getWrongUrl($url)
+    {
         if (preg_match('#^/?http-error/[0-9]{3}/(.*)/?#', $url, $matches)) {
             // Refreshed url: HTTP error is added to url.
             return $matches[1];
@@ -74,23 +81,27 @@ class AppHTTPResponse
         }
     }
 
-	/**
+    /**
      * Add (send) a HTTP header
+     *
      * @param string $string: defined header
      * @param bool $replace: should replace previous header of the same type
      * @param int|null $http_response_code
+     *
      * @return void
      */
     public function addHeader($string, $replace = true, $http_response_code = null)
-	{
-	    header($string);
- 	}
+    {
+        header($string);
+    }
 
     /**
      * Catch HTTP redirect status to customize several errors
      * WARNING: must be used with serveur configuration to run correctly!
      * Some cases need to be declared in server configuration.
+     *
      * @param AppRouter $router
+     *
      * @return void
      */
     public function autoCatchErrorRedirectstatus(AppRouter $router)
@@ -124,8 +135,11 @@ class AppHTTPResponse
     /**
      * Display automatic error customized page with serveur HTTP status
      * Headers are sent automatically by server!
+     *
      * @param string $message: message to inform user
      * @param string|false $status:
+     * @param mixed $isUncaught
+     *
      * @return void
      */
     public function autoSetErrorResponse($message, AppRouter $router, $status = false, $isUncaught = false)
@@ -150,10 +164,12 @@ class AppHTTPResponse
 
     /**
      * Refresh URL with http response code
+     *
      * @param int $httpResponseCode
      * @param string $message: message to inform user
      * @param AppRouter $router: unique instance of router
      * @param boolean $isRefreshed: should use refresh HTTP header
+     *
      * @return void
      */
     public function setError($httpResponseCode, $message, AppRouter $router, $isRefreshed = false)
@@ -179,7 +195,7 @@ class AppHTTPResponse
                 call_user_func_array([$this, "set${httpResponseCode}ErrorResponse"], [$message, $router]);
                 exit();
             }
-        // No refresh
+            // No refresh
         } else {
             // Render error directly
             call_user_func_array([$this, "set${httpResponseCode}ErrorResponse"], [$message, $router]);
@@ -187,39 +203,43 @@ class AppHTTPResponse
         }
     }
 
-	/**
+    /**
      * Display 404 error customized page
+     *
      * @param string $message: message to inform user
      * @param AppRouter|null $router
+     *
      * @return void
      */
     public function set404ErrorResponse($message, AppRouter $router = null)
-	{
+    {
         // Send "Not found" HTTP headers
         $this->addHeader('Status: 404 Not Found');
         $this->addHeader('HTTP/1.1 404 Not Found');
-		// Prepare permalink to website homepage
+        // Prepare permalink to website homepage
         if (!is_null($router)) {
             $homeURL = $router->useURL('Home\Home|isCalled', null);
         } else {
             $homeURL = '/';
         }
-		// Render template
+        // Render template
         $varsArray = [
-			'metaTitle' => '404 Error',
-			'metaDescription' => '',
-			'imgBannerCSSClass' => 'notfound-404',
+            'metaTitle' => '404 Error',
+            'metaDescription' => '',
+            'imgBannerCSSClass' => 'notfound-404',
             'status' => 404,
-			'message' => $message,
-			'homeURL' => $homeURL
-		];
-		echo self::$_page->renderTemplate('HTTPStatus/http-error-response.tpl', $varsArray);
-	}
+            'message' => $message,
+            'homeURL' => $homeURL
+        ];
+        echo self::$_page->renderTemplate('HTTPStatus/http-error-response.tpl', $varsArray);
+    }
 
     /**
      * Display 403 error customized page
+     *
      * @param string $message: message to inform user
      * @param AppRouter|null $router
+     *
      * @return void
      */
     public function set403ErrorResponse($message, AppRouter $router = null)
@@ -247,8 +267,10 @@ class AppHTTPResponse
 
     /**
      * Display 401 error customized page
+     *
      * @param string $message: message to inform user
      * @param AppRouter|null $router
+     *
      * @return void
      */
     public function set401ErrorResponse($message, AppRouter $router = null)

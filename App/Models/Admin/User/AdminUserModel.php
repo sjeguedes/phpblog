@@ -1,5 +1,6 @@
 <?php
 namespace App\Models\Admin\User;
+
 use App\Models\Admin\AdminModel;
 use Core\Routing\AppRouter;
 use App\Models\Admin\Entity\User;
@@ -11,7 +12,9 @@ class AdminUserModel extends AdminModel
 {
     /**
      * Constructor
+     *
      * @param AppRouter $router: an instance of AppRouter
+     *
      * @return void
      */
     public function __construct(AppRouter $router)
@@ -21,7 +24,9 @@ class AdminUserModel extends AdminModel
 
     /**
      * Get User entity with its id
+     *
      * @param string $userId
+     *
      * @return object: a User entity instance
      */
     public function getUserById($userId)
@@ -44,7 +49,9 @@ class AdminUserModel extends AdminModel
     /**
      * Get User entity with its email (1 account equals 1 email)
      * This value comes from form user input.
+     *
      * @param string $userEmail
+     *
      * @return object|boolean: a User entity instance or false
      */
     public function getUserByEmail($userEmail)
@@ -66,6 +73,7 @@ class AdminUserModel extends AdminModel
 
     /**
      * Get all User entities
+     *
      * @return array: an array which contains all User entities instances
      */
     public function getUserList()
@@ -73,7 +81,7 @@ class AdminUserModel extends AdminModel
         $users = [];
         $query = $this->dbConnector->query('SELECT *
                                             FROM users');
-        while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+        while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
             $users[] = new User($datas);
         }
         return $users;
@@ -81,7 +89,9 @@ class AdminUserModel extends AdminModel
 
     /**
      * Insert a User entity in database
+     *
      * @param array $userDatas: an array of user datas
+     *
      * @return void
      */
     public function insertUser($userDatas)

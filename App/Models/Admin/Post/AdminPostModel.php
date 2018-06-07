@@ -1,5 +1,6 @@
 <?php
 namespace App\Models\Admin\Post;
+
 use App\Models\Admin\AdminModel;
 use Core\Routing\AppRouter;
 use App\Models\Admin\Home\AdminHomeModel;
@@ -11,9 +12,11 @@ use App\Models\Admin\Entity\Comment;
  */
 class AdminPostModel extends AdminModel
 {
-	/**
+    /**
      * Constructor
+     *
      * @param AppRouter $router: an instance of AppRouter
+     *
      * @return void
      */
     public function __construct(AppRouter $router)
@@ -25,7 +28,9 @@ class AdminPostModel extends AdminModel
 
     /**
      * Insert a Post entity in database
+     *
      * @param array $postDatas: an array of post datas
+     *
      * @return integer: new post id
      */
     public function insertPost($postDatas)
@@ -58,7 +63,9 @@ class AdminPostModel extends AdminModel
 
     /**
      * Insert a Image entity in database
+     *
      * @param array $imageDatas: an array of image datas
+     *
      * @return integer: new image id
      */
     public function insertImage($imageDatas)
@@ -88,7 +95,9 @@ class AdminPostModel extends AdminModel
     /**
      * Get a Post entity by id
      * Use an external model: PostModel
+     *
      * @param int $postId
+     *
      * @return object|boolean: a Post entity instance, or false
      */
     public function getPostById($postId)
@@ -99,7 +108,9 @@ class AdminPostModel extends AdminModel
     /**
      * Get a Post entity by its slug
      * Use an external model: PostModel
+     *
      * @param string $postSlug
+     *
      * @return object|boolean: a Post entity instance, or false
      */
     public function getPostBySlug($postSlug)
@@ -110,7 +121,9 @@ class AdminPostModel extends AdminModel
     /**
      * Get a User (Author) entity by id
      * Use an external model: PostModel
+     *
      * @param int $userId
+     *
      * @return object|boolean: a User entity instance, or false
      */
     public function getUserAuthorById($userId)
@@ -121,7 +134,9 @@ class AdminPostModel extends AdminModel
     /**
      * Get a Comment entity by id
      * Use an external model: PostModel
+     *
      * @param int $commentId
+     *
      * @return object|boolean: a Comment entity instance, or false
      */
     public function getCommentById($commentId)
@@ -132,7 +147,9 @@ class AdminPostModel extends AdminModel
     /**
      * Get Post entities ordered by creation date
      * Use an external model: PostModel
+     *
      * @param boolean $published: true (only published post) or false
+     *
      * @return array: an array of Post entities instances
      */
     public function getPostList($published = false)
@@ -143,7 +160,9 @@ class AdminPostModel extends AdminModel
     /**
      * Get Post entities ordered by creation date with their author data
      * Use an external model: PostModel
+     *
      * @param boolean $published: true (only published post) or false
+     *
      * @return array: an array of Post entities instances with author data
      */
     public function getPostListWithAuthor($published = false)
@@ -154,7 +173,9 @@ class AdminPostModel extends AdminModel
     /**
      * Get Image entities for a particular post
      * Use an external model: PostModel
+     *
      * @param int $postId
+     *
      * @return array|boolean: an array of Image entities instances, or false
      */
     public function getPostImageList($postId)
@@ -164,6 +185,7 @@ class AdminPostModel extends AdminModel
 
     /**
      * Get all Comment entities ordered by creation date and by post id
+     *
      * @return array: an array which contains all Comment entities instances
      */
     public function getCommentList()
@@ -175,7 +197,7 @@ class AdminPostModel extends AdminModel
                                             DESC, comment_postId');
         $query->execute();
 
-        while($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
+        while ($datas = $query->fetch(\PDO::FETCH_ASSOC)) {
             $comments[] = new Comment($datas);
         }
         return $comments;
@@ -183,7 +205,9 @@ class AdminPostModel extends AdminModel
 
     /**
      * Get a single user with its id
+     *
      * @param string $userId
+     *
      * @return object|boolean: a User entity instance or false
      */
     public function getUserById($userId)
@@ -193,6 +217,7 @@ class AdminPostModel extends AdminModel
 
     /**
      * Get User entities ordered by creation date
+     *
      * @return array: an array of User entities instances
      */
     public function getUserList()

@@ -1,5 +1,6 @@
 <?php
 namespace Core\Helper\Shared;
+
 use Core\Session\AppSession;
 
 /**
@@ -14,18 +15,23 @@ trait UseSessionTrait
 
     /**
      * Get AppSession instance
+     *
      * @return object: an AppSession instance
      */
-    public static function getSession() {
+    public static function getSession()
+    {
         return self::$_session;
     }
 
     /**
      * Set AppSession instance
+     *
      * @param AppSession $session: an AppSession instance
+     *
      * @return void
      */
-    public static function setSession(AppSession $session) {
+    public static function setSession(AppSession $session)
+    {
         self::$_session = $session;
     }
 }

@@ -3,6 +3,7 @@ namespace Core\Session;
 
 /**
  * Manage a user session
+ *
  * @see: particular session methods are inspired from https://gist.github.com/Nilpo/5449999
  */
 class AppSession
@@ -38,6 +39,7 @@ class AppSession
 
     /**
      * Instanciate a unique AppSession object (Singleton)
+     *
      * @return AppSession: a unique instance of AppSession
      */
     public static function getInstance()
@@ -50,6 +52,7 @@ class AppSession
 
     /**
      * Constructor
+     *
      * @return void
      */
     private function __construct()
@@ -59,6 +62,7 @@ class AppSession
 
     /**
     * Magic method __clone
+    *
     * @return void
     */
     public function __clone()
@@ -69,9 +73,13 @@ class AppSession
 
     /**
      * Initialize a new session or resume an existing session.
+     *
      * @param boolean $regenerateSessionId: must regenerate session id with a timer rule
-     * @return boolean: return true upon success and false upon failure.
+     *
      * @throws Exception: sessions are disabled.
+     *
+     * @return boolean: return true upon success and false upon failure.
+     *
      */
     private static function init($regenerateSessionId)
     {
@@ -97,9 +105,13 @@ class AppSession
                 }
                 // Fix the domain to accept domains with and without 'www.'.
                 $domain = preg_replace('#^https?://#', '', self::$_config::getParam('domain'));
-                if (strtolower(substr($domain, 0, 4)) == 'www.') $domain = substr($domain, 4);
+                if (strtolower(substr($domain, 0, 4)) == 'www.') {
+                    $domain = substr($domain, 4);
+                }
                 // Add the dot prefix to ensure compatibility with subdomains
-                if (substr($domain, 0, 1) != '.') $domain = '.' . $domain;
+                if (substr($domain, 0, 1) != '.') {
+                    $domain = '.' . $domain;
+                }
                 // Set default session cookie params
                 $params = [
                     'lifetime' => 0,
@@ -176,9 +188,13 @@ class AppSession
 
     /**
      * Start or resume a session by calling {@link AppSession::init()}.
+     *
      * @see AppSession::init()
+     *
      * @param boolean $regenerateSessionId: must regenerate session id with a timer rule
+     *
      * @throws Exception: sessions are disabled.
+     *
      * @return boolean: return true upon success and false upon failure.
      */
     public static function start($regenerateSessionId = true)
@@ -189,6 +205,7 @@ class AppSession
 
     /**
      * Return current session datas.
+     *
      * @return array: entire array $_SESSION
      */
     public static function getDatas()
@@ -198,6 +215,7 @@ class AppSession
 
     /**
      * Return current session cookie parameters or an empty array.
+     *
      * @return array: an array of session cookie parameters.
      */
     public static function getSessionCookieParams()
@@ -211,11 +229,14 @@ class AppSession
 
     /**
      * Set a custom cookie stored in $_COOKIE
+     *
      * @param string $cookieName : custom cookie name with uppercase letters and random number
      * @param type $cookieValue: custom cookie value to store
+     *
      * @return void
      */
-    public static function setCustomCookie($cookieName, $cookieValue) {
+    public static function setCustomCookie($cookieName, $cookieValue)
+    {
         // Get parts of session cookie params
         $params = self::getSessionCookieParams();
         // Set custom cookie
@@ -224,10 +245,13 @@ class AppSession
 
     /**
      * Reset a custom or session cookie stored in $_COOKIE
+     *
      * @param string $cookieName : custom cookie name with uppercase letters and random number
+     *
      * @return void
      */
-    public static function resetCookie($cookieName) {
+    public static function resetCookie($cookieName)
+    {
         // Get parts of session cookie params
         $params = self::getSessionCookieParams();
         // Reset custom cookie
@@ -236,6 +260,7 @@ class AppSession
 
     /**
      * Close the current session and release session file lock.
+     *
      * @return boolean: return true upon success and false upon failure.
      */
     public static function close()
@@ -248,6 +273,7 @@ class AppSession
 
     /**
      * Expire a session if it has been inactive for a specified amount of time.
+     *
      * @return boolean: true if session expired, or false
      */
     private static function expire()
@@ -273,6 +299,7 @@ class AppSession
 
     /**
      * Remove session data and destroy the current session.
+     *
      * @return array|false: saved expired form tokens to manage CSRF error in outdated forms
      */
     public static function destroy()
@@ -299,6 +326,7 @@ class AppSession
 
     /**
      * Check if session id is renegerated
+     *
      * @return boolean: true if session id is regenerated, or false
      */
     public static function isSessionIdRegenerated()
@@ -308,6 +336,7 @@ class AppSession
 
     /**
      * Check if a user is authenticated
+     *
      * @return array|boolean: an array which contains essential datas from User entity stored in $_SESSION
      */
     public static function isUserAuthenticated()

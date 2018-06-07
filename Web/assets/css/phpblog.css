@@ -31,7 +31,14 @@ a:not(.btn):hover {
 }
 
 .fixed-top {
-    transform: translate3d(0,0,0); /*Avoid bug on Safari (content disapearing)*/
+    /*Avoid bug on Safari (content disapearing)*/
+    -webkit-backface-visibility: hidden;
+    -webkit-perspective: 1000;
+}
+
+.navbar-translate {
+    /*Avoid bug on Safari (content disapearing)*/
+    -webkit-transform: translate3d(0, 0, 0);
 }
 /* End override BootStrap */
 
@@ -61,15 +68,13 @@ a:not(.btn):hover {
 .g-recaptcha {
     display: inline-block;
     margin-bottom: 5px;
+    position: relative;
 }
 /* End override Recaptcha */
 
-html {
-    /*height: 100%;*/
-}
-
-body {
-    /*height: inherit;*/
+html, body {
+    height: 100%;
+    /*overflow: auto;*/
 }
 
 .content {

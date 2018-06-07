@@ -65,7 +65,9 @@ class User
 
     /**
      * Constructor
+     *
      * @param array $array: an array of properties
+     *
      * @return void
      */
     public function __construct(array $array)
@@ -75,7 +77,9 @@ class User
 
     /**
      * Hydrate entity
+     *
      * @param array $datas
+     *
      * @return void
      */
     public function hydrate($datas)
@@ -98,8 +102,10 @@ class User
 
     /**
      * __set() magic method
+     *
      * @param string $name: name of property
      * @param string $value: value of property to set
+     *
      * @return void
      */
     public function __set($name, $value)
@@ -115,7 +121,9 @@ class User
 
     /**
      * __get() magic method
+     *
      * @param type $name: name of property to get
+     *
      * @return callable|string|null
      */
     public function __get($name)
@@ -134,6 +142,7 @@ class User
 
     /**
      * Get temporary entity properties which do not exist in database
+     *
      * @return array: an array of temporary properties which are not hydrated
      */
     public function getTemporaryParams()
@@ -145,6 +154,7 @@ class User
 
     /**
      * Get property: id
+     *
      * @return integer
      */
     public function getId()
@@ -154,6 +164,7 @@ class User
 
     /**
      * Get property: creationDate
+     *
      * @return string
      */
     public function getCreationDate()
@@ -163,6 +174,7 @@ class User
 
     /**
      * Get property: familyName
+     *
      * @return string
      */
     public function getFamilyName()
@@ -172,6 +184,7 @@ class User
 
     /**
      * Get property: firstName
+     *
      * @return string
      */
     public function getFirstName()
@@ -181,6 +194,7 @@ class User
 
     /**
      * Get property: nickName
+     *
      * @return string
      */
     public function getNickName()
@@ -190,6 +204,7 @@ class User
 
     /**
      * Get property: email
+     *
      * @return string
      */
     public function getEmail()
@@ -199,6 +214,7 @@ class User
 
     /**
      * Get property: password
+     *
      * @return string
      */
     public function getPassword()
@@ -209,6 +225,7 @@ class User
 
     /**
      * Get property: passwordUpdateToken
+     *
      * @return string|null
      */
     public function getPasswordUpdateToken()
@@ -218,6 +235,7 @@ class User
 
     /**
      * Get property: passwordUpdateDate
+     *
      * @return string|null
      */
     public function getPasswordUpdateDate()
@@ -227,6 +245,7 @@ class User
 
     /**
      * Get property: activationCode
+     *
      * @return string\null
      */
     public function getActivationCode()
@@ -236,6 +255,7 @@ class User
 
     /**
      * Get property: activationDate
+     *
      * @return string
      */
     public function getActivationDate()
@@ -245,6 +265,7 @@ class User
 
     /**
      * Get property: isActivated
+     *
      * @return boolean
      */
     public function getIsActivated()
@@ -254,6 +275,7 @@ class User
 
     /**
      * Get property: userTypeId
+     *
      * @return integer
      */
     public function getUserTypeId()
@@ -265,7 +287,9 @@ class User
 
     /**
      * Set property: id
+     *
      * @param integer $id
+     *
      * @return void
      */
     public function setId($id)
@@ -278,20 +302,24 @@ class User
 
     /**
      * Set property: creationDate
+     *
      * @param string $creationDate
+     *
      * @return void
      */
     public function setCreationDate($creationDate)
     {
         if (is_string($creationDate)) {
             $date = new \DateTime($creationDate);
-            $this->creationDate = $date->format( 'd-m-Y H:i:s');
+            $this->creationDate = $date->format('d-m-Y H:i:s');
         }
     }
 
     /**
      * Set property: familyName
+     *
      * @param string $familyName
+     *
      * @return void
      */
     public function setFamilyName($familyName)
@@ -303,7 +331,9 @@ class User
 
     /**
      * Set property: firstName
+     *
      * @param string $firstName
+     *
      * @return void
      */
     public function setFirstName($firstName)
@@ -315,7 +345,9 @@ class User
 
     /**
      * Set property: nickName
+     *
      * @param string $nickName
+     *
      * @return void
      */
     public function setNickName($nickName)
@@ -327,7 +359,9 @@ class User
 
     /**
      * Set property: email
+     *
      * @param string $email
+     *
      * @return void
      */
     public function setEmail($email)
@@ -339,7 +373,9 @@ class User
 
     /**
      * Set property: password
+     *
      * @param string $password
+     *
      * @return void
      */
     public function setPassword($password)
@@ -351,7 +387,9 @@ class User
 
     /**
      * Set property: passwordUpdateToken
+     *
      * @param string|null $passwordUpdateToken
+     *
      * @return void
      */
     public function setPasswordUpdateToken($passwordUpdateToken)
@@ -361,11 +399,13 @@ class User
         }
     }
 
-   /**
-     * Set property: passwordUpdateDate
-     * @param string $passwordUpdateDate
-     * @return void
-     */
+    /**
+      * Set property: passwordUpdateDate
+      *
+      * @param string $passwordUpdateDate
+      *
+      * @return void
+      */
     public function setPasswordUpdateDate($passwordUpdateDate)
     {
         if (is_string($passwordUpdateDate)) {
@@ -375,7 +415,9 @@ class User
 
     /**
      * Set property: activationCode
+     *
      * @param string\null $activationCode
+     *
      * @return void
      */
     public function setActivationCode($activationCode)
@@ -387,20 +429,24 @@ class User
 
     /**
      * Set property: activationDate
+     *
      * @param string $activationDate
+     *
      * @return void
      */
     public function setActivationDate($activationDate)
     {
         if (is_string($activationDate)) {
             $date = new \DateTime($activationDate);
-            $this->activationDate = $date->format( 'd-m-Y H:i:s');
+            $this->activationDate = $date->format('d-m-Y H:i:s');
         }
     }
 
     /**
      * Set property: isActivated
+     *
      * @param boolean $isActivated
+     *
      * @return void
      */
     public function setIsActivated($isActivated)
@@ -413,7 +459,9 @@ class User
 
     /**
      * Set property: userTypeId
+     *
      * @param integer $userTypeId
+     *
      * @return void
      */
     public function setUserTypeId($userTypeId)

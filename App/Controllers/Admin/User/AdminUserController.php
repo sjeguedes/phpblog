@@ -1,5 +1,6 @@
 <?php
 namespace App\Controllers\Admin\User;
+
 use App\Controllers\Admin\AdminController;
 use Core\Routing\AppRouter;
 use App\Models\Admin\Entity\User;
@@ -21,9 +22,9 @@ class AdminUserController extends AdminController
      * @var object: an instance of validator object
      */
     private $forgetPasswordFormValidator;
-     /**
-     * @var string: dynamic index name for register form token
-     */
+    /**
+    * @var string: dynamic index name for register form token
+    */
     private $refTokenIndex;
     /**
      * @var string: dynamic value for register form token
@@ -76,7 +77,9 @@ class AdminUserController extends AdminController
 
     /**
      * Constructor
+     *
      * @param AppRouter $router
+     *
      * @return void
      */
     public function __construct(AppRouter $router)
@@ -115,7 +118,9 @@ class AdminUserController extends AdminController
 
     /**
      * Initialize admin register template parameters
+     *
      * @param array|null $checkedForm: an array which contains result of form validation (error on fields, filtered form values, ...), or null
+     *
      * @return array: an array of template parameters
      */
     private function initAdminRegister($checkedForm = null)
@@ -163,7 +168,9 @@ class AdminUserController extends AdminController
 
     /**
      * Render admin register template (template based on Twig template engine)
+     *
      * @param array $vars: an array of template engine parameters
+     *
      * @return void
      */
     private function renderAdminRegister($vars)
@@ -173,32 +180,35 @@ class AdminUserController extends AdminController
 
     /**
      * Check if there is already a success state for admin register form
+     *
      * @return boolean
      */
-    private function isRegisterSuccess() {
+    private function isRegisterSuccess()
+    {
         if (isset($_SESSION['ref_success'])) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
     /**
      * Check if there is already a success state for user registration activation
+     *
      * @return boolean
      */
-    private function isActivationSuccess() {
+    private function isActivationSuccess()
+    {
         if (isset($_SESSION['ref_act_success'])) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
     /**
      * Show default register template
+     *
      * @return void
      */
     public function showAdminRegister()
@@ -232,9 +242,11 @@ class AdminUserController extends AdminController
 
     /**
      * Register a user with form validation try (on submission) template
+     *
      * @return void
      */
-    public function registerUser() {
+    public function registerUser()
+    {
         // Store result from register form validation
         $checkedForm = $this->validateRegisterForm();
         // Is it already a succcess state?
@@ -251,6 +263,7 @@ class AdminUserController extends AdminController
 
     /**
      * Validate (or not) register form
+     *
      * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
      */
     private function validateRegisterForm()
@@ -287,7 +300,7 @@ class AdminUserController extends AdminController
         $result = $this->registerFormCaptcha->call([isset($_POST['g-recaptcha-response']) ? $_POST['g-recaptcha-response'] : false, $result, 'ref_errors']);
         // Submit: register form is correctly filled.
         if (isset($result) && empty($result['ref_errors']) && isset($result['g-recaptcha-response']) && $result['g-recaptcha-response'] && isset($result['ref_check']) && $result['ref_check']) {
-             try {
+            try {
                 // Check not existing email account or nickname in database
                 $existingEmail = false;
                 $existingNickName = false;
@@ -346,7 +359,9 @@ class AdminUserController extends AdminController
 
     /**
      * Send a user registration activation email
+     *
      * @param array $result: register form datas
+     *
      * @return void
      */
     private function sendUserActivationEmail($result)
@@ -359,16 +374,17 @@ class AdminUserController extends AdminController
         $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
         $headers .= 'From: "' . $this->config->getParam('websiteName') . '" <' . $this->config->getParam('contactForm.contactEmail') . '>'. "\r\n";
         $emailMessage = '<html><head></head><body>' . PHP_EOL .
-        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg" alt="phpBlog - Registration activation" width="150" height="150"></p>' . PHP_EOL .
+        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg?v=' . time() . '" alt="phpBlog - Registration activation" width="150" height="150"></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center;"><strong>ACCOUNT REGISTRATION ACTIVATION</strong><br><br></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center; border-top: 2px solid #ffb236; border-bottom: 2px solid #2ca8ff;"><br>Dear ' . htmlentities($result['ref_firstName']) . ' ' . htmlentities($result['ref_familyName']) . ',<br>Thank you to be registered on <a href="' . $this->config->getParam('domain'). '" title="phpBlog"><font color="#888"><u><strong>' . $this->config->getParam('domain') . '</u></strong></font></a>.<br>Now, you have to activate your account to be able to use it on our website.<br>Please click on <a href="' . $this->config->getParam('domain') .'/admin/register/?userAccount=' . $result['ref_email'] . '&amp;activationKey=' . $result['ref_activationCode'] . '" title="Activate your user account"><font color="#f96332"><u>your personal link</u></font></a> to perform this action.<br>Important: please consider your account will be deleted automatically in 48 hours<br>if no activation happens before time limit: <strong>' . $date->format('d-m-Y H:i:s') . '</strong>.<br>Best regards.<br><br>&copy; ' . date('Y') . ' phpBlog<br><br></p>' . PHP_EOL .
         '</body></html>';
         // Send email
-        mail( $result['ref_email'], 'Registration activation on ' . $this->config->getParam('websiteName'), $emailMessage, $headers);
+        mail($result['ref_email'], 'Registration activation on ' . $this->config->getParam('websiteName'), $emailMessage, $headers);
     }
 
     /**
      * Activate user account if it's possible
+     *
      * @return array: error to show in message box, or empty array if activation is a success
      */
     private function activateUserAccount()
@@ -448,7 +464,9 @@ class AdminUserController extends AdminController
 
     /**
      * Initialize admin login template parameters
+     *
      * @param array|null $checkedForm: an array which contains result of form validation (error on fields, filtered form values, ...), or null
+     *
      * @return array: an array of template parameters
      */
     private function initAdminAccess($checkedForm = null)
@@ -494,7 +512,9 @@ class AdminUserController extends AdminController
 
     /**
      * Render admin login template (template based on Twig template engine)
+     *
      * @param array $vars: an array of template engine parameters
+     *
      * @return void
      */
     private function renderAdminAccess($vars)
@@ -504,19 +524,21 @@ class AdminUserController extends AdminController
 
     /**
      * Check if there is already a success state for admin login form
+     *
      * @return boolean
      */
-    private function isLoginSuccess() {
+    private function isLoginSuccess()
+    {
         if (isset($_SESSION['lif_success'])) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
     /**
      * Show default admin login template
+     *
      * @return void
      */
     public function showAdminAccess()
@@ -543,6 +565,7 @@ class AdminUserController extends AdminController
 
     /**
      * Login a user with form validation try (on submission) template
+     *
      * @return void
      */
     public function loginUser()
@@ -563,6 +586,7 @@ class AdminUserController extends AdminController
 
     /**
      * Validate (or not) login form
+     *
      * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
      */
     private function validateLoginForm()
@@ -639,7 +663,6 @@ class AdminUserController extends AdminController
             } catch (\PDOException $e) {
                 $result['lif_errors']['lif_login'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! You are not able to login at this time: please try again later.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
             }
-
         }
         // Update datas in form, error messages near fields, and notice error/success message
         return $result;
@@ -649,6 +672,7 @@ class AdminUserController extends AdminController
      * Logout a back office user
      * $_GET['userKey'] is a personal key to identify a particular user
      * This key is regenerated each time a new session is created.
+     *
      * @return void
      */
     public function logoutUser()
@@ -669,7 +693,9 @@ class AdminUserController extends AdminController
 
     /**
      * Initialize admin request new password (forgotten) template parameters
+     *
      * @param array|null $checkedForm: an array which contains result of form validation (error on fields, filtered form values, ...), or null
+     *
      * @return array: an array of template parameters
      */
     public function initAdminRequestNewPassword($checkedForm = null)
@@ -707,7 +733,9 @@ class AdminUserController extends AdminController
 
     /**
      * Render admin request new password (forgotten) template (template based on Twig template engine)
+     *
      * @param array $vars: an array of template engine parameters
+     *
      * @return void
      */
     public function renderAdminRequestNewPassword($vars)
@@ -718,19 +746,21 @@ class AdminUserController extends AdminController
 
     /**
      * Check if there is already a success state for user new password (forgotten) request
+     *
      * @return boolean
      */
-    private function isRequestNewPasswordSuccess() {
+    private function isRequestNewPasswordSuccess()
+    {
         if (isset($_SESSION['fpf_success'])) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
     /**
      * Show default admin request new password (forgotten) template
+     *
      * @return void
      */
     public function showAdminRequestNewPassword()
@@ -742,7 +772,7 @@ class AdminUserController extends AdminController
         // Render default template
         $vars = $this->initAdminRequestNewPassword();
         $this->renderAdminRequestNewPassword($vars);
-         // Is it already a succcess state for user when requesting new password?
+        // Is it already a succcess state for user when requesting new password?
         // Enable requesting new password success message box once a time
         if ($this->isRequestNewPasswordSuccess()) {
             // Do not store a success state anymore!
@@ -752,6 +782,7 @@ class AdminUserController extends AdminController
 
     /**
      * Send user an authentication code by email to renew his password (on submission) template
+     *
      * @return void
      */
     public function requestNewPassword()
@@ -776,6 +807,7 @@ class AdminUserController extends AdminController
 
     /**
      * Validate (or not) request new password (forgotten) form
+     *
      * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
      */
     public function validateRequestNewPasswordForm()
@@ -794,7 +826,7 @@ class AdminUserController extends AdminController
         $result = $this->forgetPasswordFormValidator->getResult();
         // Update validation result with "no spam tools" captcha antispam validation
         $result = $this->forgetPasswordFormCaptcha->call([$result, 'fpf_errors']);
-         // Submit: login form is correctly filled.
+        // Submit: login form is correctly filled.
         if (isset($result) && empty($result['fpf_errors']) && isset($result['fpf_noSpam']) && $result['fpf_noSpam'] && isset($result['fpf_check']) && $result['fpf_check']) {
             try {
                 // Check email account in database
@@ -856,10 +888,13 @@ class AdminUserController extends AdminController
 
     /**
      * Send a user authentication code email to renew his password
+     *
      * @param array $result: request new password (forgotten) form datas
+     *
      * @return void
      */
-    public function sendUserAuthenticationCodeEmail($result) {
+    public function sendUserAuthenticationCodeEmail($result)
+    {
         // Time limit to use update token (+ 2 days)
         $date = new \DateTime(date('d-m-Y H:i:s'));
         $date->add(new \DateInterval('P2D'));
@@ -868,17 +903,19 @@ class AdminUserController extends AdminController
         $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
         $headers .= 'From: "' . $this->config->getParam('websiteName') . '" <' . $this->config->getParam('contactForm.contactEmail') . '>'. "\r\n";
         $emailMessage = '<html><head></head><body>' . PHP_EOL .
-        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg" alt="phpBlog - Registration activation" width="150" height="150"></p>' . PHP_EOL .
+        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg?v=' . time() . '" alt="phpBlog - Registration activation" width="150" height="150"></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center;"><strong>PASSWORD RENEWAL AUTHENTICATION CODE</strong><br><br></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center; border-top: 2px solid #ffb236; border-bottom: 2px solid #2ca8ff;"><br>Dear ' . htmlentities($result['fpf_firstName']) . ' ' . htmlentities($result['fpf_familyName']) . ',<br>Here is your authentication code <strong>' . $result['fpf_passwordUpdateToken'] . '</strong> which is only valid on <a href="' . $this->config->getParam('domain'). '" title="phpBlog"><font color="#888"><u><strong>' . $this->config->getParam('domain') . '</u></strong></font></a>.<br>Now, you have to use it on our website, to renew your password.<br>Please click on <a href="' . $this->config->getParam('domain') .'/admin/renew-password" title="Renew your password"><font color="#f96332"><u>this link</u></font></a> to access a dedicated form.<br>Important: please consider your authentication code (token) will be deleted automatically in 48 hours<br>if no update happens before time limit: <strong>' . $date->format('d-m-Y H:i:s') . '</strong>.<br>Best regards.<br><br>&copy; ' . date('Y') . ' phpBlog<br><br></p>' . PHP_EOL .
         '</body></html>';
         // Send email
-        mail( $result['fpf_email'], 'Password renewal authentication code to use on ' . $this->config->getParam('websiteName'), $emailMessage, $headers);
+        mail($result['fpf_email'], 'Password renewal authentication code to use on ' . $this->config->getParam('websiteName'), $emailMessage, $headers);
     }
 
     /**
      * Initialize admin renew password template parameters
+     *
      * @param array|null $checkedForm: an array which contains result of form validation (error on fields, filtered form values, ...), or null
+     *
      * @return array: an array of template parameters
      */
     public function initAdminRenewPassword($checkedForm = null)
@@ -924,7 +961,9 @@ class AdminUserController extends AdminController
 
     /**
      * Render admin renew password template (template based on Twig template engine)
+     *
      * @param array $vars: an array of template engine parameters
+     *
      * @return void
      */
     public function renderAdminRenewPassword($vars)
@@ -935,19 +974,21 @@ class AdminUserController extends AdminController
 
     /**
      * Check if there is already a success state for user password renewal
+     *
      * @return boolean
      */
-    private function isRenewPasswordSuccess() {
+    private function isRenewPasswordSuccess()
+    {
         if (isset($_SESSION['rpf_success'])) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
     /**
      * Show default admin renew password template
+     *
      * @return void
      */
     public function showAdminRenewPassword()
@@ -959,6 +1000,7 @@ class AdminUserController extends AdminController
 
     /**
      * Renew user password (on submission) template
+     *
      * @return void
      */
     public function renewPassword()
@@ -979,6 +1021,7 @@ class AdminUserController extends AdminController
 
     /**
      * Validate user password renewal form
+     *
      * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
      */
     public function validateRenewPasswordForm()

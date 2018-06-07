@@ -1,5 +1,6 @@
 <?php
 namespace Core\Routing;
+
 use Core\Routing\AppRouter;
 
 /**
@@ -27,8 +28,10 @@ class AppRoute
 
     /**
      * Initialize $path and $name
+     *
      * @param string $path: path to check
      * @param string $name: name given to route
+     *
      * @return void
      */
     public function __construct($path, $name)
@@ -39,14 +42,16 @@ class AppRoute
 
     /**
      * Try to match URL with defined path
+     *
      * @param  string $url: URL we want to access
+     *
      * @return boolean
      */
     public function isMatched($url)
     {
         $url = trim($url, '/');
         $path = trim($this->path, '/');
-        $path = preg_replace_callback('#\:([\w]+)#', [$this, 'matchParameter'] , $path);
+        $path = preg_replace_callback('#\:([\w]+)#', [$this, 'matchParameter'], $path);
         $regex = "#^$path$#i";
         // $url doesn't match
         if (!preg_match($regex, $url, $matches)) {
@@ -61,7 +66,9 @@ class AppRoute
 
     /**
      * matchParameter is a callback function to manage different matching parameters
+     *
      * @param  array: $match contains captured matched parameters
+     *
      * @return string: pattern
      */
     private function matchParameter($match)
@@ -91,20 +98,24 @@ class AppRoute
 
     /**
      * Store parameters to match
+     *
      * @param  string $param: defined parameter to find
      * @param  string $regex: pattern to match this parameter
+     *
      * @return void
      */
     private function useParameter($param, $regex)
     {
         // Escapes "()" to prevent these groups from being matched
-        $paramRegex = str_replace('(','(?:', $regex);
+        $paramRegex = str_replace('(', '(?:', $regex);
         $this->params[$param] = $paramRegex;
     }
 
     /**
      * Call and execute controller action method with its arguments
+     *
      * @param AppRouter $router instance
+     *
      * @return string|callable: error message or controller action method is executed
      */
     public function getControllerAction(AppRouter $router)
@@ -138,7 +149,9 @@ class AppRoute
 
     /**
      * Retrieve URL with parameter(s)
+     *
      * @param array|null $params
+     *
      * @return string: generated URL
      */
     public function generateURL($params = null)

@@ -1,5 +1,6 @@
 <?php
 namespace App\Controllers\Admin\Post;
+
 use App\Controllers\Admin\AdminController;
 use Core\Routing\AppRouter;
 use App\Models\Admin\Entity\User;
@@ -9,7 +10,7 @@ use App\Models\Admin\Entity\User;
  */
 class AdminPostController extends AdminController
 {
-	/**
+    /**
      * @var object: an instance of validator object
      */
     private $adminPostValidator;
@@ -108,7 +109,9 @@ class AdminPostController extends AdminController
 
     /**
      * Constructor
+     *
      * @param AppRouter $router
+     *
      * @return void
      */
     public function __construct(AppRouter $router)
@@ -172,6 +175,7 @@ class AdminPostController extends AdminController
 
     /**
      * Initialize default template parameters
+     *
      * @return array: an array of template parameters
      */
     private function initAdminPosts()
@@ -248,7 +252,9 @@ class AdminPostController extends AdminController
 
     /**
      * Render admin posts template (template based on Twig template engine)
+     *
      * @param array $vars: an array of template engine parameters
+     *
      * @return void
      */
     private function renderAdminPosts($vars)
@@ -258,19 +264,21 @@ class AdminPostController extends AdminController
 
     /**
      * Check if there is already a success state for one of admin posts forms
+     *
      * @return boolean
      */
-    private function isActionSuccess() {
+    private function isActionSuccess()
+    {
         if (isset($_SESSION['paf_success'])) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
     /**
      * Show default admin posts template
+     *
      * @return void
      */
     public function showAdminPosts()
@@ -286,7 +294,9 @@ class AdminPostController extends AdminController
 
     /**
      * Check several particular conditions to allow authenticated user to manage Post and Comment entities
+     *
      * @param User $authenticatedUser: User entity to check
+     *
      * @return array: an array with data to retrieve not allowed main condition (empty array if management is allowed)
      */
     public function disallowPostAndCommentManagement(User $authenticatedUser)
@@ -303,7 +313,9 @@ class AdminPostController extends AdminController
 
     /**
      * Delete a Post entity in database
+     *
      * @param array $matches: an array of parameters matched in route
+     *
      * @return void
      */
     public function deletePost($matches)
@@ -367,6 +379,7 @@ class AdminPostController extends AdminController
 
     /**
      * Validate (moderate) a Post entity changing its state in database
+     *
      * @return void
      */
     public function validatePost()
@@ -423,6 +436,7 @@ class AdminPostController extends AdminController
 
     /**
      * Publish a Post entity changing its state in database
+     *
      * @return void
      */
     public function publishPost()
@@ -479,6 +493,7 @@ class AdminPostController extends AdminController
 
     /**
      * Cancel publication for Post entity changing its state in database
+     *
      * @return void
      */
     public function unpublishPost()
@@ -535,19 +550,21 @@ class AdminPostController extends AdminController
 
     /**
      * Check if there is already a success state for update add form
+     *
      * @return boolean
      */
-    private function isaddPostSuccess() {
-        if(isset($_SESSION['pnf_success'])) {
+    private function isaddPostSuccess()
+    {
+        if (isset($_SESSION['pnf_success'])) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
     /**
      * Render add post form with or without form validation
+     *
      * @return void
      */
     public function addPost()
@@ -664,7 +681,9 @@ class AdminPostController extends AdminController
 
     /**
      * Render admin add post template (template based on Twig template engine)
+     *
      * @param array $vars: an array of template engine parameters
+     *
      * @return void
      */
     private function renderAdminAddPost($vars)
@@ -674,6 +693,7 @@ class AdminPostController extends AdminController
 
     /**
      * Validate (or not) post add form
+     *
      * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
      */
     private function validatePostAddForm()
@@ -798,8 +818,8 @@ class AdminPostController extends AdminController
                             $imageInsertion = false;
                             $failed = true;
                         } else {
-                             // Insert image only if resizing is a success.
-                             if ($failed == false) {
+                            // Insert image only if resizing is a success.
+                            if ($failed == false) {
                                 // Prepare datas to add
                                 $newDatas2 = [
                                     'name' => pathinfo($resizedBigImage, PATHINFO_FILENAME), // string
@@ -838,7 +858,7 @@ class AdminPostController extends AdminController
                                 $imageInsertion = true;
                             }
                         }
-                    // Upload failed
+                        // Upload failed
                     } else {
                         // Real error which excludes particular case "No selected file"!
                         if (isset($_SESSION['uploads']['pnf_image']['tempFile']['tmp_name'])) {
@@ -862,7 +882,7 @@ class AdminPostController extends AdminController
                     if ($imageInsertion) {
                         $_SESSION['pnf_imageSuccess'] = 'Attached images were created without issue!<br>They will appear on post.';
                     } else {
-                         $_SESSION['pnf_imageSuccess'] = 'Notice: Attached images creation failed!<br>Default images will appear on post.<br>You can try to update post to modify them.';
+                        $_SESSION['pnf_imageSuccess'] = 'Notice: Attached images creation failed!<br>Default images will appear on post.<br>You can try to update post to modify them.';
                     }
                 }
             }
@@ -873,20 +893,23 @@ class AdminPostController extends AdminController
 
     /**
      * Check if there is already a success state for update post form
+     *
      * @return boolean
      */
-    private function isUpdatePostSuccess() {
-        if(isset($_SESSION['puf_success'])) {
+    private function isUpdatePostSuccess()
+    {
+        if (isset($_SESSION['puf_success'])) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
     /**
      * Render update post form with or without form validation
+     *
      * @param array $matches: route parameters to match
+     *
      * @return void
      */
     public function updatePost($matches)
@@ -1022,7 +1045,9 @@ class AdminPostController extends AdminController
 
     /**
      * Render admin update post template (template based on Twig template engine)
+     *
      * @param array $vars: an array of template engine parameters
+     *
      * @return void
      */
     private function renderAdminUpdatePost($vars)
@@ -1032,7 +1057,9 @@ class AdminPostController extends AdminController
 
     /**
      * Validate (or not) post update form
+     *
      * @param $postId: post id to update
+     *
      * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
      */
     private function validatePostUpdateForm($postId)
@@ -1089,7 +1116,7 @@ class AdminPostController extends AdminController
         if ((int) $authorUserId > 0) {
             // Is there an existing user author with this id? User can change option value!
             $author = $this->currentModel->getUserAuthorById($authorUserId);
-             if ($author != false) {
+            if ($author != false) {
                 $result['puf_userAuthor'] = $author;
             } else {
                 $result['puf_errors']['puf_notUpdated'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your post was not updated: please try again later.<br>[Debug trace: user author id "<strong>' . htmlentities($authorUserId) . '</strong>" doesn\'t exist in database!]</span>');
@@ -1190,8 +1217,8 @@ class AdminPostController extends AdminController
                             $imageInsertion = false;
                             $failed = true;
                         } else {
-                             // Insert image only if resizing is a success.
-                             if ($failed == false) {
+                            // Insert image only if resizing is a success.
+                            if ($failed == false) {
                                 // Prepare datas to add
                                 $newDatas2 = [
                                     'name' => pathinfo($resizedBigImage, PATHINFO_FILENAME), // string
@@ -1230,7 +1257,7 @@ class AdminPostController extends AdminController
                                 $imageInsertion = true;
                             }
                         }
-                    // Upload failed
+                        // Upload failed
                     } else {
                         // Real error which excludes particular case "No selected file"!
                         if (isset($_SESSION['uploads']['puf_image']['currentFile']['tmp_name'])) {
@@ -1260,7 +1287,7 @@ class AdminPostController extends AdminController
                             }
                         }
                     } else {
-                         $_SESSION['puf_imageSuccess'] = 'Notice: Attached images didn\'t change!<br>Previous uploaded images will appear on post.';
+                        $_SESSION['puf_imageSuccess'] = 'Notice: Attached images didn\'t change!<br>Previous uploaded images will appear on post.';
                     }
                 }
             }
@@ -1271,6 +1298,7 @@ class AdminPostController extends AdminController
 
     /**
      * Delete a Comment entity in database
+     *
      * @return void
      */
     public function deleteComment()
@@ -1316,6 +1344,7 @@ class AdminPostController extends AdminController
 
     /**
      * Validate (moderate) a Comment entity changing its state in database
+     *
      * @return void
      */
     public function validateComment()
@@ -1372,6 +1401,7 @@ class AdminPostController extends AdminController
 
     /**
      * Publish a Comment entity changing its state in database
+     *
      * @return void
      */
     public function publishComment()
@@ -1428,6 +1458,7 @@ class AdminPostController extends AdminController
 
     /**
      * Cancel publication for Comment entity changing its state in database
+     *
      * @return void
      */
     public function unpublishComment()

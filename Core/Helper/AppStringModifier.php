@@ -1,5 +1,6 @@
 <?php
 namespace Core\Helper;
+
 use Core\Routing\AppRouter;
 use voku\helper\URLify;
 
@@ -8,10 +9,10 @@ use voku\helper\URLify;
  */
 class AppStringModifier
 {
-	/**
-	 * @var object: unique instance of AppStringModifier
-	 */
-	private static $_instance;
+    /**
+     * @var object: unique instance of AppStringModifier
+     */
+    private static $_instance;
     /**
      * @var AppRouter instance
      */
@@ -27,7 +28,9 @@ class AppStringModifier
 
     /**
      * Instanciate a unique AppStringModifier object (Singleton)
+     *
      * @param object: an AppRouter instance
+     *
      * @return AppStringModifier: a unique instance of AppStringModifier
      */
     public static function getInstance(AppRouter $router)
@@ -40,7 +43,9 @@ class AppStringModifier
 
     /**
      * Constructor
+     *
      * @param object: an AppRouter instance
+     *
      * @return void
      */
     private function __construct(AppRouter $router)
@@ -55,6 +60,7 @@ class AppStringModifier
 
     /**
     * Magic method __clone
+    *
     * @return void
     */
     public function __clone()
@@ -65,42 +71,50 @@ class AppStringModifier
 
     /**
      * Use trim() function
+     *
      * @param string $string
+     *
      * @return string
      */
     public static function trimStr($string)
     {
-    	return trim($string);
+        return trim($string);
     }
 
     /**
      * Use strtolower() function
+     *
      * @param string $string
+     *
      * @return string
      */
     public static function strtolowerStr($string)
     {
-    	return strtolower($string);
+        return strtolower($string);
     }
 
     /**
      * Use strtoupper() function
+     *
      * @param string $string
+     *
      * @return string
      */
     public static function strtoupperStr($string)
     {
-    	return strtoupper($string);
+        return strtoupper($string);
     }
 
     /**
      * Use ucfirst() function
+     *
      * @param string $string
+     *
      * @return string
      */
     public static function ucfirstStr($string)
     {
-    	// HTML tags
+        // HTML tags
         if (preg_match('#^<[\w\d]+>(\w){1}#', $string)) {
             return preg_replace('#<[\w\d]+>(\w){1}#', ucfirst('$1'), $string);
         } else {
@@ -110,18 +124,22 @@ class AppStringModifier
 
     /**
      * Use ucwords() function
+     *
      * @param string $string
+     *
      * @return string
      */
     public static function ucwordsStr($string)
     {
-    	return ucwords($string);
+        return ucwords($string);
     }
 
     /**
      * Use URLify::filter() function
      * Create a slug for pretty url
+     *
      * @param string $string
+     *
      * @return string: formated slug
      */
     public static function slugStr($string)
