@@ -1,7 +1,4 @@
 # phpblog
-
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f78d66d9814947568d2d2a80d3cb32a1)](https://app.codacy.com/app/sje.guedes/phpblog?utm_source=github.com&utm_medium=referral&utm_content=sjeguedes/phpblog&utm_campaign=badger)
-
 Minimalist PHP Blog system and MVC structure
 
 - Use "Web/" directory as your document root (routes and assets)
