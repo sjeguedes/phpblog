@@ -77,7 +77,7 @@ abstract class AdminModel extends BaseModel
                                               SET $set
                                               WHERE ${columnPrefix}id = :entityId");
         for ($i = 0; $i < count($newValues); $i ++) {
-            $query->bindParam(':' . $newValues[$i]['column'], $newValues[$i]['value'], $PDOParams[$newValues[$i]['type']] - 1);
+            $query->bindParam(':' . $newValues[$i]['column'], $newValues[$i]['value'], $PDOParams[$newValues[$i]['type'] - 1]);
         }
         $query->bindParam(':entityId', $entityId, \PDO::PARAM_INT);
         $query->execute();

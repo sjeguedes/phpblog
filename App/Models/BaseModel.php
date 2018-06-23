@@ -3,7 +3,6 @@ namespace App\Models;
 
 use Core\Routing\AppRouter;
 use Core\Database\AppDatabase;
-use Core\Database\PDOFactory;
 use Core\Config\AppConfig;
 
 /**
@@ -72,10 +71,9 @@ abstract class BaseModel
     /**
      * Get all datas for one row with its id in a particular database table
      *
-     * @param string $id: table name
+     * @param string $table: table name
      * @param string $columnPrefix: prefix column name
      * @param string $id: primary key
-     * @param mixed $table
      *
      * @return array|boolean: an array of datas which contains one row from the database or false
      */

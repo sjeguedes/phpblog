@@ -76,7 +76,7 @@ class AppConfig
      *
      * @param string $keys: array keys to explode in string argument with a "."
      *
-     * @return mixed|boolean: parameter value (type depends on returned value) or false (if no value exists in config yaml file)
+     * @return mixed|false: parameter value (type depends on returned value) or false (if no value exists in config yaml file)
      */
     public static function getParam($keys)
     {

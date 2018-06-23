@@ -86,11 +86,11 @@ class AppHTTPResponse
      *
      * @param string $string: defined header
      * @param bool $replace: should replace previous header of the same type
-     * @param int|null $http_response_code
+     * @param integer|null $httpResponseCode
      *
      * @return void
      */
-    public function addHeader($string, $replace = true, $http_response_code = null)
+    public function addHeader($string, $replace = true, $httpResponseCode = null)
     {
         header($string);
     }

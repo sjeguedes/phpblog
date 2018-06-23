@@ -2,6 +2,9 @@
 namespace Core\Helper;
 
 use Core\Routing\AppRouter;
+/* Global namespace for HTMLPurifier librairy */
+use HTMLPurifier;
+use HTMLPurifier_Config;
 use voku\helper\URLify;
 
 /**
@@ -135,8 +138,8 @@ class AppStringModifier
     }
 
     /**
-     * Use URLify::filter() function
      * Create a slug for pretty url
+     * Use URLify external library
      *
      * @param string $string
      *
@@ -145,5 +148,31 @@ class AppStringModifier
     public static function slugStr($string)
     {
         return URLify::filter($string);
+    }
+
+    /**
+     * Clean html string to prevent XSS issues
+     * Useful for WYSIWYG content
+     * Use HTMLPurifier external library
+     *
+     * @param string $html
+     *
+     * @return string: formated html
+     */
+    public static function cleanHTMLStr($html)
+    {
+        require_once __DIR__ . '/../../Libs/vendor/ezyang/htmlpurifier/library/HTMLPurifier.auto.php';
+        $config = HTMLPurifier_Config::createDefault();
+        $config->loadArray([
+            'Cache.DefinitionImpl' => null,
+            'Core.Encoding' => 'UTF-8',
+            'HTML.Allowed' => 'strong,em,a[href|title|target|rel|class|style],ul[style],ol[style],li[style],br,span[class|style]',
+            'Attr.AllowedFrameTargets' => array('_blank', '_self'),
+            'CSS.AllowTricky' => true,
+            'CSS.AllowedProperties' => 'font,font-size,font-weight,font-style,font-family,text-decoration,padding,padding-left,padding-right,color,background-color,text-align,display',
+            'AutoFormat.RemoveEmpty' => true
+        ]);
+        $purifier = new HTMLPurifier($config);
+        return $purifier->purify($html);
     }
 }

@@ -103,7 +103,7 @@ class AppMailer
         // Content
         $this->mailer->isHTML(true); // set email format to HTML
         $this->mailer->Subject = 'phpBlog - Contact form: someone sent a message!'; // email subject
-        $this->mailer->Body = '<p style="width:600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg?v=' . time() . '" alt="phpBlog contact form" width="150" height="150"></p>' . PHP_EOL; // add custom header image
+        $this->mailer->Body = '<p style="width:600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-email-logo.jpg?v=' . time() . '" alt="phpBlog contact form" width="150" height="150"></p>' . PHP_EOL; // add custom header image
         $this->mailer->Body .= '<p style="width:600px; margin: 0 auto; text-align:center;"><strong>CONTACT FORM<br>Someone sent a message!</strong><br><br></p>' . PHP_EOL; // html format
         $this->mailer->Body .= '<p style="width:600px; margin:auto; text-align:center; border-top: 2px solid #ffb236;"><br>' . $insertionInfos . '<br><br></p>' . PHP_EOL; // html format
         $this->mailer->Body .= '<p style="width:600px; margin:auto; text-align:center; border-bottom: 2px solid #2ca8ff;">From: ' . $datas['firstName'] . ' ' . $datas['familyName'] . ' | <a href="#" style="color:#000; text-decoration:none;"><font color="#000">' . $datas['email'] . '</font></a><br>- Message -<br>' . nl2br($datas['message']) . '<br><br>&copy; ' . date('Y') . ' phpBlog<br><br></p>'; // html format

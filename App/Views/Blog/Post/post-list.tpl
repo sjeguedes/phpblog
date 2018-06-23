@@ -55,7 +55,7 @@
                         </div>
                         <div class="post-intro text-left pb-4 col-md-12 col-lg-9">
                             <p class="px-3">{{ item.intro|raw }}</p>
-                            <div class="read-more text-right px-3"><a href="/post/{{ item.slug|e('url') }}-{{ item.id }}" title="Read more about post: {{ item.title|striptags|e('html_attr') }}">Read more +</a></div>
+                            <div class="read-more text-right px-3"><a class="normal-link" href="/post/{{ item.slug|e('url') }}-{{ item.id }}" title="Read more about post: {{ item.title|striptags|e('html_attr') }}">Read more +</a></div>
                         </div>
                     </div>
                     <hr>

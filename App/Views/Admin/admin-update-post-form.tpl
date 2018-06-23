@@ -95,15 +95,11 @@
                         <p class="text-left mb-0"><small><strong>IMAGE</strong></small></p>
                         <p class="selected-image text-center mt-0{{ image is empty ? ' form-hide' }}"><span class="text-warning"><i class="fa fa-info-circle"></i>&nbsp;<strong>Your selected file is:</strong></span><br>"<em>{{ image }}</em>"&nbsp;&nbsp;<button class="btn btn-danger btn-sm" title="Delete image"><i class="now-ui-icons ui-1_simple-remove"></i></button><br>
                         {% if (post.temporaryParams['postImage'] is not empty) and (post.temporaryParams['postImage'] == image) %}
-                            {% set preview = '' %}
-                            {% set noPreview = ' form-hide' %}
+                            <small class="image-preview">Current uploaded and validated image (front-end)</small>
+                            <img class="raised rounded image-preview" src="/uploads/images/ci-{{ post.temporaryParams['postCreatorId']|e('html_attr') }}/{{ post.temporaryParams['postImage']|e('html_attr') }}" alt="{{ post.temporaryParams['postImage']|e('html_attr') }}">
                         {% else %}
-                            {% set preview = ' form-hide' %}
-                            {% set noPreview = '' %}
+                            <small class="image-no-preview">Image preview is available only after validation.</small>
                         {% endif %}
-                        <small class="image-preview{{ preview }}">Current uploaded and validated image (front-end)</small>
-                        <img class="raised rounded image-preview{{ preview }}" src="/uploads/images/ci-{{ post.temporaryParams['postCreatorId']|e('html_attr') }}/{{ post.temporaryParams['postImage']|e('html_attr') }}" alt="{{ post.temporaryParams['postImage']|e('html_attr') }}">
-                        <small class="image-no-preview{{ noPreview }}">Image preview is available only after validation.</small>
                         </p>
                         <p class="text-danger{{ errors['puf_image'] is not defined ? ' form-hide' }}" role="alert">&nbsp;{{ errors['puf_image']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                         <div class="input-group phpblog-field-group form-group-no-border input-lg post-custom-image">

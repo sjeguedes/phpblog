@@ -19,3 +19,19 @@
     border: 0 none;
     box-shadow: none;*/
 }
+
+/* Custom css class to use in editor */
+a {
+    color: #f96332;
+    text-decoration: none;
+}
+
+a.btn-primary.btn-link {
+    color: #f96332;
+    text-decoration: none;
+}
+
+a.btn.btn-link {
+    color: #888;
+    text-decoration: none;
+}

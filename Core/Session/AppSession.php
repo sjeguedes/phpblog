@@ -337,7 +337,7 @@ class AppSession
     /**
      * Check if a user is authenticated
      *
-     * @return array|boolean: an array which contains essential datas from User entity stored in $_SESSION
+     * @return array|false: an array which contains essential datas from User entity stored in $_SESSION
      */
     public static function isUserAuthenticated()
     {

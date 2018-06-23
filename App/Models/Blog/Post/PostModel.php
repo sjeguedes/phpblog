@@ -313,7 +313,8 @@ class PostModel extends BaseModel
      */
     public function getAuthorByPostUserId($postUserId)
     {
-        $query = $this->dbConnector->prepare('SELECT u.user_id, u.user_firstName, u.user_familyName, u.user_nickName, u.user_email,
+        $query = $this->dbConnector->prepare('SELECT u.user_id, u.user_firstName, u.user_familyName,
+                                              u.user_nickName, u.user_email,
 	    									  u.user_password, u.user_isActivated, u.user_userTypeId
 	    									  FROM posts p
 	    									  INNER JOIN users u ON (p.post_userId = u.user_id)

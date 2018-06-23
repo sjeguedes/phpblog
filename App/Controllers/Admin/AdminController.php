@@ -8,7 +8,7 @@ use Core\Routing\AppRouter;
  * Create a parent controller for common actions in back-end
  * This class extends BaseController parent controller for all controllers.
  */
-class AdminController extends BaseController
+abstract class AdminController extends BaseController
 {
     /**
      * @var string: value stored in to manage user admin session
@@ -302,13 +302,13 @@ class AdminController extends BaseController
     /**
      * Check if user generated password renewal authentication token matches token in $_POST/$_GET value
      *
-     * @param string $inputToken: user input token value
+     * @param string $tokenInput: user token input value
      * @param string $generatedToken: token value stored in database
      *
      * @return boolean
      */
-    protected function checkPasswordUpdateTokenValue($inputToken, $generatedToken)
+    protected function checkPasswordUpdateTokenValue($tokenInput, $generatedToken)
     {
-        return $inputToken === $generatedToken;
+        return $tokenInput === $generatedToken;
     }
 }

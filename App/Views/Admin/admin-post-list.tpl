@@ -91,7 +91,7 @@
                                         {% if (connectedUser is not null) and (connectedUser.userTypeId == 1) %}
                                             <button data-toggle="modal" data-target="#ppd-modal-{{ postList[i].id }}" class="btn btn-danger btn-sm" title="Delete post"><i class="now-ui-icons ui-1_simple-remove"></i></button>
                                             {% if postList[i].isValidated == 0 %}<button data-toggle="modal" data-target="#ppv-modal-{{ postList[i].id }}" class="btn btn-warning btn-sm" title="Validate post"><i class="now-ui-icons ui-1_check"></i></button>{% endif -%}
-                                            {% if postList[i].isValidated == 1 %}<a href="/admin/update-post/{{ postList[i].id }}#detail" class="btn btn-default btn-sm" title="Update post" target="_blank"><i class="now-ui-icons arrows-1_refresh-69"></i></a>{% endif -%}
+                                            {% if postList[i].isValidated == 1 %}<a href="/admin/update-post/{{ postList[i].id }}#detail" class="btn btn-default btn-sm" title="Update post"><i class="now-ui-icons arrows-1_refresh-69"></i></a>{% endif -%}
                                             {% if (postList[i].isValidated == 1) and (postList[i].isPublished == 0) %}<button data-toggle="modal" data-target="#ppp-modal-{{ postList[i].id }}" class="btn btn-success btn-sm" title="Publish post"><i class="now-ui-icons ui-1_calendar-60"></i></button>{% endif -%}
                                             {% if postList[i].isPublished == 1 %}<button data-toggle="modal" data-target="#ppu-modal-{{ postList[i].id }}" class="btn btn-danger btn-sm" title="Cancel post publication"><i class="now-ui-icons ui-1_calendar-60"></i>&nbsp;<i class="now-ui-icons ui-1_simple-remove"></i></button>{% endif %}
                                         {% else %}
@@ -102,7 +102,7 @@
                                             {% endif %}
                                             <button class="btn btn-danger btn-deactivate btn-sm" title="Post deleting is not allowed! {{ noManagementAction|e('html_attr') }}"><i class="now-ui-icons ui-1_simple-remove" disabled></i></button>
                                             {% if postList[i].isValidated == 0 %}<button class="btn btn-warning btn-deactivate btn-sm" title="Post validating is not allowed! {{ noManagementAction|e('html_attr') }}" disabled><i class="now-ui-icons ui-1_check"></i></button>{% endif -%}
-                                            {% if postList[i].isValidated == 1 %}<a href="/admin/update-post/{{ postList[i].id }}#detail" class="btn btn-default btn-sm" title="Update post" target="_blank"><i class="now-ui-icons arrows-1_refresh-69"></i></a>{% endif -%}
+                                            {% if postList[i].isValidated == 1 %}<a href="/admin/update-post/{{ postList[i].id }}#detail" class="btn btn-default btn-sm" title="Update post"><i class="now-ui-icons arrows-1_refresh-69"></i></a>{% endif -%}
                                             {% if (postList[i].isValidated == 1) and (postList[i].isPublished == 0) %}<button class="btn btn-success btn-deactivate btn-sm" title="Post publication is not allowed! {{ noManagementAction|e('html_attr') }}" disabled><i class="now-ui-icons ui-1_calendar-60"></i></button>{% endif -%}
                                             {% if postList[i].isPublished == 1 %}<button class="btn btn-danger btn-deactivate btn-sm" title="Post publication Cancelation is not allowed! {{ noManagementAction|e('html_attr') }}" disabled><i class="now-ui-icons ui-1_calendar-60"></i>&nbsp;<i class="now-ui-icons ui-1_simple-remove"></i></button>{% endif %}
                                         {% endif %}
@@ -140,8 +140,8 @@
     {% if (i == 0) or (i % postPerSlide == 0) -%}
         {% set rank = rank + 1 -%}
     {% endif -%}
-<!-- Comment content modal -->
-<div class="modal fade" id="modal-post-content-{{ i + 1 }}" tabindex="-1" role="dialog" aria-labelledby="Comment content">
+<!-- Post content modal -->
+<div class="modal fade" id="modal-post-content-{{ i + 1 }}" tabindex="-1" role="dialog" aria-labelledby="Post content">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header justify-content-center">
@@ -158,7 +158,7 @@
                 <p class="text-left">{{ postList[i].intro|raw|nl2br }}</p>
             </div>
             <div class="modal-footer">
-                <a href="/post/{{ postList[i].id }}" class="btn btn-default btn-xs" title="Look at single post #{{ postList[i].id }}" target="_blank">VIEW COMPLETE POST #{{ postList[i].id }}</a>
+                {% if postList[i].isPublished == 1 %}<a href="/post/{{ postList[i].id }}" class="btn btn-default btn-xs" title="Look at single post #{{ postList[i].id }}" target="_blank">VIEW COMPLETE POST #{{ postList[i].id }}</a>{% else -%}&nbsp;{% endif -%}
                 <button type="button" class="btn btn-danger" data-dismiss="modal" title="Close viewer">CLOSE</button>
             </div>
         </div>

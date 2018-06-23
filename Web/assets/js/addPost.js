@@ -195,16 +195,36 @@ jQuery(function($) {
     tinymce.init({
         branding: false,
         selector: 'textarea',
-        theme : 'modern',
+        schema: 'html5-strict',
+        theme: 'modern',
         menubar: false,
         forced_root_block: false, // don't generate <p> tag when typing "enter"
-        entity_encoding : 'raw', // don't encode special chars with html
-        valid_children : '-strong[strong],-em[em]',
-        element_format : 'html',
+        entity_encoding: 'raw', // don't encode special chars with html
+        valid_elements: 'a[title|href|target|rel|style|class],span[style|class],ul[style|class],ol[style|class],li[style|class],em,strong,br',
+        element_format: 'html',
         remove_trailing_brs: true,
+        relative_urls: false,
+        target_list: [
+            { title: 'None', value: '' },
+            { title: 'Same page', value: '_self' },
+            { title: 'New page', value: '_blank'}
+        ],
+        default_link_target: '_self',
+        link_class_list: [
+            {title: 'Link with default red text', value: ''},
+            {title: 'Link with primary effect text', value: 'btn-primary btn-link'},
+            {title: 'Link with grey effect text', value: 'btn btn-link'}
+        ],
+        paste_as_text: true,
+        formats: {
+            div: { inline: 'span', classes: 'block-container', styles: { display: 'block' } },
+            alignleft: { inline: 'span', classes: 'text-format', styles: { display: 'block', textAlign: 'left' } },
+            aligncenter: { inline: 'span', classes: 'text-format', styles: { display: 'block', textAlign: 'center' } },
+            alignright: { inline: 'span', classes: 'text-format', styles: { display: 'block', textAlign: 'right' } },
+            alignjustify: { inline: 'span', classes: 'text-format', styles: { display: 'block', textAlign: 'justify' } }
+        },
+        style_formats_autohide: true,
         style_formats: [
-            { title: 'Link primary text', selector: 'a', classes: '.btn-primary.btn-link', styles: { color: '#f96332' } },
-            { title: 'Link default text', selector: 'a', classes: '.btn-link', styles: { color: '#888' } },
             { title: 'Normal text', inline: 'span', styles: { color: '#212529' } },
             { title: 'Warning text', inline: 'span', styles: { color: '#ffb236' } },
             { title: 'Muted text', inline: 'span', styles: { color: '#868e96' } },
@@ -227,6 +247,66 @@ jQuery(function($) {
                         $('#' + editor.id).parent('.input-group').removeClass('phpblog-tinymce');
                     });
                 });
+            });
+            // Customize or fix "Indent", "Outdent", "mceToggleFormat" (bold, italic) toolbar button commands
+            editor.on('execCommand', function(args) {
+                var node = tinymce.activeEditor.selection.getNode();
+                switch (args.command) {
+                    case 'Indent':
+                        if ($(node).hasClass('mce-content-body')) {
+                            node = $(node).find('.block-container')[0];
+                        } else if ($(node).hasClass('block-container')) {
+                            node = $(node)[0];
+                        }
+                        // Set padding-left value as wanted
+                        if ($(node)[0].style.paddingLeft === '') {
+                            $(node)[0].style.paddingLeft = '0%';
+                        }
+                        // Increase value
+                        if (cleanInt($(node)[0].style.paddingLeft.replace(/%/g, '')) < 100) {
+                            $(node).css({
+                                'padding-left': cleanInt($(node)[0].style.paddingLeft.replace(/%/g, '')) + 1 + '%',
+                                'display': 'block',
+                            });
+                            $(node).attr('data-mce-style', $(node).attr('style'));
+                        }
+                        break;
+                    case 'Outdent':
+                        if ($(node).hasClass('mce-content-body')) {
+                            node = $(node).find('.block-container')[0];
+                        } else if ($(node).hasClass('block-container')) {
+                            node = $(node)[0];
+                        }
+                        // Set padding-left value as wanted
+                        if ($(node)[0].style.paddingLeft === '') {
+                            $(node)[0].style.paddingLeft = '0%';
+                        }
+                        // Decrease value
+                        if (cleanInt($(node)[0].style.paddingLeft.replace(/%/g, '')) > 0) {
+                            $(node).css({
+                                'padding-left': cleanInt($(node)[0].style.paddingLeft.replace(/%/g, '')) - 1 + '%',
+                                'display': 'block',
+                            });
+                            $(node).attr('data-mce-style', $(node).attr('style'));
+                        }
+                        break;
+                    case 'mceToggleFormat':
+                        // Fix bug with a personal trick for bold, italic formatting which happens sometimes (one letter selected, first letter selected, ...)
+                        if (args.value == 'bold') {
+                            if (editor.editorCommands.queryCommandState('Bold')) {
+                                tinymce.activeEditor.selection.setContent('<strong>' + tinymce.activeEditor.selection.getContent().replace(/\<\/?strong\>/g,'') + '</strong>');
+                            } else {
+                                tinymce.activeEditor.selection.setContent(tinymce.activeEditor.selection.getContent().replace(/\<\/?strong\>/g,''));
+                            }
+                        } else if (args.value == 'italic') {
+                            if (editor.editorCommands.queryCommandState('Italic')) {
+                                tinymce.activeEditor.selection.setContent('<em>' + tinymce.activeEditor.selection.getContent().replace(/\<\/?em\>/g,'') + '</em>');
+                            } else {
+                                tinymce.activeEditor.selection.setContent(tinymce.activeEditor.selection.getContent().replace(/\<\/?em\>/g,''));
+                            }
+                        }
+                        break;
+                }
             });
         },
         init_instance_callback: function(editor) {
@@ -291,11 +371,8 @@ jQuery(function($) {
                 }
             });
         },
-        plugins: 'lists, link, autolink',
-        // Default formats in editor
-        formats: {
-            link: { inline : 'span', 'classes' : 'text-primary', styles : { color : '#f96332' } }
-        },
+        plugins: 'lists, link, autolink, paste',
+        // Don't show "paste" plugin
         toolbar: 'undo redo styleselect | bold italic underline strikethrough link unlink autolink | alignleft aligncenter alignright alignjustify removeformat | bullist numlist outdent indent',
     });
 });
@@ -421,4 +498,10 @@ var slugify = function(str) {
     .replace(/\s+/g, '-') // collapse whitespace and replace by -
     .replace(/-+/g, '-'); // collapse dashes
     return str;
+}
+
+// Parse integer: avoid issues with parseInt() function
+var cleanInt = function(x) {
+  x = Number(x);
+  return Math[x >= 0 ? 'floor' : 'ceil'](x);
 }

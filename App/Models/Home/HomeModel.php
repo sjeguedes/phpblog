@@ -34,10 +34,10 @@ class HomeModel extends BaseModel
         $query = $this->dbConnector->prepare('INSERT INTO contacts
 											  (contact_sendingDate, contact_familyName, contact_firstName, contact_email, contact_message)
 											  VALUES (NOW(), ?, ?, ?, ?)');
-        $query->bindParam(1, $familyName);
-        $query->bindParam(2, $firstName);
-        $query->bindParam(3, $email);
-        $query->bindParam(4, $message);
+        $query->bindParam(1, $familyName, \PDO::PARAM_STR);
+        $query->bindParam(2, $firstName, \PDO::PARAM_STR);
+        $query->bindParam(3, $email, \PDO::PARAM_STR);
+        $query->bindParam(4, $message, \PDO::PARAM_STR);
 
         // Insertion
         $familyName = $contactDatas['cf_familyName'];

@@ -109,7 +109,7 @@ class AdminUserModel extends AdminModel
         $query->bindParam(':passwordUpdateDate', $passwordUpdateDate, \PDO::PARAM_STR);
         $query->bindParam(':activationCode', $activationCode, \PDO::PARAM_STR);
         $query->bindParam(':activationDate', $activationDate, \PDO::PARAM_STR);
-        $query->bindParam(':isActivated', $isActivated, \PDO::PARAM_INT);
+        $query->bindParam(':isActivated', $isActivated, \PDO::PARAM_BOOL);
         $query->bindParam(':userTypeId', $userTypeId, \PDO::PARAM_INT);
         // Insertion
         $familyName = $userDatas['ref_familyName'];

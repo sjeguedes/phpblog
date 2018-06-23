@@ -17,7 +17,7 @@ class AppCaptcha
      */
     private $router;
     /**
-     * @var object: config to use
+     * @var AppConfig: config to use
      */
     private $config;
 

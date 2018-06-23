@@ -35,7 +35,7 @@ class AppPage
      */
     private static $_session;
     /**
-     * @var object: template engine instance
+     * @var AppTwig|object: template engine instance
      */
     private static $_templateEngine;
 

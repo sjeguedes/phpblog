@@ -23,6 +23,10 @@ class AdminUserController extends AdminController
      */
     private $forgetPasswordFormValidator;
     /**
+     * @var object: an instance of validator object
+     */
+    private $renewPasswordFormValidator;
+    /**
     * @var string: dynamic index name for register form token
     */
     private $refTokenIndex;
@@ -374,7 +378,7 @@ class AdminUserController extends AdminController
         $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
         $headers .= 'From: "' . $this->config->getParam('websiteName') . '" <' . $this->config->getParam('contactForm.contactEmail') . '>'. "\r\n";
         $emailMessage = '<html><head></head><body>' . PHP_EOL .
-        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg?v=' . time() . '" alt="phpBlog - Registration activation" width="150" height="150"></p>' . PHP_EOL .
+        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-email-logo.jpg?v=' . time() . '" alt="phpBlog - Registration activation" width="150" height="150"></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center;"><strong>ACCOUNT REGISTRATION ACTIVATION</strong><br><br></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center; border-top: 2px solid #ffb236; border-bottom: 2px solid #2ca8ff;"><br>Dear ' . htmlentities($result['ref_firstName']) . ' ' . htmlentities($result['ref_familyName']) . ',<br>Thank you to be registered on <a href="' . $this->config->getParam('domain'). '" title="phpBlog"><font color="#888"><u><strong>' . $this->config->getParam('domain') . '</u></strong></font></a>.<br>Now, you have to activate your account to be able to use it on our website.<br>Please click on <a href="' . $this->config->getParam('domain') .'/admin/register/?userAccount=' . $result['ref_email'] . '&amp;activationKey=' . $result['ref_activationCode'] . '" title="Activate your user account"><font color="#f96332"><u>your personal link</u></font></a> to perform this action.<br>Important: please consider your account will be deleted automatically in 48 hours<br>if no activation happens before time limit: <strong>' . $date->format('d-m-Y H:i:s') . '</strong>.<br>Best regards.<br><br>&copy; ' . date('Y') . ' phpBlog<br><br></p>' . PHP_EOL .
         '</body></html>';
@@ -698,7 +702,7 @@ class AdminUserController extends AdminController
      *
      * @return array: an array of template parameters
      */
-    public function initAdminRequestNewPassword($checkedForm = null)
+    private function initAdminRequestNewPassword($checkedForm = null)
     {
         $jsArray = [
             0 => [
@@ -738,7 +742,7 @@ class AdminUserController extends AdminController
      *
      * @return void
      */
-    public function renderAdminRequestNewPassword($vars)
+    private function renderAdminRequestNewPassword($vars)
     {
         // Render minimalist template
         echo $this->page->renderTemplate('Admin/admin-forget-password-form.tpl', $vars);
@@ -810,7 +814,7 @@ class AdminUserController extends AdminController
      *
      * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
      */
-    public function validateRequestNewPasswordForm()
+    private function validateRequestNewPasswordForm()
     {
         // Prepare filters for form email data
         $datas = [
@@ -893,7 +897,7 @@ class AdminUserController extends AdminController
      *
      * @return void
      */
-    public function sendUserAuthenticationCodeEmail($result)
+    private function sendUserAuthenticationCodeEmail($result)
     {
         // Time limit to use update token (+ 2 days)
         $date = new \DateTime(date('d-m-Y H:i:s'));
@@ -903,7 +907,7 @@ class AdminUserController extends AdminController
         $headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
         $headers .= 'From: "' . $this->config->getParam('websiteName') . '" <' . $this->config->getParam('contactForm.contactEmail') . '>'. "\r\n";
         $emailMessage = '<html><head></head><body>' . PHP_EOL .
-        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-logo.jpg?v=' . time() . '" alt="phpBlog - Registration activation" width="150" height="150"></p>' . PHP_EOL .
+        '<p style="width: 600px; margin: 0 auto; text-align:center;"><img src="' . $this->config::getParam('mailing.hostedImagesAbsoluteURL') . 'phpblog-email-logo.jpg?v=' . time() . '" alt="phpBlog - Password renewal authentication code" width="150" height="150"></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center;"><strong>PASSWORD RENEWAL AUTHENTICATION CODE</strong><br><br></p>' . PHP_EOL .
         '<p style="width: 600px; margin: 0 auto; text-align:center; border-top: 2px solid #ffb236; border-bottom: 2px solid #2ca8ff;"><br>Dear ' . htmlentities($result['fpf_firstName']) . ' ' . htmlentities($result['fpf_familyName']) . ',<br>Here is your authentication code <strong>' . $result['fpf_passwordUpdateToken'] . '</strong> which is only valid on <a href="' . $this->config->getParam('domain'). '" title="phpBlog"><font color="#888"><u><strong>' . $this->config->getParam('domain') . '</u></strong></font></a>.<br>Now, you have to use it on our website, to renew your password.<br>Please click on <a href="' . $this->config->getParam('domain') .'/admin/renew-password" title="Renew your password"><font color="#f96332"><u>this link</u></font></a> to access a dedicated form.<br>Important: please consider your authentication code (token) will be deleted automatically in 48 hours<br>if no update happens before time limit: <strong>' . $date->format('d-m-Y H:i:s') . '</strong>.<br>Best regards.<br><br>&copy; ' . date('Y') . ' phpBlog<br><br></p>' . PHP_EOL .
         '</body></html>';
@@ -918,7 +922,7 @@ class AdminUserController extends AdminController
      *
      * @return array: an array of template parameters
      */
-    public function initAdminRenewPassword($checkedForm = null)
+    private function initAdminRenewPassword($checkedForm = null)
     {
         $jsArray = [
             0 => [
@@ -966,7 +970,7 @@ class AdminUserController extends AdminController
      *
      * @return void
      */
-    public function renderAdminRenewPassword($vars)
+    private function renderAdminRenewPassword($vars)
     {
         // Render minimalist template
         echo $this->page->renderTemplate('Admin/admin-renew-password-form.tpl', $vars);
@@ -1024,7 +1028,7 @@ class AdminUserController extends AdminController
      *
      * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
      */
-    public function validateRenewPasswordForm()
+    private function validateRenewPasswordForm()
     {
         // Prepare filters for form datas
         $datas = [

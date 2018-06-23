@@ -263,14 +263,14 @@ class AppFormValidator
      * Check if user password renewal authentication token in $_REQUEST value contains exactly 15 characters
      *
      * @param string $name: field name
-     * @param string $inputToken: user input token value
+     * @param string $tokenInput: user token input value
      *
      * @return void
      */
-    public function validatePasswordUpdateTokenLength($name, $inputToken)
+    public function validatePasswordUpdateTokenLength($name, $tokenInput)
     {
         $name = $this->formIdentifier . $name;
-        if (strlen($inputToken) != 15) {
+        if (strlen($tokenInput) != 15) {
             $this->result[$this->errorIndex][$name] = 'Sorry, your token must contain<br>exactly 15 characters!<br>Please check it.';
         }
     }
@@ -321,7 +321,7 @@ class AppFormValidator
      *
      * @param string $name: field name in $_FILES
      *
-     * @return string|boolean: path to temporary file name or false
+     * @return string|false: path to temporary file name or false
      */
     public function validateImageUpload($name)
     {
@@ -389,7 +389,7 @@ class AppFormValidator
      * @param string $name: field name
      * @param boolean $temporary: generate a temporary file or not
      *
-     * @return string|boolean: path to uploaded image or false
+     * @return string|false: path to uploaded image or false
      */
     public function saveImageUpload($name, $temporary = false)
     {
@@ -523,7 +523,7 @@ class AppFormValidator
      * @param integer $width: desired width
      * @param integer $height: desired height
      *
-     * @return string|boolean: resized image complete path or false
+     * @return string|false: resized image complete path or false
      */
     public function resizeImageWithCrop($name, $imagePath, $width, $height)
     {
@@ -546,7 +546,7 @@ class AppFormValidator
             }
             // Get image content
             $image = file_get_contents($imagePath);
-            $image = imagecreatefromstring($image); // could be adpated directly if MIME type was known: imagecreatefromjpeg($image), ...
+            $image = imagecreatefromstring($image); // could be adpated directly if MIME type was known: imagecreatefromjpeg($image), imagecreatefrompng($image), imagecreatefromgif($image)
             // Get image size
             $currentWidth = @imagesx($image);
             $currentHeight = @imagesy($image);
@@ -588,13 +588,33 @@ class AppFormValidator
                 imagedestroy($image2);
                 // Rename image with defined dimensions
                 $imagePath3 = pathinfo($imagePath, PATHINFO_DIRNAME) . '/' . pathinfo($imagePath, PATHINFO_FILENAME) . "-{$width}x{$height}." .pathinfo($imagePath, PATHINFO_EXTENSION);
-                $imageFunction($image3, $imagePath3, 90); // quality 90%
+                switch ($mimeType) {
+                    case 'jpeg':
+                        $imageFunction($image3, $imagePath3, 90); // quality 90%
+                        break;
+                    case 'png':
+                        $imageFunction($image3, $imagePath3, null, null);
+                        break;
+                    case 'gif':
+                        $imageFunction($image3, $imagePath3);
+                        break;
+                }
                 $_SESSION['uploads'][$name]['lastCreated'][] = $imagePath3;
                 return $imagePath3;
             } else {
                 // Rename image with defined dimensions
                 $imagePath2 = pathinfo($imagePath, PATHINFO_DIRNAME) . '/' . pathinfo($imagePath, PATHINFO_FILENAME) . "-{$width}x{$height}." .pathinfo($imagePath, PATHINFO_EXTENSION);
-                $imageFunction($image2, $imagePath2, 90); // quality 90%
+                switch ($mimeType) {
+                    case 'jpeg':
+                        $imageFunction($image2, $imagePath2, 90); // quality 90%
+                        break;
+                    case 'png':
+                        $imageFunction($image2, $imagePath2, null, null);
+                        break;
+                    case 'gif':
+                        $imageFunction($image2, $imagePath2);
+                        break;
+                }
                 $_SESSION['uploads'][$name]['lastCreated'][] = $imagePath2;
                 return $imagePath2;
             }

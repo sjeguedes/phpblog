@@ -1,6 +1,11 @@
 <?php
 namespace Core\Page;
 
+/* Global namespace for Twig librairy */
+use Twig_Loader_Filesystem;
+use Twig_Environment;
+use Twig_Extension_StringLoader;
+
 /**
  * Manage Twig Template engine
  */
@@ -26,10 +31,10 @@ class AppTwig
      */
     public function __construct()
     {
-        self::$_templateEngineLoader = new \Twig_Loader_Filesystem(__DIR__ . '/../../App/Views');
-        self::$_templateEngineEnv = new \Twig_Environment(self::$_templateEngineLoader, self::$_envParams);
+        self::$_templateEngineLoader = new Twig_Loader_Filesystem(__DIR__ . '/../../App/Views');
+        self::$_templateEngineEnv = new Twig_Environment(self::$_templateEngineLoader, self::$_envParams);
         // Add template_from_string function
-        self::$_templateEngineEnv->addExtension(new \Twig_Extension_StringLoader());
+        self::$_templateEngineEnv->addExtension(new Twig_Extension_StringLoader());
         // Set environment parameters
         self::setTemplateEngineEnv();
     }

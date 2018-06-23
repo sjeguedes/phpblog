@@ -641,6 +641,10 @@ class AdminPostController extends AdminController
             ],
             7 => [
                 'placement' => 'bottom',
+                'src' => 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.7.11/plugins/paste/plugin.min.js'
+            ],
+            8 => [
+                'placement' => 'bottom',
                 'src' => '/assets/js/addPost.js'
             ]
         ];
@@ -701,7 +705,7 @@ class AdminPostController extends AdminController
         // Prepare datas to format (String filters are not used here because of HTML datas!)
         $datas = [
             0 => ['name' => 'title', 'filter' => null, 'modifiers' => ['trimStr', 'ucfirstStr']],
-            1 => ['name' => 'slug', 'filter' => null, 'modifiers' => ['trimStr', 'slugStr']],
+            1 => ['name' => 'slug', 'filter' => null, 'modifiers' => ['trimStr', 'strtolowerStr', 'slugStr']],
             2 => ['name' => 'intro', 'filter' => null, 'modifiers' => ['trimStr', 'ucfirstStr']],
             3 => ['name' => 'content', 'filter' => null, 'modifiers' => ['trimStr', 'ucfirstStr']]
         ];
@@ -729,8 +733,11 @@ class AdminPostController extends AdminController
         // Filter HTML user inputs with tinyMCE editor allowed tags
         $allowedTags = '<a><li><ol><ul><br><strong><em><span>';
         $title = strip_tags(stripslashes($result['pnf_title']), $allowedTags);
+        $title = $this->adminPostAddValidator->getFormHelper()::cleanHTMLStr($title);
         $intro = strip_tags(stripslashes($result['pnf_intro']), $allowedTags);
+        $intro = $this->adminPostAddValidator->getFormHelper()::cleanHTMLStr($intro);
         $content = strip_tags(stripslashes($result['pnf_content']), $allowedTags);
+        $content = $this->adminPostAddValidator->getFormHelper()::cleanHTMLStr($content);
         // Post author
         $authorUserId = $_POST['pnf_userAuthor'];
         // User author id is valid!
@@ -752,11 +759,10 @@ class AdminPostController extends AdminController
             $result['pnf_customSlug'] = $_POST['pnf_customSlug'];
             $isSlugCustomized = filter_var($result['pnf_customSlug'], FILTER_VALIDATE_BOOLEAN) ? $result['pnf_customSlug'] : null;
             // Slug (based on customized value)
-            $this->adminPostAddValidator->validateRequired('slug', 'slug');
-            $isSlugCustomized = false;
-            if (!isset($result['pnf_errors']['pnf_slug'])) {
-                // Slug (based on filtered title)
-                $slug = strip_tags(stripslashes($result['pnf_slug']));
+            if (!isset($result['pnf_errors']['pnf_slug']) && $isSlugCustomized !== null) {
+                // Slug (based on filtered slug)
+                $slug = $this->adminPostAddValidator->getFormHelper()::strtolowerStr($result['pnf_slug']);
+                $slug = $this->adminPostAddValidator->getFormHelper()::slugStr(strip_tags(stripslashes($slug)));
             }
         } else {
             // Option is set to "no".
@@ -764,8 +770,8 @@ class AdminPostController extends AdminController
             $isSlugCustomized = false;
             if (!isset($result['pnf_errors']['pnf_title'])) {
                 // Slug (based on filtered title)
-                $slug = $this->adminPostAddValidator->getFormHelper()->strtolowerStr($result['pnf_title']);
-                $slug = $this->adminPostAddValidator->getFormHelper()->slugStr(strip_tags(stripslashes($slug)));
+                $slug = $this->adminPostAddValidator->getFormHelper()::strtolowerStr($result['pnf_title']);
+                $slug = $this->adminPostAddValidator->getFormHelper()::slugStr(strip_tags(stripslashes($slug)));
             }
         }
         // Submit: post add form is correctly filled.
@@ -994,6 +1000,10 @@ class AdminPostController extends AdminController
                     ],
                     7 => [
                         'placement' => 'bottom',
+                        'src' => 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/4.7.11/plugins/paste/plugin.min.js'
+                    ],
+                    8 => [
+                        'placement' => 'bottom',
                         'src' => '/assets/js/updatePost.js'
                     ]
                 ];
@@ -1064,10 +1074,12 @@ class AdminPostController extends AdminController
      */
     private function validatePostUpdateForm($postId)
     {
+        //var_dump($_POST['puf_intro']);
+        //exit();
         // Prepare datas to format (String filters are not used here because of HTML datas!)
         $datas = [
             0 => ['name' => 'title', 'filter' => null, 'modifiers' => ['trimStr', 'ucfirstStr']],
-            1 => ['name' => 'slug', 'filter' => null, 'modifiers' => ['trimStr', 'slugStr']],
+            1 => ['name' => 'slug', 'filter' => null, 'modifiers' => ['trimStr', 'strtolowerStr', 'slugStr']],
             2 => ['name' => 'intro', 'filter' => null, 'modifiers' => ['trimStr', 'ucfirstStr']],
             3 => ['name' => 'content', 'filter' => null, 'modifiers' => ['trimStr', 'ucfirstStr']]
         ];
@@ -1107,9 +1119,11 @@ class AdminPostController extends AdminController
         // tinyMCE editor allowed tags
         $allowedTags = '<a><li><ol><ul><br><strong><em><span>';
         $title = strip_tags(stripslashes($result['puf_title']), $allowedTags);
-        $slug = strip_tags(stripslashes($result['puf_slug']));
+        $title = $this->adminPostUpdateValidator->getFormHelper()::cleanHTMLStr($title);
         $intro = strip_tags(stripslashes($result['puf_intro']), $allowedTags);
+        $intro = $this->adminPostUpdateValidator->getFormHelper()::cleanHTMLStr($intro);
         $content = strip_tags(stripslashes($result['puf_content']), $allowedTags);
+        $content = $this->adminPostUpdateValidator->getFormHelper()::cleanHTMLStr($content);
         // Post author
         $authorUserId = $_POST['puf_userAuthor'];
         // User author id is valid!
@@ -1130,10 +1144,21 @@ class AdminPostController extends AdminController
             // Option is set to "yes" and is considered as checked, then verify boolean type.
             $result['puf_customSlug'] = $_POST['puf_customSlug'];
             $isSlugCustomized = filter_var($result['puf_customSlug'], FILTER_VALIDATE_BOOLEAN) ? $result['puf_customSlug'] : null;
+            // Slug (based on customized value)
+            if (!isset($result['puf_errors']['puf_slug']) && $isSlugCustomized !== null) {
+                // Slug (based on filtered slug)
+                $slug = $this->adminPostUpdateValidator->getFormHelper()::strtolowerStr($result['puf_slug']);
+                $slug = $this->adminPostUpdateValidator->getFormHelper()::slugStr(strip_tags(stripslashes($slug)));
+            }
         } else {
             // Option is set to "no".
             $result['puf_customSlug'] = false;
             $isSlugCustomized = false;
+            if (!isset($result['puf_errors']['puf_title'])) {
+                // Slug (based on filtered title)
+                $slug = $this->adminPostUpdateValidator->getFormHelper()::strtolowerStr($result['puf_title']);
+                $slug = $this->adminPostUpdateValidator->getFormHelper()::slugStr(strip_tags(stripslashes($slug)));
+            }
         }
         // Submit: post update form is correctly filled.
         if (isset($result) && empty($result['puf_errors']) && isset($result['puf_check']) && $result['puf_check'] && $isSlugCustomized !== null) {
