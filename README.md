@@ -10,7 +10,7 @@ Minimalist PHP Blog system and MVC structure
 ---- phpmailer/phpmailer
 ---- voku/urlify
 ---- ezyang/htmlpurifier
-And to improve code quality (only for development):
+- Add these components to improve code quality (only for development):
 ---- squizlabs/php_codesniffer
 ---- phpmd/phpmd
 ---- friendsofphp/php-cs-fixer
