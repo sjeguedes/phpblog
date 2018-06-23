@@ -8,7 +8,7 @@
                 <!-- User notice message -->
                 <div class="row">
                     <div class="col-lg-8 text-center col-md-10 ml-auto mr-auto">
-                        <p class="alert alert-success form-success{{ success['comment']['state'] == 0 ? ' form-hide'}}" role="alert">
+                        <p class="alert alert-success form-success{{ success['comment']['state'] == 0 ? ' form-hide' }}" role="alert">
                             <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>WELL DONE!</strong>&nbsp;{% if success['comment'] is defined %}{{ success['comment']['message']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>{% endif %}
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                 <span aria-hidden="true">
@@ -16,7 +16,7 @@
                                 </span>
                             </button>
                         </p>
-                        <p class="alert alert-danger form-error{{ errors['comment']['state'] == 0 ? ' form-hide'}}" role="alert">
+                        <p class="alert alert-danger form-error{{ errors['comment']['state'] == 0 ? ' form-hide' }}" role="alert">
                             <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERRORS!</strong>&nbsp;Change a few things up and try submitting again.{% if errors['paf_check'] is defined %}<br><br>{{ errors['paf_check']|raw }}{% endif %}
                             {% if errors['paf_failed']['comment']['message'] is defined %}<br><br>{{ errors['paf_failed']['comment']['message']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i>{% endif %}
                             {% if errors['paf_failed']['comment']['message2'] is defined %}<br><br>{{ errors['paf_failed']['comment']['message2']|raw }}{% endif %}
@@ -88,10 +88,22 @@
                                             <span class="flex-label">ACTIONS</span>
                                         </div>
                                         <p class="flex-content">
+                                        {% if (connectedUser is not null) and (connectedUser.userTypeId == 1) %}
                                             <button data-toggle="modal" data-target="#pcd-modal-{{ commentList[i].id }}" class="btn btn-danger btn-sm" title="Delete comment"><i class="now-ui-icons ui-1_simple-remove"></i></button>
                                             {% if commentList[i].isValidated == 0 %}<button data-toggle="modal" data-target="#pcv-modal-{{ commentList[i].id }}" class="btn btn-warning btn-sm" title="Validate comment"><i class="now-ui-icons ui-1_check"></i></button>{% endif -%}
                                             {% if (commentList[i].isValidated == 1) and (commentList[i].isPublished == 0) %}<button data-toggle="modal" data-target="#pcp-modal-{{ commentList[i].id }}" class="btn btn-success btn-sm" title="Publish comment"><i class="now-ui-icons ui-1_calendar-60"></i></button>{% endif -%}
                                             {% if commentList[i].isPublished == 1 %}<button data-toggle="modal" data-target="#pcu-modal-{{ commentList[i].id }}" class="btn btn-danger btn-sm" title="Cancel comment publication"><i class="now-ui-icons ui-1_calendar-60"></i>&nbsp;<i class="now-ui-icons ui-1_simple-remove"></i></button>{% endif %}
+                                        {% else %}
+                                            {% if connectedUser.temporaryParams['noManagementAction'] is defined %}
+                                                {% set noManagementAction = connectedUser.temporaryParams['noManagementAction']['message'] %}
+                                            {% else %}
+                                                {% set noManagementAction = '' %}
+                                            {% endif %}
+                                            <button class="btn btn-danger btn-deactivate btn-sm" title="Comment deleting is not allowed! {{ noManagementAction|e('html_attr') }}"><i class="now-ui-icons ui-1_simple-remove" disabled></i></button>
+                                            {% if commentList[i].isValidated == 0 %}<button class="btn btn-warning btn-deactivate btn-sm" title="Comment validating is not allowed! {{ noManagementAction|e('html_attr') }}" disabled><i class="now-ui-icons ui-1_check"></i></button>{% endif -%}
+                                            {% if (commentList[i].isValidated == 1) and (commentList[i].isPublished == 0) %}<button class="btn btn-success btn-deactivate btn-sm" title="Comment publication is not allowed! {{ noManagementAction|e('html_attr') }}" disabled><i class="now-ui-icons ui-1_calendar-60"></i></button>{% endif -%}
+                                            {% if commentList[i].isPublished == 1 %}<button class="btn btn-danger btn-deactivate btn-sm" title="Comment publication Cancelation is not allowed! {{ noManagementAction|e('html_attr') }}" disabled><i class="now-ui-icons ui-1_calendar-60"></i>&nbsp;<i class="now-ui-icons ui-1_simple-remove"></i></button>{% endif %}
+                                        {% endif %}
                                         </p>
                                     </div>
                                 </div>

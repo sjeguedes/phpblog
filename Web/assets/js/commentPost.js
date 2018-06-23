@@ -61,6 +61,14 @@ jQuery(function($) {
 
     // Set input value on bootstrap switch UI
     $(document).on('switchChange.bootstrapSwitch', 'input[name="' + formIdentifier + 'hsi"]', function(event, state) {
+        // Initialize switch to manage return false in listener below
+        if (formJustLoaded) {
+            if ($(this).attr('value') == 'on') {
+                state = true;
+            } else {
+                state = false;
+            }
+        }
         // Look at http://bootstrapswitch.com/events.html for events explanations:
         if (state) {
             $(this).attr('value', 'on');
@@ -77,7 +85,7 @@ jQuery(function($) {
     $(document).on('change keyup input paste switchChange.bootstrapSwitch', fieldType, function(e) {
         // Cancel "switchChange.bootstrapSwitch" event here when page is simply loaded!
         if (formJustLoaded && $(this).attr('id') == formIdentifier + 'hsi') {
-            return false;
+           return false;
         }
         // Render first letter in uppercase immediately when typing for "nickname", "title" and "content" inputs
         if ($(this).attr('id') == formIdentifier + 'nickName' || $(this).attr('id') == formIdentifier + 'title' || $(this).attr('id') == formIdentifier + 'content') {

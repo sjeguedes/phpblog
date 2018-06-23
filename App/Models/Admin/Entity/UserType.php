@@ -6,40 +6,44 @@ namespace App\Models\Admin\Entity;
  */
 class UserType
 {
-	/**
+    /**
      * @var integer
      */
     private $id;
     /**
      * @var string
      */
-	private $creationDate;
+    private $creationDate;
     /**
      * @var string
      */
-	private $label;
+    private $label;
     /**
      * @var string
      */
-	private $slugName;
+    private $slugName;
     /**
      * @var array: an array of temporary properties which are not in database but useful in methods
      */
-	private $temporaryParams = [];
+    private $temporaryParams = [];
 
-	/**
+    /**
      * Constructor
+     *
      * @param array $array: an array of properties
+     *
      * @return void
      */
     public function __construct(array $array)
-	{
-		$this->hydrate($array);
-	}
+    {
+        $this->hydrate($array);
+    }
 
-	/**
+    /**
      * Hydrate entity
+     *
      * @param array $datas
+     *
      * @return void
      */
     public function hydrate($datas)
@@ -60,10 +64,12 @@ class UserType
         }
     }
 
-	/**
+    /**
      * __set() magic method
+     *
      * @param string $name: name of property
      * @param string $value: value of property to set
+     *
      * @return void
      */
     public function __set($name, $value)
@@ -79,7 +85,9 @@ class UserType
 
     /**
      * __get() magic method
+     *
      * @param type $name: name of property to get
+     *
      * @return callable|string|null
      */
     public function __get($name)
@@ -98,6 +106,7 @@ class UserType
 
     /**
      * Get temporary entity properties which do not exist in database
+     *
      * @return array: an array of temporary properties which are not hydrated
      */
     public function getTemporaryParams()
@@ -105,10 +114,11 @@ class UserType
         return $this->temporaryParams;
     }
 
-	// Getters
+    // Getters
 
     /**
      * Get property: id
+     *
      * @return integer
      */
     public function getId()
@@ -118,6 +128,7 @@ class UserType
 
     /**
      * Get property: creationDate
+     *
      * @return string
      */
     public function getCreationDate()
@@ -127,6 +138,7 @@ class UserType
 
     /**
      * Get property: label
+     *
      * @return string
      */
     public function getLabel()
@@ -136,6 +148,7 @@ class UserType
 
     /**
      * Get property: slugName
+     *
      * @return string
      */
     public function getSlugName()
@@ -143,11 +156,13 @@ class UserType
         return $this->slugName;
     }
 
-	// Setters
+    // Setters
 
     /**
      * Set property: id
+     *
      * @param integer $id
+     *
      * @return void
      */
     public function setId($id)
@@ -160,20 +175,24 @@ class UserType
 
     /**
      * Set property: creationDate
+     *
      * @param string $creationDate
+     *
      * @return void
      */
     public function setCreationDate($creationDate)
     {
         if (is_string($creationDate)) {
             $date = new \DateTime($creationDate);
-            $this->creationDate = $date->format( 'd-m-Y H:i:s');
+            $this->creationDate = $date->format('d-m-Y H:i:s');
         }
     }
 
     /**
      * Set property: label
+     *
      * @param string $label
+     *
      * @return void
      */
     public function setLabel($label)
@@ -185,7 +204,9 @@ class UserType
 
     /**
      * Set property: slugName
+     *
      * @param string $slugName
+     *
      * @return void
      */
     public function setSlugName($slugName)

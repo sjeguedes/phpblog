@@ -1,5 +1,6 @@
 <?php
 namespace App\Controllers\Admin;
+
 use App\Controllers\BaseController;
 use Core\Routing\AppRouter;
 
@@ -7,16 +8,18 @@ use Core\Routing\AppRouter;
  * Create a parent controller for common actions in back-end
  * This class extends BaseController parent controller for all controllers.
  */
-class AdminController extends BaseController
+abstract class AdminController extends BaseController
 {
     /**
-     * @var string: value stored in $_SESSION to manage user admin session
+     * @var string: value stored in to manage user admin session
      */
     protected $userToken;
 
     /**
      * Constructor
+     *
      * @param AppRouter $router
+     *
      * @return void
      */
     public function __construct(AppRouter $router)
@@ -33,9 +36,11 @@ class AdminController extends BaseController
 
     /**
      * Update user cookie and session tokens if session id was regenerated
+     *
      * @return boolean: true if tokens are updated, or false
      */
-    private function updateUserTokens() {
+    private function updateUserTokens()
+    {
         $authenticatedUser = $this->session::isUserAuthenticated();
         if ($authenticatedUser != false) {
             $newSID = session_id();
@@ -55,9 +60,11 @@ class AdminController extends BaseController
 
     /**
      * Check if access to admin pages is allowed
+     *
      * @return void
      */
-    protected function controlAdminAccess() {
+    protected function controlAdminAccess()
+    {
         // Check access to admin pages but not for user login, user request new password, user renew password, user register pages
         $adminPageRequest = preg_match('#^/?admin((?!/login|/request-new-password|/renew-password|/register)(?=.*[\d\w-/]).*)?$#', $_GET['url']);
         $authenticatedUser = $this->session::isUserAuthenticated();
@@ -80,7 +87,7 @@ class AdminController extends BaseController
                 } else {
                     if ($_SESSION['newSID']['request'] >= 3) {
                         // Custom cookie is not set yet or does not exist!
-                        foreach ($_COOKIE as $key => $value) {
+                        foreach (array_keys($_COOKIE) as $key) {
                             // Similar cookie may be found
                             if (preg_match('#^UPDATEDUST((?=.\w)(?=.\d).*)$#', $key)) {
                                 // Check wrong custom cookie index: this can be suspicious in case of session hijacking!
@@ -106,9 +113,11 @@ class AdminController extends BaseController
 
     /**
      * Validate (or not) admin actions forms on entity (deleting, validation, publication, publication cancelation)
+     *
      * @param array $params: an array of parameter to validate a simple form
      * @param object $formValidatorObject: an instance of form validator
      * @param string $redirectUrl: url to redirect after validation success
+     *
      * @return array: an array which contains result of validation (errors, form values, ...)
      */
     protected function validateEntityForms($params, $formValidatorObject, $redirectUrl = null)
@@ -151,7 +160,7 @@ class AdminController extends BaseController
                     $performed = false;
                 }
             } catch (\PDOException $e) {
-                $result[$formIdentifier . 'errors'][$formIdentifier . 'failed'][$entity]['message2'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Please try again later.<br>Action [Debug trace: <strong>' . $params["action"] . '</strong>] on ' . $entity . ' [Debug trace: <strong> ' . $entity . ' id ' . htmlentities($_POST[$entityIdIndex]) . '</strong>] was not performed correctly.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $result[$formIdentifier . 'errors'][$formIdentifier . 'failed'][$entity]['message2'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Please try again later.<br>Action [Debug trace: <strong>' . $params["action"] . '</strong>] on ' . $entity . ' [Debug trace: <strong> ' . $entity . ' id ' . htmlentities($_POST[$entityIdIndex]) . '</strong>] was not performed correctly.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
                 $performed = false;
             }
             // Action was performed successfully on entity!
@@ -178,11 +187,13 @@ class AdminController extends BaseController
 
     /**
      * Regenerate all existing form tokens
+     *
      * @return void
      */
-    protected function regenerateAllFormTokens() {
+    protected function regenerateAllFormTokens()
+    {
         // Change token dynamic key and value for each existing token
-        foreach ($_SESSION as $key => $value) {
+        foreach (array_keys($_SESSION) as $key) { // no use of $value
             if (preg_match("#_check|_token#", $key)) {
                 unset($_SESSION[$key]);
             }
@@ -191,8 +202,11 @@ class AdminController extends BaseController
 
     /**
      * Generate activation code (used in url GET parameter) for new user (User entity) to validate his account
+     *
      * @param string $UserEmail: user email address
+     *
      * @see http://php.net/manual/fr/function.hash.php
+     *
      * @return string: a part of long hash
      */
     protected function generateUserActivationCode($UserEmail)
@@ -205,8 +219,11 @@ class AdminController extends BaseController
     /**
      * Generate password renewal update token for user (User entity)
      * to update (change) his forgotten password with form
+     *
      * @param string $UserEmail: user email address
+     *
      * @see http://php.net/manual/fr/function.hash.php
+     *
      * @return string: a part of long hash
      */
     protected function generateUserPasswordUpdateToken($UserEmail)
@@ -218,8 +235,12 @@ class AdminController extends BaseController
 
     /**
      * Generate encrypted password for user password
+     *
      * @param string $password
+     * @param mixed $passwordString
+     *
      * @see http://php.net/manual/fr/function.password-hash.php
+     *
      * @return string: an encrypted password
      */
     protected function generateUserPasswordEncryption($passwordString)
@@ -233,8 +254,10 @@ class AdminController extends BaseController
 
     /**
      * Check a password string against an existing password hash in database
+     *
      * @param string $passwordString: password which comes from user input
      * @param string $passwordHash: password hash which belongs to a User entity in database
+     *
      * @return boolean: true if password matches, or false
      */
     protected function verifyUserPassword($passwordString, $passwordHash)
@@ -250,8 +273,10 @@ class AdminController extends BaseController
 
     /**
      * Create a session token value for a user, to fight against session hijacking)
+     *
      * @param string $varName: name which corresponds to token index
      * @param string: $sessionId: session id (may be regenerated)
+     *
      * @return string: hash value
      */
     protected function generateUserSessionTokenValue($varName, $sessionId = null)
@@ -263,8 +288,10 @@ class AdminController extends BaseController
 
     /**
      * Check if user generated session token matches token in $_COOKIE value
+     *
      * @param string $cookieToken: token value stored in $_COOKIE
      * @param string $sessionToken: token value stored in $_SESSION
+     *
      * @return boolean
      */
     protected function checkUserSessionTokenValue($cookieToken, $sessionToken)
@@ -274,12 +301,14 @@ class AdminController extends BaseController
 
     /**
      * Check if user generated password renewal authentication token matches token in $_POST/$_GET value
-     * @param string $inputToken: user input token value
+     *
+     * @param string $tokenInput: user token input value
      * @param string $generatedToken: token value stored in database
+     *
      * @return boolean
      */
-    protected function checkPasswordUpdateTokenValue($inputToken, $generatedToken)
+    protected function checkPasswordUpdateTokenValue($tokenInput, $generatedToken)
     {
-        return $inputToken === $generatedToken;
+        return $tokenInput === $generatedToken;
     }
 }

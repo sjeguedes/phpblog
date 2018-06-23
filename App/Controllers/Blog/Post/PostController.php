@@ -1,5 +1,6 @@
 <?php
 namespace App\Controllers\Blog\Post;
+
 use App\Controllers\BaseController;
 use Core\Routing\AppRouter;
 use Core\Service\AppContainer;
@@ -9,7 +10,7 @@ use Core\Service\AppContainer;
  */
 class PostController extends BaseController
 {
-	/**
+    /**
      * @var object: an instance of validator object
      */
     private $commentFormValidator;
@@ -32,13 +33,15 @@ class PostController extends BaseController
 
     /**
      * Constructor
+     *
      * @param AppRouter $router
+     *
      * @return void
      */
     public function __construct(AppRouter $router)
-	{
-		parent::__construct($router);
-		$this->currentModel = $this->getCurrentModel(__CLASS__);
+    {
+        parent::__construct($router);
+        $this->currentModel = $this->getCurrentModel(__CLASS__);
         // Initialize comment form validator
         $this->commentFormValidator = $this->container::getFormValidator()[1];
         // Define used parameters to avoid CSRF
@@ -46,16 +49,17 @@ class PostController extends BaseController
         $this->pcfTokenValue = $this->commentFormValidator->generateTokenValue('pcf_token');
         // Initialize comment form captcha
         $this->commentFormCaptcha = $this->container::getCaptcha()[1];
-	}
+    }
 
-	/**
+    /**
      * Show all posts without paging
+     *
      * @return void
      */
     public function showList()
-	{
-		// Get posts datas
-		$postList = $this->currentModel->getListWithAuthor();
+    {
+        // Get posts datas
+        $postList = $this->currentModel->getListWithAuthor();
         // Loop to find any existing comments attached to each post
         for ($i = 0; $i < count($postList); $i ++) {
             // Retrieve (or not) single post comments
@@ -73,29 +77,31 @@ class PostController extends BaseController
                 $postList[$i]->postImages = $postImages;
             }
         }
-		$varsArray = [
-			'metaTitle' => 'Posts list',
-			'metaDescription' => 'Here, you can follow our news and technical topics.',
-			'imgBannerCSSClass' => 'post-list',
-			'postList' => $postList
-		];
-		echo $this->page->renderTemplate('Blog/Post/post-list.tpl', $varsArray);
-	}
+        $varsArray = [
+            'metaTitle' => 'Posts list',
+            'metaDescription' => 'Here, you can follow our news and technical topics.',
+            'imgBannerCSSClass' => 'post-list',
+            'postList' => $postList
+        ];
+        echo $this->page->renderTemplate('Blog/Post/post-list.tpl', $varsArray);
+    }
 
-	/**
+    /**
      * Show all posts for a particular paging number
+     *
      * @param array $matches: an array which contains paging number to show
+     *
      * @return void
      */
     public function showListWithPaging($matches)
-	{
-		// Get page number to show with paging
-		$currentPageId = $matches[0];
-		// $currentPageId doesn't exist (string or int <= 0)
-		if ((int) $currentPageId <= 0) {
-			$this->httpResponse->set404ErrorResponse('Sorry this page doesn\'t exist! [Debug trace: reason is paging starts at number "1".]', $this->router);
+    {
+        // Get page number to show with paging
+        $currentPageId = $matches[0];
+        // $currentPageId doesn't exist (string or int <= 0)
+        if ((int) $currentPageId <= 0) {
+            $this->httpResponse->set404ErrorResponse('Sorry this page doesn\'t exist! [Debug trace: reason is paging starts at number "1".]', $this->router);
             exit();
-		} else {
+        } else {
             // Get published posts
             $publishedPostsList = $this->currentModel->getList();
             // Get total number of pages for paging
@@ -105,8 +111,8 @@ class PostController extends BaseController
                 $this->httpResponse->set404ErrorResponse('Sorry this page doesn\'t exist! [Debug trace: reason is current page id > page quantity.]', $this->router);
                 exit();
             }
-			// Get posts datas for current page and get post Quantity to show per page
-			$postListOnPage = $this->currentModel->getListByPaging($currentPageId, $this->config::getParam('posts.postPerPage'));
+            // Get posts datas for current page and get post Quantity to show per page
+            $postListOnPage = $this->currentModel->getListByPaging($currentPageId, $this->config::getParam('posts.postPerPage'));
             // Loop to find any existing comments attached to each post
             for ($i = 0; $i < count($postListOnPage['postsOnPage']); $i ++) {
                 // Retrieve (or not) single post comments
@@ -124,24 +130,27 @@ class PostController extends BaseController
                     $postListOnPage['postsOnPage'][$i]->postImages = $postImages;
                 }
             }
-			// $currentPageId value is correct: render page with included posts!
-			$varsArray = [
-				'metaTitle' => 'Posts list',
-				'metaDescription' => 'Here, you can follow our news and technical topics.',
-				'imgBannerCSSClass' => 'post-list',
-				'postListOnPage' => $postListOnPage
-			];
-			echo $this->page->renderTemplate('Blog/Post/post-list.tpl', $varsArray);
-		}
-	}
+            // $currentPageId value is correct: render page with included posts!
+            $varsArray = [
+                'metaTitle' => 'Posts list',
+                'metaDescription' => 'Here, you can follow our news and technical topics.',
+                'imgBannerCSSClass' => 'post-list',
+                'postListOnPage' => $postListOnPage
+            ];
+            echo $this->page->renderTemplate('Blog/Post/post-list.tpl', $varsArray);
+        }
+    }
 
     /**
      * Render single post template with comment form
+     *
      * @param array $post: an array which contains a single post
      * @param array $checkedForm: an array which contains filtered values or an empty array
+     *
      * @return void
      */
-    private function renderSingle($post, $checkedForm = []) {
+    private function renderSingle($post, $checkedForm = [])
+    {
         // Post is not published.
         if ((bool) $post[0]->isPublished === false) {
             $this->httpResponse->set404ErrorResponse($this->config::isDebug('The content you try to access doesn\'t exist! [Debug trace: reason is $post is not published]'), $this->router);
@@ -185,8 +194,8 @@ class PostController extends BaseController
             $varsArray = [
                 'CSS' => $cssArray,
                 'JS' => $jsArray,
-                'metaTitle' => 'Post - ' . $post[0]->title,
-                'metaDescription' => $post[0]->intro,
+                'metaTitle' => 'Post - ' . strip_tags($post[0]->title),
+                'metaDescription' => strip_tags($post[0]->intro),
                 'imgBannerCSSClass' => 'post-single',
                 'post' => $post,
                 'postComments' => $postComments,
@@ -212,7 +221,9 @@ class PostController extends BaseController
 
     /**
      * Check if a single post exists
+     *
      * @param array $matches: an array of parameters which contains post id (and optionnaly post slug)
+     *
      * @return boolean|array: false or an array which contains a Post entity
      */
     private function checkSingle($matches)
@@ -268,24 +279,27 @@ class PostController extends BaseController
 
     /**
      * Check if there is already a success state for comment form
+     *
      * @return boolean
      */
-    private function isCommentSuccess() {
-        if(isset($_SESSION['pcf_success'])) {
+    private function isCommentSuccess()
+    {
+        if (isset($_SESSION['pcf_success'])) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-	/**
+    /**
      * Show single post page template
+     *
      * @param array $matches: an array of parameters catched by router
+     *
      * @return void
      */
     public function showSingle($matches)
-	{
+    {
         // Check if single post exists
         $post = $this->checkSingle($matches);
         if ($post !== false && is_array($post)) {
@@ -300,12 +314,14 @@ class PostController extends BaseController
         if ($this->isCommentSuccess()) {
             unset($_SESSION['pcf_success']);
         }
-	}
+    }
 
     /**
      * Show comment form validation try (on submission) template
      * on single post page
+     *
      * @param array $matches: an array of parameters catched by router
+     *
      * @return void
      */
     public function commentPost($matches)
@@ -333,6 +349,7 @@ class PostController extends BaseController
 
     /**
      * Validate (or not) comment form on single post page
+     *
      * @return array: an array which contains result of validation (error on fields, filtered form values, ...)
      */
     private function validateCommentForm()
@@ -371,11 +388,11 @@ class PostController extends BaseController
                     $this->currentModel->insertComment($result);
                     $insertion = true;
                 } else {
-                    $result['pcf_errors']['pcf_unsaved'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your comment was not saved: please try again later.<br>[Debug trace: id "<strong>' . $_POST['pcf_postId'] . '</strong>" doesn\'t exist in database!]</span>');
+                    $result['pcf_errors']['pcf_unsaved'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your comment was not saved: please try again later.<br>[Debug trace: id "<strong>' . htmlentities($_POST['pcf_postId']) . '</strong>" doesn\'t exist in database!]</span>');
                     $insertion = false;
                 }
             } catch (\PDOException $e) {
-                $result['pcf_errors']['pcf_unsaved'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your comment was not saved: please try again later.<br>[Debug trace: <strong>' . $e->getMessage() . '</strong>]</span>');
+                $result['pcf_errors']['pcf_unsaved'] = $this->config::isDebug('<span class="form-check-notice">Sorry a technical error happened! Your comment was not saved: please try again later.<br>[Debug trace: <strong>' . htmlentities($e->getMessage()) . '</strong>]</span>');
                 $insertion = false;
             }
             // Comment entity was saved successfuly!

@@ -1,5 +1,6 @@
 <?php
 namespace Core\Form\Element;
+
 use Core\Routing\AppRouter;
 
 /**
@@ -17,7 +18,7 @@ class AppNoSpamTools
      */
     private $config;
     /**
-     * @var string: form prefix name to distinguish values in $_POST/$_GET...
+     * @var string: form prefix name to distinguish values in/$_GET...
      */
     private $formIdentifier;
     /**
@@ -41,14 +42,16 @@ class AppNoSpamTools
      */
     private $tools;
     /**
-     * @var array: values from captcha tools HTML elements to retrieve in $_POST, $_GET...
+     * @var array: values from captcha tools HTML elements to retrieve in,...
      */
     private $noSpamFormValues;
 
     /**
      * Constructor
+     *
      * @param object $router: an instance of AppRouter
      * @param array $serviceParams: an array of parameters to initialize properties
+     *
      * @return void
      */
     public function __construct(AppRouter $router, $serviceParams)
@@ -61,6 +64,7 @@ class AppNoSpamTools
 
     /**
      * Get a form identifier where no spam tools "captcha" is used
+     *
      * @return string: identifier name
      */
     public function getFormIdentifier()
@@ -70,6 +74,7 @@ class AppNoSpamTools
 
     /**
      * Get defined time limit (amount of minimun time to fill a form)
+     *
      * @return int: time limit
      */
     public function getTimeLimit()
@@ -79,6 +84,7 @@ class AppNoSpamTools
 
     /**
      * Get used tools in no spam tools "captcha"
+     *
      * @return array: an array of activated tools
      * When a no spam tools captcha is defined, one or more tools can be used: it is a part of customization.
      */
@@ -94,8 +100,10 @@ class AppNoSpamTools
 
     /**
      * Set no spam tools values (before or after form submission)
+     *
      * @param array $formValues: an array which contains $_POST, $_GET ... values (submission)
      * or no values (initialization must be done)
+     *
      * @return void
      */
     public function setNoSpamFormValues($formValues = [])
@@ -113,7 +121,7 @@ class AppNoSpamTools
                     case $this->formIdentifier . 'hsi':
                         $this->noSpamFormValues[$this->formIdentifier . 'hsi'] = $value;
                         break;
-                    default :
+                    default:
                         // Particular case: human control checkbox is not set
                         if (!isset($formValues[$this->formIdentifier . 'hsi'])) {
                             // return default "off" value instead to create $_POST value
@@ -122,7 +130,7 @@ class AppNoSpamTools
                         break;
                 }
             }
-        // Form was just loaded!
+            // Form was just loaded!
         } else {
             $this->noSpamFormValues[$this->formIdentifier . 'hpi'] = '';
             $this->noSpamFormValues[$this->formIdentifier . 'tli'] = time();
@@ -132,7 +140,9 @@ class AppNoSpamTools
 
     /**
      * Check timestamp validity
+     *
      * @param int $timestamp: time() is used to create the value automatically.
+     *
      * @return boolean: validity of timestamp
      */
     public function checkTimestamp($timestamp)
@@ -144,7 +154,9 @@ class AppNoSpamTools
 
     /**
      * Create a honeypot HTML element (empty text input)
+     *
      * @param bool $print: should render directly HTML output
+     *
      * @return string|array: HTMl element tag string or an array of parameters to create HTML element
      */
     public function createHoneyPotInput($print = false)
@@ -171,7 +183,9 @@ class AppNoSpamTools
     /**
      * Create a time check HTML element (hidden input):
      * Created value corresponds to timestamp when form was loaded.
+     *
      * @param bool $print: should render directly HTML output
+     *
      * @return string|array: HTMl element tag string or an array of parameters to create HTML element
      */
     public function createTimeLimitInput($print = false)
@@ -197,8 +211,10 @@ class AppNoSpamTools
 
     /**
      * Create a human checkbox control HTML element (checkbox input)
+     *
      * @param bool $print: should render directly HTML output
      * @param string $label: label string to render next to HTML switch input
+     *
      * @return string|array: HTMl element tag string or an array of parameters to create HTML element
      */
     public function createHumanSwitchInput($print = false, $label)
@@ -228,6 +244,7 @@ class AppNoSpamTools
 
     /**
      * Set all activated tools in no spam tools "captcha"
+     *
      * @return array: an array of tools parameters or tools HTML ouputs
      */
     public function setNoSpamFormElements()
@@ -236,5 +253,5 @@ class AppNoSpamTools
             $toolsHTMLParams[$i] = call_user_func_array([$this, $this->tools[$i]['callable']], $this->tools[$i]['arguments']);
         }
         return $toolsHTMLParams;
-   }
+    }
 }

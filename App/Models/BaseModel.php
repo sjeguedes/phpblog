@@ -1,8 +1,8 @@
 <?php
 namespace App\Models;
+
 use Core\Routing\AppRouter;
 use Core\Database\AppDatabase;
-use Core\Database\PDOFactory;
 use Core\Config\AppConfig;
 
 /**
@@ -25,7 +25,9 @@ abstract class BaseModel
 
     /**
      * Constructor
+     *
      * @param AppRouter $router: an instance of AppRouter
+     *
      * @return void
      */
     public function __construct(AppRouter $router)
@@ -42,9 +44,11 @@ abstract class BaseModel
 
     /**
      * Check if a row id exists in a particular database table
+     *
      * @param string $table: table name
      * @param string $columnPrefix: prefix column name
      * @param string $id: primary key
+     *
      * @return boolean
      */
     public function checkRowId($table, $columnPrefix, $id)
@@ -66,9 +70,11 @@ abstract class BaseModel
 
     /**
      * Get all datas for one row with its id in a particular database table
-     * @param string $id: table name
+     *
+     * @param string $table: table name
      * @param string $columnPrefix: prefix column name
      * @param string $id: primary key
+     *
      * @return array|boolean: an array of datas which contains one row from the database or false
      */
     public function selectSingle($table, $columnPrefix, $id)
@@ -89,7 +95,9 @@ abstract class BaseModel
 
     /**
      * Select all datas in a particular database table
+     *
      * @param string $table: table name
+     *
      * @return array: an array of datas which contains all rows from the database
      */
     public function selectAll($table)

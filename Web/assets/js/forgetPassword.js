@@ -45,9 +45,13 @@ jQuery(function($) {
 
     // Set input value on bootstrap switch UI
     $(document).on('switchChange.bootstrapSwitch', 'input[name="' + formIdentifier + 'hsi"]', function(event, state) {
-        // Cancel "switchChange.bootstrapSwitch" event here when page is simply loaded!
-        if (formJustLoaded && $(this).attr('id') == formIdentifier + 'hsi') {
-            return false;
+        // Initialize switch to manage return false in listener below
+        if (formJustLoaded) {
+            if ($(this).attr('value') == 'on') {
+                state = true;
+            } else {
+                state = false;
+            }
         }
         // Look at http://bootstrapswitch.com/events.html for events explanations:
         if (state) {
@@ -63,6 +67,10 @@ jQuery(function($) {
 
     // Manage errors on fields
     $(document).on('change keyup input paste switchChange.bootstrapSwitch', fieldType, function(e) {
+        // Cancel "switchChange.bootstrapSwitch" event here when page is simply loaded!
+        if (formJustLoaded && $(this).attr('id') == formIdentifier + 'hsi') {
+            return false;
+        }
         // Look at /assets/js/phpblog.js for declared functions
         // Avoid multiple call to form check on the same element: one call is queued each time.
         if (fieldsInQueue.indexOf($(this).attr('id')) != -1) {

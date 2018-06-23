@@ -6,11 +6,13 @@ namespace Core\Routing;
  */
 class RoutingException extends \Exception
 {
-	/**
+    /**
      * Override Constructor: should use message
+     *
      * @param string $message
      * @param int $code
      * @param \Exception|null $previous
+     *
      * @return void
      */
     public function __construct($message, $code = 0, \Exception $previous = null)
@@ -22,6 +24,7 @@ class RoutingException extends \Exception
     /**
       * Override __toString()
       * Example
+      *
       * @return string
       */
     public function __toString()

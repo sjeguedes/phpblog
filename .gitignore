@@ -1,4 +1,5 @@
 .DS_store
+Libs/.php_cs.cache
 Libs/vendor
 Libs/composer.phar
 Libs/composer.lock

@@ -13,7 +13,7 @@
         <!-- User notice message -->
         <div class="row">
             <div class="col-lg-8 text-center col-md-10 ml-auto mr-auto">
-                <p class="alert alert-success form-success{{ success == 0 ? ' form-hide'}}" role="alert">
+                <p class="alert alert-success form-success{{ success == 0 ? ' form-hide' }}" role="alert">
                     <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>WELL DONE!</strong>&nbsp;Post was updated successfully.{% if post.isPublished == 0 %}<br>Don't forget to publish this post to show it on front-end!{% endif %}<br>Actual permalink is:<br><strong class="text-lower text-muted">{{ domain }}/post/{{ post.slug }}-{{ post.id }}</strong>
                     {% if imageSuccess is not null %}<br>{{ imageSuccess|raw }}{% endif %}
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -22,7 +22,7 @@
                         </span>
                     </button>
                 </p>
-                <p class="alert alert-danger form-error{{ errors == 0 ? ' form-hide'}}" role="alert">
+                <p class="alert alert-danger form-error{{ errors == 0 ? ' form-hide' }}" role="alert">
                     <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERRORS!</strong>&nbsp;Change a few things up and try submitting again.{% if errors['puf_check'] is defined %}<br>{{ errors['puf_check']|raw }}{% endif %}{% if errors['puf_notUpdated'] is defined %}<br>{{ errors['puf_notUpdated']|raw }}{% endif %}
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">
@@ -95,15 +95,11 @@
                         <p class="text-left mb-0"><small><strong>IMAGE</strong></small></p>
                         <p class="selected-image text-center mt-0{{ image is empty ? ' form-hide' }}"><span class="text-warning"><i class="fa fa-info-circle"></i>&nbsp;<strong>Your selected file is:</strong></span><br>"<em>{{ image }}</em>"&nbsp;&nbsp;<button class="btn btn-danger btn-sm" title="Delete image"><i class="now-ui-icons ui-1_simple-remove"></i></button><br>
                         {% if (post.temporaryParams['postImage'] is not empty) and (post.temporaryParams['postImage'] == image) %}
-                            {% set preview = '' %}
-                            {% set noPreview = ' form-hide' %}
+                            <small class="image-preview">Current uploaded and validated image (front-end)</small>
+                            <img class="raised rounded image-preview" src="/uploads/images/ci-{{ post.temporaryParams['postCreatorId']|e('html_attr') }}/{{ post.temporaryParams['postImage']|e('html_attr') }}" alt="{{ post.temporaryParams['postImage']|e('html_attr') }}">
                         {% else %}
-                            {% set preview = ' form-hide' %}
-                            {% set noPreview = '' %}
+                            <small class="image-no-preview">Image preview is available only after validation.</small>
                         {% endif %}
-                        <small class="image-preview{{ preview }}">Current uploaded and validated image (front-end)</small>
-                        <img class="raised rounded image-preview{{ preview }}" src="/uploads/images/ci-{{ post.temporaryParams['postCreatorId']|e('html_attr') }}/{{ post.temporaryParams['postImage']|e('html_attr') }}" alt="{{ post.temporaryParams['postImage']|e('html_attr') }}">
-                        <small class="image-no-preview{{ noPreview }}">Image preview is available only after validation.</small>
                         </p>
                         <p class="text-danger{{ errors['puf_image'] is not defined ? ' form-hide' }}" role="alert">&nbsp;{{ errors['puf_image']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                         <div class="input-group phpblog-field-group form-group-no-border input-lg post-custom-image">

@@ -46,7 +46,7 @@
         <div class="no-js-box">
             <p class="alert alert-warning text-center" role="alert">
                 <i class="now-ui-icons travel_info"></i>&nbsp;&nbsp;
-                <strong>CAUTION!</strong>&nbsp;Javascript is disabled on your browser.<br>You can't use functionalities normally!<br>Please activate it.
+                <strong>CAUTION!</strong>&nbsp;JavaScript is disabled on your browser.<br>You can't use functionalities normally!<br>Please activate it.
             </p>
         </div>
     </noscript>

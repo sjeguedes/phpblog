@@ -17,6 +17,12 @@
         "symfony/yaml": "^3.3",
         "google/recaptcha": "~1.1",
         "phpmailer/phpmailer": "^6.0",
-        "voku/urlify": "^4.0"
+        "voku/urlify": "^4.0",
+        "ezyang/htmlpurifier": "^4.10"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "*",
+        "phpmd/phpmd" : "@stable",
+        "friendsofphp/php-cs-fixer": "^2.12"
     }
 }

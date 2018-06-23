@@ -1,5 +1,6 @@
 <?php
 namespace App\Controllers\Home;
+
 use App\Controllers\BaseController;
 use Core\Routing\AppRouter;
 use Core\Service\AppContainer;
@@ -40,7 +41,9 @@ class HomeController extends BaseController
 
     /**
      * Constructor
+     *
      * @param AppRouter $router
+     *
      * @return void
      */
     public function __construct(AppRouter $router)
@@ -62,6 +65,7 @@ class HomeController extends BaseController
     /**
      * Action called on Homepage with routing: check AJAX request, $_POST, $_GET parameters
      * to call the right action
+     *
      * @return void
      */
     public function isCalled()
@@ -74,13 +78,12 @@ class HomeController extends BaseController
                 // Call 401 "Unauthorized" response
                 $this->contactFormValidator->setUnauthorizedFormSubmissionResponse();
             } elseif (isset($_POST['cf_call']) && $_POST['cf_call'] == 'contact-ajax') {
-                 // Detect AJAX contact form submission
+                // Detect AJAX contact form submission
                 $this->showContact();
             }
-
         } else {
             if (isset($_POST['cf_call']) && $_POST['cf_call'] == 'contact') {
-                 // Detect only server side contact form submission
+                // Detect only server side contact form submission
                 $this->showContact();
             } elseif (isset($_GET['url']) && count($_GET) == 1) {
                 // Execute showHome entirely
@@ -91,9 +94,11 @@ class HomeController extends BaseController
 
     /**
      * Check if there is already a success state for contact form
+     *
      * @return boolean
      */
-    private function isContactSuccess() {
+    private function isContactSuccess()
+    {
         if (isset($_SESSION['cf_success'])) {
             return true;
         } else {
@@ -103,6 +108,7 @@ class HomeController extends BaseController
 
     /**
      * Show homepage with normal routing, call twig template and initialize contact form parameters
+     *
      * @return void
      */
     private function showHome()
@@ -143,6 +149,7 @@ class HomeController extends BaseController
     /**
      * Manage two modes to update contact form: AJAX and no AJAX twig templates
      * and call form validation
+     *
      * @return void
      */
     private function showContact()
@@ -191,9 +198,8 @@ class HomeController extends BaseController
                 $this->httpResponse->addHeader('Location: /');
                 exit();
             }
-        }
-        // Ajax mode
-        else {
+            // Ajax mode
+        } else {
             $varsArray = [
                 'ajaxModeForContactForm' => $this->config::getParam('contactForm.ajaxMode') ? 1 : 0,
                 'familyName' => isset($checkedForm['cf_familyName']) ? $checkedForm['cf_familyName'] : '',
@@ -210,7 +216,7 @@ class HomeController extends BaseController
             ];
             // Render AJAX response with contact form only
             $this->httpResponse->addHeader('Cache-Control: no-cache, must-revalidate');
-            echo $this->page->renderBlock('Home/home-contact-form.tpl', 'contactForm',  $varsArray);
+            echo $this->page->renderBlock('Home/home-contact-form.tpl', 'contactForm', $varsArray);
             // Is it already a succcess state?
             if ($this->isContactSuccess()) {
                 unset($_SESSION['cf_success']);
@@ -220,15 +226,18 @@ class HomeController extends BaseController
 
     /**
      * Echo a current token JSON string for contact form
+     *
      * @return void
      */
-    private function getCurrentToken() {
+    private function getCurrentToken()
+    {
         $this->httpResponse->addHeader('Content-Type:application/json; charset=utf-8');
         echo json_encode(['key' => $this->cfTokenIndex,'value' => $this->cfTokenValue]);
     }
 
     /**
      * Validate contact form and send message with services
+     *
      * @return array: an array of datas (error notice, fields error messages, input values)
      */
     private function validateContactForm()
@@ -263,7 +272,7 @@ class HomeController extends BaseController
                 $this->currentModel->insertContact($result);
                 $this->insertionInfos = '<font color="#18ce0f"><strong>Success notice - Contact entity was successfully saved in database.</strong></font>';
             } catch (\PDOException $e) {
-                $this->insertionInfos = '<font color="#ff3636"><strong>Error warning - Contact entity was unsaved in database:</strong></font><br><br><font color="#ff3636"><strong>' . $e->getMessage() . '</strong></font>';
+                $this->insertionInfos = '<font color="#ff3636"><strong>Error warning - Contact entity was unsaved in database:</strong></font><br><br><font color="#ff3636"><strong>' . htmlentities($e->getMessage()) . '</strong></font>';
             }
             // Is message sent?
             $datas = [

@@ -38,11 +38,12 @@
                     </div>
                     <div class="separator separator-neutral"></div>
                     <div class="post-intro text-left">
-                        <p><strong>{{ post[0].intro|raw|nl2br }}</strong></p>
+                        <p>{{ post[0].intro|raw|nl2br }}</p>
+                        <hr>
                         <p>{{ post[0].content|raw|nl2br }}</p>
                         {% if authenticatedUser is defined %}
                         <!-- Update post -->
-                        <div class="text-right"><a class="normal-link" href="/admin/update-post/{{ post[0].id }}" title="Update post: {{ post[0].title|striptags|e('html_attr') }}"><i class="now-ui-icons arrows-1_minimal-right">&nbsp;</i>Update this post</a></div>
+                        <div class="text-right"><a class="normal-link" href="/admin/update-post/{{ post[0].id }}#detail" title="Update post: {{ post[0].title|striptags|e('html_attr') }}"><i class="now-ui-icons arrows-1_minimal-right">&nbsp;</i>Update this post</a></div>
                         {% endif %}
                     </div>
                     <hr>

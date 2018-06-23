@@ -1,5 +1,6 @@
 <?php
 namespace Core\Form;
+
 use Core\Routing\AppRouter;
 
 /**
@@ -7,26 +8,28 @@ use Core\Routing\AppRouter;
  */
 class AppCaptcha
 {
-	/**
-	 * @var object: captcha to use
-	 */
-	private $captcha;
+    /**
+     * @var object: captcha to use
+     */
+    private $captcha;
     /**
      * @var AppRouter: an instance of AppRouter
      */
     private $router;
-	/**
-	 * @var object: config to use
-	 */
-	private $config;
+    /**
+     * @var AppConfig: config to use
+     */
+    private $config;
 
-	/**
-	 * Constructor
+    /**
+     * Constructor
+     *
      * @param object $router: an instance of AppRouter
-	 * @param object $captcha: an instance of one type of captcha object
-	 * @return void
-	 */
-	public function __construct($captcha, AppRouter $router)
+     * @param object $captcha: an instance of one type of captcha object
+     *
+     * @return void
+     */
+    public function __construct($captcha, AppRouter $router)
     {
         $this->captcha = $captcha;
         $this->router = $router;
@@ -35,76 +38,84 @@ class AppCaptcha
 
     /**
      * Call the right method and depends on called object
+     *
      * @param array $arguments: an array of $arguments to feed a method
+     *
      * @return mixed: type of return depends on called method
      */
     public function call($arguments)
     {
-    	switch((new \ReflectionClass($this->captcha))->getShortName()) {
-    		case 'ReCaptcha':
-    			return call_user_func_array([$this, 'validateReCaptcha'], $arguments);
-    		break;
+        switch ((new \ReflectionClass($this->captcha))->getShortName()) {
+            case 'ReCaptcha':
+                return call_user_func_array([$this, 'validateReCaptcha'], $arguments);
+            break;
             case 'AppNoSpamTools':
                 if (isset($arguments['customized'])) {
                     return call_user_func_array([$this->captcha, $arguments['customized'][0]], isset($arguments['customized'][1]) ? $arguments['customized'][1] : []);
                 } elseif ((is_array($arguments))) { // Only arguments
                     return call_user_func_array([$this, 'validateAppNoSpamTools'], $arguments);
                 }
-            break;
-    		// Other types: do stuff here
-    	}
+                break;
+            // Other types: do stuff here
+        }
     }
 
     /**
-	 * Check Google recaptcha response with ReCaptcha instance
-	 * @param string $grcResponse value of 'g-recaptcha-response' in submitted form
-	 * @return mixed boolean or an array which contains boolean and string
-	 */
-	public function checkReCaptchaResponse($grcResponse)
-	{
-		if (isset($grcResponse)) {
-			$return = $this->captcha->verify($grcResponse, $_SERVER['REMOTE_ADDR']);
-			// Verify response
-			if ($return->isSuccess()) {
-				return true;
-			} else {
-				return [false, $return->getErrorCodes()];
-			}
-		} else {
-			return false;
-		}
-	}
+     * Check Google recaptcha response with ReCaptcha instance
+     *
+     * @param string $grcResponse value of 'g-recaptcha-response' in submitted form
+     *
+     * @return mixed boolean or an array which contains boolean and string
+     */
+    public function checkReCaptchaResponse($grcResponse)
+    {
+        if (isset($grcResponse)) {
+            $return = $this->captcha->verify($grcResponse, $_SERVER['REMOTE_ADDR']);
+            // Verify response
+            if ($return->isSuccess()) {
+                return true;
+            } else {
+                return [false, $return->getErrorCodes()];
+            }
+        } else {
+            return false;
+        }
+    }
 
-	/**
-	 * Validate Google recaptcha (is it correctly checked?)
-	 * @param string $grcResponse: value of 'g-recaptcha-response' in submitted form
-	 * @param array $result: an array which contains form inputs values, errors with messages
-	 * @param string $errorIndex: name of errors index related to submitted form
-	 * @return array: $result is updated with captcha form validation
-	 */
-	public function validateReCaptcha($grcResponse, $result, $errorIndex)
-	{
-		if (isset($grcResponse)) {
-			$response = $this->checkReCaptchaResponse($grcResponse);
+    /**
+     * Validate Google recaptcha (is it correctly checked?)
+     *
+     * @param string $grcResponse: value of 'g-recaptcha-response' in submitted form
+     * @param array $result: an array which contains form inputs values, errors with messages
+     * @param string $errorIndex: name of errors index related to submitted form
+     *
+     * @return array: $result is updated with captcha form validation
+     */
+    public function validateReCaptcha($grcResponse, $result, $errorIndex)
+    {
+        if (isset($grcResponse)) {
+            $response = $this->checkReCaptchaResponse($grcResponse);
 
-			if (is_bool($response) && $response && empty($result[$errorIndex])) {
-				$result['g-recaptcha-response'] = true;
-			} elseif ((is_array($response) && !$response[0]) || (is_bool($response) && $response && !empty($result[$errorIndex]))) {
-				$result[$errorIndex]['g-recaptcha-response'] = 'Please confirm you are a human.';
-				$result['g-recaptcha-response'] = false;
-			} else {
-				$result[$errorIndex]['g-recaptcha-response'] = 'Sorry, a technical error happened.<br>We were not able to check if you are a human.<br>Please try again later.';
-				$result['g-recaptcha-response'] = false;
-			}
-		}
-		return $result;
-	}
+            if (is_bool($response) && $response && empty($result[$errorIndex])) {
+                $result['g-recaptcha-response'] = true;
+            } elseif ((is_array($response) && !$response[0]) || (is_bool($response) && $response && !empty($result[$errorIndex]))) {
+                $result[$errorIndex]['g-recaptcha-response'] = 'Please confirm you are a human.';
+                $result['g-recaptcha-response'] = false;
+            } else {
+                $result[$errorIndex]['g-recaptcha-response'] = 'Sorry, a technical error happened.<br>We were not able to check if you are a human.<br>Please try again later.';
+                $result['g-recaptcha-response'] = false;
+            }
+        }
+        return $result;
+    }
 
     /**
      * Validate customized no spam tools "captcha"
      * Important: don't forget to add "form-switch-input" CSS class on form tag, to use custom style
+     *
      * @param array $result: an array which contains form inputs values, errors with messages
      * @param string $errorIndex: name of errors index related to submitted form
+     *
      * @return array: $result is updated with captcha form validation
      */
     public function validateAppNoSpamTools($result, $errorIndex)
@@ -120,8 +131,8 @@ class AppCaptcha
             }
         }
         if ($usedTools[$formIdentifier . 'tli']) { // Time limit (minimum amount of time to fill and submit a form)
-             // Test if time limit is a valid timestamp
-             // and if submitted time() - time limit > loaded form time()
+            // Test if time limit is a valid timestamp
+            // and if submitted time() - time limit > loaded form time()
             if (isset($_REQUEST[$formIdentifier . 'tli']) && $this->captcha->checkTimestamp($_REQUEST[$formIdentifier . 'tli'])
             && ((time() - $this->captcha->getTimeLimit()) > $_REQUEST[$formIdentifier . 'tli'])) {
                 $result[$formIdentifier . 'noSpam'] = true;

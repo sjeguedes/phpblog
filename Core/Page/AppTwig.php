@@ -1,6 +1,11 @@
 <?php
 namespace Core\Page;
 
+/* Global namespace for Twig librairy */
+use Twig_Loader_Filesystem;
+use Twig_Environment;
+use Twig_Extension_StringLoader;
+
 /**
  * Manage Twig Template engine
  */
@@ -21,20 +26,22 @@ class AppTwig
 
     /**
      * Constructor
+     *
      * @return void
      */
     public function __construct()
     {
-        self::$_templateEngineLoader = new \Twig_Loader_Filesystem(__DIR__ . '/../../App/Views');
-        self::$_templateEngineEnv = new \Twig_Environment(self::$_templateEngineLoader, self::$_envParams);
+        self::$_templateEngineLoader = new Twig_Loader_Filesystem(__DIR__ . '/../../App/Views');
+        self::$_templateEngineEnv = new Twig_Environment(self::$_templateEngineLoader, self::$_envParams);
         // Add template_from_string function
-        self::$_templateEngineEnv->addExtension(new \Twig_Extension_StringLoader());
+        self::$_templateEngineEnv->addExtension(new Twig_Extension_StringLoader());
         // Set environment parameters
         self::setTemplateEngineEnv();
     }
 
     /**
      * Set Twig template engine configuration
+     *
      * @return void
      */
     private static function setTemplateEngineEnv()
@@ -46,8 +53,10 @@ class AppTwig
 
     /**
      * Render Entirely a particular Twig template
+     *
      * @param string $view: path for template to load
      * @param array $vars: parameters to use in template
+     *
      * @return string: HTML content type
      */
     public function renderTwigTemplate($view, $vars = [])
@@ -59,9 +68,11 @@ class AppTwig
 
     /**
      * Render only a part of a particular Twig template
+     *
      * @param string $view: path for template to load
      * @param string $blockName: block name in template
      * @param array $vars: parameters to use in template
+     *
      * @return string: HTML content type
      */
     public function renderTwigBlock($view, $blockName, $vars = [])

@@ -1,5 +1,6 @@
 <?php
 namespace Core\Page;
+
 use Core\Page\AppTwig;
 
 /**
@@ -34,12 +35,13 @@ class AppPage
      */
     private static $_session;
     /**
-	 * @var object: template engine instance
-	 */
-	private static $_templateEngine;
+     * @var AppTwig|object: template engine instance
+     */
+    private static $_templateEngine;
 
     /**
      * Instanciate a unique AppPage object (Singleton)
+     *
      * @return AppPage: a unique instance of AppPage
      */
     public static function getInstance()
@@ -52,6 +54,7 @@ class AppPage
 
     /**
      * Constructor
+     *
      * @return void
      */
     private function __construct()
@@ -61,6 +64,7 @@ class AppPage
 
     /**
     * Magic method __clone
+    *
     * @return void
     */
     public function __clone()
@@ -71,13 +75,14 @@ class AppPage
 
     /**
      * Add essential session parameters for a template
+     *
      * @param array $vars: template engine variables
+     *
      * @return array: entire array with added sesion parameters
      */
     private static function addSessionTemplateParams($vars)
     {
         self::$_session::start(true);
-        $sessionDatas = self::$_session::getDatas();
         // Is user authenticated? if this is true, then get needed User infos.
         $user = self::$_session::isUserAuthenticated();
         if ($user != false) {
@@ -92,7 +97,9 @@ class AppPage
 
     /**
      * Add essential common parameters for a template
+     *
      * @param array $vars: template engine variables
+     *
      * @return array: entire array with added common parameters
      */
     private static function addCommonTemplateParams($vars)
@@ -114,14 +121,16 @@ class AppPage
         return $vars;
     }
 
-	/**
-	 * Render Entirely a particular Twig template
-	 * @param string $view: path for template to load
-	 * @param array $vars: parameters to use in template
-	 * @return string: HTML content type
-	 */
-	public function renderTemplate($view, $vars = [])
-	{
+    /**
+     * Render Entirely a particular Twig template
+     *
+     * @param string $view: path for template to load
+     * @param array $vars: parameters to use in template
+     *
+     * @return string: HTML content type
+     */
+    public function renderTemplate($view, $vars = [])
+    {
         // Instanciate AppTwig
         self::$_templateEngine = new AppTwig();
         // Pass session datas to template
@@ -130,24 +139,26 @@ class AppPage
         $vars = self::addCommonTemplateParams($vars);
         // Render template
         return self::$_templateEngine->renderTwigTemplate($view, $vars);
-	}
+    }
 
-	/**
-	 * Render only a part of a particular Twig template
-	 * @param string $view: path for template to load
-	 * @param string $blockName: block name in template
-	 * @param array $vars: parameters to use in template
-	 * @return string: HTML content type
-	 */
-	public function renderBlock($view, $blockName, $vars = [])
-	{
-		// Instanciate AppTwig
+    /**
+     * Render only a part of a particular Twig template
+     *
+     * @param string $view: path for template to load
+     * @param string $blockName: block name in template
+     * @param array $vars: parameters to use in template
+     *
+     * @return string: HTML content type
+     */
+    public function renderBlock($view, $blockName, $vars = [])
+    {
+        // Instanciate AppTwig
         self::$_templateEngine = new AppTwig();
         // Pass session datas to template
         $vars = self::addSessionTemplateParams($vars);
         // Pass common datas to template
         $vars = self::addCommonTemplateParams($vars);
         // Render block
-		return self::$_templateEngine->renderTwigBlock($view, $blockName, $vars);
-	}
+        return self::$_templateEngine->renderTwigBlock($view, $blockName, $vars);
+    }
 }

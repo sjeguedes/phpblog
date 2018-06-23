@@ -8,7 +8,7 @@
         <div class="row">
             <div class="col-lg-8 text-center col-md-10 ml-auto mr-auto">
                 <!-- Success message box is on the same page here. -->
-                <p class="alert alert-success form-success{{ success == 0 ? ' form-hide'}}" role="alert">
+                <p class="alert alert-success form-success{{ success == 0 ? ' form-hide' }}" role="alert">
                     <i class="now-ui-icons ui-2_like"></i>&nbsp;&nbsp;<strong>WELL DONE!</strong>&nbsp;You request was treated successfully.<br>You are going to receive a password renewal email in a few minutes!<br>You will be able to change your password<br>on a dedicated form accessible <a href="/admin/renew-password" class="text-muted" href title="Password renewal form"><strong class="text-lower">here</strong></a>.
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">
@@ -16,7 +16,7 @@
                         </span>
                     </button>
                 </p>
-                <p class="alert alert-danger form-error{{ errors == 0 ? ' form-hide'}}" role="alert">
+                <p class="alert alert-danger form-error{{ errors == 0 ? ' form-hide' }}" role="alert">
                     <i class="now-ui-icons ui-1_bell-53"></i>&nbsp;&nbsp;<strong>ERRORS!</strong>&nbsp;Change a few things up and try submitting again.{% if errors['fpf_renewalCode'] is defined %}<br>{{ errors['fpf_renewalCode']|raw }}{% endif %}{% if errors['fpf_check'] is defined %}<br>{{ errors['fpf_check']|raw }}{% endif %}
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">
@@ -32,7 +32,7 @@
             <div class="col-lg-5 text-center col-md-8 col-sm-10 ml-auto mr-auto">
                 <div class="row card p-4" data-background-color="black">
                         <form novalidate class="forget-password-form form-switch-input" method="post" action="/admin/request-new-password" data-try-validation="{{ tryValidation }}">
-                            <p class="text-danger{{ errors['fpf_email'] is not defined ? ' form-hide'}}" role="alert">&nbsp;{{ errors['fpf_email']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
+                            <p class="text-danger{{ errors['fpf_email'] is not defined ? ' form-hide' }}" role="alert">&nbsp;{{ errors['fpf_email']|raw }}&nbsp;<i class="fa fa-long-arrow-down" aria-hidden="true"></i></p>
                             <div class="input-group phpblog-field-group form-group-no-border input-lg">
                                 <span class="input-group-addon">
                                     <i class="now-ui-icons ui-1_email-85"></i>

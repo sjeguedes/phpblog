@@ -15,6 +15,7 @@
 
 .btn {
     white-space: normal;
+    font-size: inherit;
 }
 
 span.btn {
@@ -22,8 +23,9 @@ span.btn {
     cursor: default !important;
 }
 
-a:not(.btn):hover {
+a.btn-link:hover,a.normal-link:hover {
     text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.4);
+    text-decoration: none;
 }
 
 .form-success a:hover {
@@ -32,6 +34,10 @@ a:not(.btn):hover {
 /* End override BootStrap */
 
 /* Override Now ui */
+p {
+    line-height: 1.5;
+}
+
 .alert {
     position: relative;
 }
@@ -53,19 +59,17 @@ a:not(.btn):hover {
     font-size: 0.75em;
 }
 /* End override Now ui */
+
 /* Override Recaptcha */
 .g-recaptcha {
     display: inline-block;
     margin-bottom: 5px;
+    position: relative;
 }
 /* End override Recaptcha */
 
-html {
-    /*height: 100%;*/
-}
-
-body {
-    /*height: inherit;*/
+html, body {
+    height: 100%;
 }
 
 .content {
@@ -91,11 +95,17 @@ ul.phpblog-list {
 }
 
 .navbar.bg-phpblog-neutral {
-    background-color: rgb(153, 153, 153);
+    background-color: #868e96;
 }
 
 .navbar {
+    position: fixed;
+    z-index: 3;
     min-height: 115px;
+}
+
+.btn, .btn-link {
+    font-weight: inherit !important;
 }
 
 .navbar a {
@@ -186,12 +196,17 @@ ul.phpblog-list {
     top: 0;
     left: 0;
     width: 100%;
+    color: #ffb236;
 }
 
 .navbar .navbar-nav .navbar-nav-profile a span {
     position: relative;
     top: 0.4rem;
     left: 0;
+}
+
+.navbar .navbar-nav .navbar-nav-profile a span .fa.fa-times {
+    color: #ff3636;
 }
 
 @media screen and (max-width: 991px) {
@@ -219,7 +234,8 @@ ul.phpblog-list {
 
     .sidebar-collapse .navbar-collapse {
         overflow-y: auto;
-        height: 100vh;
+        background-color: #868e96;
+        box-shadow: -2px 0 6px rgba(0, 0, 0, 0.2);
     }
 
     .sidebar-collapse .navbar-collapse::before {
@@ -249,6 +265,14 @@ ul.phpblog-list {
         opacity: 1;
         height: auto;
     }
+}
+
+.page-header .container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    transform: translate3d(0,0,0);
 }
 
 .page-header-image.home {
@@ -307,6 +331,10 @@ ul.phpblog-list {
     position: relative;
 }
 
+.content a.btn-link {
+    padding: 0;
+}
+
 .no-js-box {
     width: 100%;
     height: 100%;
@@ -328,7 +356,7 @@ ul.phpblog-list {
 }
 
 .footer.footer-default {
-    background-color: rgb(153, 153, 153);
+    background-color: #868e96;
 }
 
 .footer .social-personal-links {
@@ -338,6 +366,7 @@ ul.phpblog-list {
 .footer .copyright {
     float: none;
     text-align: center;
+    font-size: inherit;
 }
 
 .footer .copyright a.btn-link {
@@ -419,7 +448,7 @@ form p.text-danger {
 
 .input-group-addon, .form-control {
     background-color: transparent !important;
-    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 .input-group-addon {
@@ -458,7 +487,7 @@ form p.text-danger {
     -ms-user-select: none;
     user-select: none;
     background-color: transparent !important;
-    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
     border-left-width: 0 !important;
     border-radius: 0 5px 5px 0 !important;
     text-align: left;
@@ -478,14 +507,14 @@ form p.text-danger {
     font-size: 1em;
     color: #fff;
     background-color: #888;
-    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
     border-left-width: 0 !important;
     border-radius: 0 5px 5px 0 !important;
 }
 
 .custom-file-input.form-control {
     padding: 11px 19px !important;
-    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border: 2px solid rgba(255, 255, 255, 0.2) !important;
     line-height: normal;
     font-size: 1em;
     display: block;
@@ -523,9 +552,8 @@ select.form-control.custom-select {
     background-size: 8px 10px;
 }
 
-.active-field .input-group-addon:not('.phpblog-disabled'), .active-field .form-control:not('.phpblog-disabled') {
+.active-field .input-group-addon:not(.phpblog-disabled), .active-field .form-control:not(.phpblog-disabled) {
     background-color: transparent !important;
-    border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
 .section-contact-us .contact-form .input-group {
@@ -713,6 +741,15 @@ select:-webkit-autofill {
     margin-bottom: 0;
 }
 
+.btn-deactivate {
+    opacity: 0.15 !important;
+    cursor: not-allowed;
+}
+
+.btn-deactivate:hover {
+    box-shadow: none;
+}
+
 @media screen and (max-width: 767px) {
     .flex-table {
         flex-direction: column;
@@ -816,6 +853,8 @@ select:-webkit-autofill {
     top: -1em;
     bottom: auto;
     width: auto;
+    min-height: 3em;
+    line-height: 3em;
     margin: 0 2.5em;
 }
 
