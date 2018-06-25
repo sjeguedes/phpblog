@@ -73,7 +73,7 @@
                                         <div class="flex-header bg-primary">
                                             <span class="flex-label">Added on</span>
                                         </div>
-                                        <p class="flex-content"><br><i class="fa fa-hourglass-end" aria-hidden="true"></i>&nbsp;{{ commentList[i].creationDate }}</p>
+                                        <p class="flex-content"><i class="fa fa-hourglass-end" aria-hidden="true"></i>&nbsp;{{ commentList[i].creationDate }}</p>
                                     </div>
                                     <div class="flex-col">
                                         <div class="flex-header bg-primary">

@@ -14,7 +14,6 @@
 }
 
 .btn {
-    white-space: normal;
     font-size: inherit;
 }
 
@@ -72,8 +71,19 @@ html, body {
     height: 100%;
 }
 
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
 .content {
-    padding-top: 2em !important;
+    padding: 2em 0 1em;
+    flex: 1 0 auto;
+}
+
+.content a.btn-link {
+    padding: 0;
 }
 
 .content h1, .content .h1 {
@@ -102,6 +112,12 @@ ul.phpblog-list {
     position: fixed;
     z-index: 3;
     min-height: 115px;
+}
+
+/* Trick to apply fix only for Safari 7.1+: issue with positon fixed and scroll: content may disappear;
+https://stackoverflow.com/questions/16348489/is-there-a-css-hack-for-safari-only-not-chrome */
+_::-webkit-full-page-media, _:future, :root .navbar {
+    -webkit-transform: translate3d(0, 0, 0);/*fix content disappearing on scroll*/
 }
 
 .btn, .btn-link {
@@ -238,6 +254,12 @@ ul.phpblog-list {
         box-shadow: -2px 0 6px rgba(0, 0, 0, 0.2);
     }
 
+    /* Trick to apply fix only for Safari 7.1+: issue with positon fixed and scroll: content may disappear;
+    https://stackoverflow.com/questions/16348489/is-there-a-css-hack-for-safari-only-not-chrome */
+    _::-webkit-full-page-media, _:future, :root .sidebar-collapse .navbar-collapse {
+        height: 100vh !important; /*fix height with translate3d(0, 0, 0) on .navbar*/
+    }
+
     .sidebar-collapse .navbar-collapse::before {
         background: none;
     }
@@ -272,7 +294,7 @@ ul.phpblog-list {
     left: 0;
     right: 0;
     z-index: 2;
-    transform: translate3d(0,0,0);
+    transform: translate3d(0, 0, 0);
 }
 
 .page-header-image.home {
@@ -317,22 +339,6 @@ ul.phpblog-list {
 
 .page-header h1 {
     margin-bottom: 0;
-}
-
-.wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-.content {
-    padding: 1em 0;
-    flex: 1 0 auto;
-    position: relative;
-}
-
-.content a.btn-link {
-    padding: 0;
 }
 
 .no-js-box {
@@ -704,6 +710,10 @@ select:-webkit-autofill {
 .flex-table {
     display: flex;
     justify-content: space-between;
+    transform-style: preserve-3d;
+    -webkit-transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    transition: none !important;
 }
 
 .flex-col {
@@ -732,6 +742,8 @@ select:-webkit-autofill {
 }
 
 .flex-content {
+    position: relative;
+    z-index: 1;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -739,6 +751,18 @@ select:-webkit-autofill {
     line-height: 1;
     padding: 0.5em 0.5em 0.25em;
     margin-bottom: 0;
+}
+
+.flex-content .btn {
+    transform-style: preserve-3d;
+    -webkit-transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    transition: none !important;
+}
+
+.modal-content .modal-footer .btn.btn-neutral:hover,
+.modal-content .modal-footer .btn.btn-neutral:focus {
+    box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.17) !important;
 }
 
 .btn-deactivate {
