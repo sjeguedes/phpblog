@@ -13,7 +13,6 @@
             </button>
         </div>
         <div class="collapse navbar-collapse justify-content-end" id="navigation">
-
             <ul class="navbar-nav">
                 {% if authenticatedUser is defined %}
                 <!-- Show user profile -->

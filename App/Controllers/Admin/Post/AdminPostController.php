@@ -202,6 +202,10 @@ class AdminPostController extends AdminController
             ],
             1 => [
                 'placement' => 'bottom',
+                'src' => '/assets/js/phpblog.js'
+            ],
+            2 => [
+                'placement' => 'bottom',
                 'src' => '/assets/js/adminPosts.js'
             ]
         ];
